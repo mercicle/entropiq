@@ -1,1 +1,1 @@
-# dwave_testing
+# Quantum Computing Final Project
