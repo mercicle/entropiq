@@ -39,6 +39,7 @@ gunzip('/Users/mercicle/__school/___UW/intro-to-quantum-computing/final-projects
 
 import os
 import tarfile
+import glob
 
 out_dir = os.getcwd()+'/out-data/'
 dir_name = os.getcwd()+'/in-data/'
@@ -57,3 +58,15 @@ for item in file_list:
         tar.extractall(new_dir)
         tar.close()
         print('done: '+file_name)
+
+gz_files_in_out_data = glob.glob(out_dir + "/**/*.gz", recursive = True)
+
+for item in gz_files_in_out_data:
+    # item = gz_files_in_out_data[0]
+    tar = tarfile.open(item)
+    tar.extractall(out_dir)
+    tar.close()
+    print('done: '+item)
+    
+    
+    
