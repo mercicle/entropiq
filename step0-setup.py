@@ -6,6 +6,9 @@
 @author: mercicle
 """
 
+##########################################
+###### Install Python Libraries ##########
+##########################################
 
 # !pip install dwave-ocean-sdk networkx
 # !pip install networkx
@@ -17,10 +20,40 @@
 
 # !pip install git+git://github.com/rasbt/biopandas.git
 # !pip install pandas-compat
+
+# !pip install sh
+##########################################
+########### DWave Ocean API  #############
+##########################################
+
 # Step 1: From https://docs.ocean.dwavesys.com/en/stable/overview/sapi.html#sapi-access, you have to run from terminal
 # $ dwave config create
 # and provide your API token and other info
 
 
+##########################################
+########## Download DUD Files  ###########
+##########################################
 
+gunzip('/Users/mercicle/__school/___UW/intro-to-quantum-computing/final-projects/dwave/in-data/ace.tar.gz')
 
+import os
+import tarfile
+
+out_dir = os.getcwd()+'/out-data/'
+dir_name = os.getcwd()+'/in-data/'
+extension = ".gz"
+os.chdir(dir_name) # change directory from working dir to dir with files
+
+file_list = os.listdir(dir_name)
+for item in file_list:
+    # item = file_list[0]
+    if item.endswith(extension):
+        file_name = os.path.abspath(item)
+        print('unzipping: '+file_name)
+        tar = tarfile.open(file_name)
+        new_dir = out_dir + item.replace('.tar.gz','')+'/'
+        os.mkdir(new_dir)
+        tar.extractall(new_dir)
+        tar.close()
+        print('done: '+file_name)

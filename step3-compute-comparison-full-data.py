@@ -29,46 +29,20 @@ mol_path = './in-data/vegfr2/databases/dud_ligands2006/vegfr2_ligands.mol2'
 pdmol = PandasMol2()
 
 # https://github.com/rasbt/biopandas/issues/54
-
+all_bonds_df = pd.DataFrame()
 for mol2 in split_multimol2(mol_path):
-    
     
     pdmol.read_mol2_from_list(mol2_lines=mol2[1], mol2_code=mol2[0])
 
     bonds_df = bond_parser(in_mol2_lines = mol2[1])
     bonds_df['molecule'] = mol2[0]
-    
-    print(bonds_df.head())
 
+    print(bonds_df.head(2))
     
-    
+    all_bonds_df = all_bonds_df.append(bonds_df)
     
 
-f_text = ''.join(mol2[1])
-f_text = f_text.split('@<TRIPOS>BOND')[1]
-row_chunks = f_text.split('\n')[1:]
-df = pd.DataFrame()
-for i in range(len(row_chunks)):
-    # i = 1
-    print('i = '+str(i)+ '  row:' +row_chunks[i] )
-    edge_list = [x for x in row_chunks[i].split(" ") if x!='']
-    if len(edge_list)>0:
-        edge_list = edge_list[1:3]
-        df = df.append(pd.DataFrame.from_dict({'source':[edge_list[0]], 'target': [edge_list[1]]}))
-    
-# put in function
-def bond_parser(in_mol2_lines):
+all_bonds_df.head()
+all_bonds_df.shape
 
-    f_text = ''.join(in_mol2_lines)
-    f_text = f_text.split('@<TRIPOS>BOND')[1]
-    row_chunks = f_text.split('\n')[1:]
-    df = pd.DataFrame()
-    for i in range(len(row_chunks)):
-        # i = 1
-        #print('i = '+str(i)+ '  row:' +row_chunks[i] )
-        edge_list = [x for x in row_chunks[i].split(" ") if x!='']
-        if len(edge_list)>0:
-            edge_list = edge_list[1:3]
-            df = df.append(pd.DataFrame.from_dict({'source':[edge_list[0]], 'target': [edge_list[1]]}))
-    
-    return df
+all_bonds_df.to_csv('./out-data/all_molecule_graphs_df.csv')
