@@ -22,6 +22,7 @@
 # !pip install pandas-compat
 
 # !pip install sh
+
 ##########################################
 ########### DWave Ocean API  #############
 ##########################################
@@ -31,15 +32,14 @@
 # and provide your API token and other info
 
 
-##########################################
-########## Download DUD Files  ###########
-##########################################
-
-gunzip('/Users/mercicle/__school/___UW/intro-to-quantum-computing/final-projects/dwave/in-data/ace.tar.gz')
+################################################################
+########## Download and Unzip DUD Folders and Files  ###########
+################################################################
 
 import os
 import tarfile
 import glob
+from sh import gunzip
 
 out_dir = os.getcwd()+'/out-data/'
 dir_name = os.getcwd()+'/in-data/'
@@ -63,9 +63,7 @@ gz_files_in_out_data = glob.glob(out_dir + "/**/*.gz", recursive = True)
 
 for item in gz_files_in_out_data:
     # item = gz_files_in_out_data[0]
-    tar = tarfile.open(item)
-    tar.extractall(out_dir)
-    tar.close()
+    gunzip(item)
     print('done: '+item)
     
     
