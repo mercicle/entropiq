@@ -11,17 +11,15 @@
 ##########################################
 
 # !pip install dwave-ocean-sdk networkx
-# !pip install networkx
 # !pip install numpy --upgrade
 # !pip install biopandas
 
 # This is important pymol read_mol2_from_list will error without it.
 # !pip install pandas==0.24
-
 # !pip install git+git://github.com/rasbt/biopandas.git
 # !pip install pandas-compat
 
-# !pip install sh
+# !pip install sh glob
 
 ##########################################
 ########### DWave Ocean API  #############
@@ -57,7 +55,6 @@ for item in file_list:
         os.mkdir(new_dir)
         tar.extractall(new_dir)
         tar.close()
-        print('done: '+file_name)
 
 gz_files_in_out_data = glob.glob(out_dir + "/**/*.gz", recursive = True)
 
