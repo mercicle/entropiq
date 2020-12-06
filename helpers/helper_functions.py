@@ -32,4 +32,7 @@ def bond_parser(in_mol2_lines):
 
     return df
 
-len('foo bar baz'.split('bar'))
+def jaccard_sim(l1, l2):
+    intersection = len(list(set(l1).intersection(l2)))
+    union = len(l1) + len(l2) - intersection
+    return float(intersection) / union
