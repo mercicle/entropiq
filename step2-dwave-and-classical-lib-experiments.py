@@ -4,18 +4,31 @@
 @author: mercicle
 """
 
-# Standard Libs
+##########################################
+########## Standard Libraries  ###########
+##########################################
+
 import time
 import networkx as nx
 import matplotlib
 matplotlib.use("agg")
 import matplotlib.pyplot as plt
 
+##########################################
+##########    DWave Libraries  ###########
+##########################################
+
 # DWave libs
 # DWaveSampler(solver={'qpu': True})
+# ^^^ this is already True based on my selections in the command line setup.
+
 import dwave_networkx as dnx
 from dwave.system.samplers import DWaveSampler
 from dwave.system.composites import EmbeddingComposite
+
+########################################
+##            Setup Parms             ##
+########################################
 
 original_name = "original_network.png"
 solution_name = "solution_annotated_network.png"
@@ -25,11 +38,19 @@ sampler = EmbeddingComposite(DWaveSampler())
 
 n_sim_nodes = 20
 
+########################################
+##           Simulate a Graph         ##
+########################################
+
 # first simulate a scale-free grapha nd them coerce to undirected
 G = nx.scale_free_graph(n_sim_nodes)
 G = nx.DiGraph.to_undirected(G)
 print(nx.info(G))
 newtork_layout = nx.spring_layout(G)
+
+##################################################
+## Cmpute MIS with Both DWave and Classical     ##
+##################################################
 
 # Compute MIS
 start_time = time.time()
@@ -47,7 +68,6 @@ end_time = time.time()
 total_seconds = (end_time - start_time)
 print("Classical ompute time in {} seconds.".format(total_seconds))
 
-
 size_classical_mis = len(classical_mis_results)
 
 # Assess Results
@@ -57,7 +77,7 @@ print(dwave_mis_results)
 ########################################
 ##     Visualize DWave Result         ##
 ########################################
-# Compute subgraphs for network viz annotations 
+# Compute subgraphs for network viz annotations
 dwave_mis_subgraph = G.subgraph(list(dwave_mis_results)).copy()
 print(nx.info(dwave_mis_subgraph))
 
@@ -69,33 +89,32 @@ plt.figure()
 
 # Save
 
-nx.draw_networkx(G, 
-                 pos = newtork_layout, 
+nx.draw_networkx(G,
+                 pos = newtork_layout,
                  with_labels = True)
 if save_results:
     plt.savefig(original_name, bbox_inches='tight')
 
-nx.draw_networkx(dwave_mis_subgraph, 
-                 pos=newtork_layout, 
-                 with_labels=True, 
+nx.draw_networkx(dwave_mis_subgraph,
+                 pos=newtork_layout,
+                 with_labels=True,
                  node_color='r',
                  font_color='k')
 nx.draw_networkx(not_dwave_mis_subgraph,
                  pos=newtork_layout,
-                 with_labels=True, 
-                 node_color='grey', 
+                 with_labels=True,
+                 node_color='grey',
                  font_color='w')
 
 if save_results:
     plt.savefig('dwave_'+solution_name, bbox_inches='tight')
 
 
-
 ########################################
 ##     Visualize Classical Result     ##
 ########################################
 
-# Compute subgraphs for network viz annotations 
+# Compute subgraphs for network viz annotations
 classical_mis_subgraph = G.subgraph(list(classical_mis_results)).copy()
 print(nx.info(classical_mis_subgraph))
 
@@ -108,21 +127,20 @@ plt.figure()
 
 # Save
 plt.title('foo')
-nx.draw_networkx(G, 
-                 pos = newtork_layout, 
+nx.draw_networkx(G,
+                 pos = newtork_layout,
                  with_labels = True)
 
-nx.draw_networkx(classical_mis_subgraph, 
-                 pos=newtork_layout, 
-                 with_labels=True, 
+nx.draw_networkx(classical_mis_subgraph,
+                 pos=newtork_layout,
+                 with_labels=True,
                  node_color='r',
                  font_color='k')
 nx.draw_networkx(not_classical_mis_subgraph,
                  pos=newtork_layout,
-                 with_labels=True, 
-                 node_color='grey', 
+                 with_labels=True,
+                 node_color='grey',
                  font_color='w')
 
 if save_results:
     plt.savefig('classical_'+solution_name, bbox_inches='tight')
-
