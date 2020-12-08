@@ -16,7 +16,7 @@ from sh import gunzip
 out_dir = os.getcwd()+'/out-data/'
 dir_name = os.getcwd()+'/in-data/'
 extension = ".gz"
-os.chdir(dir_name) # change directory from working dir to dir with files
+os.chdir(dir_name)
 
 file_list = os.listdir(dir_name)
 for item in file_list:
