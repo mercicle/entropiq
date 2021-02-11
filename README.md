@@ -2,6 +2,17 @@
 
 Welcome to my QC Project 2 code base!
 
+
+# Learning DWave
+
+Resources available in Leap: https://cloud.dwavesys.com/leap/resources
+Ocean Documentation:  https://docs.ocean.dwavesys.com/en/stable/getting_started.html#gs
+Ocean Install Videos:  https://www.youtube.com/playlist?list=PLPvKnT7dgEsuhec_yW9oxcZ6gg9SfRFFV
+Ocean Code Examples:  https://github.com/dwave-examples
+Introduction to D-Wave and Quantum Annealing: https://docs.dwavesys.com/docs/latest/doc_getting_started.html
+Problem Solving Handbook: https://docs.dwavesys.com/docs/latest/doc_handbook.html
+
+
 # Repository Structure
 
 The helpers functions in /helpers has the bond_parser and jaccard_sim functions created for my analysis.
