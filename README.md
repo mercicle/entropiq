@@ -2,7 +2,6 @@
 
 Welcome to my QC Project 2 code base!
 
-
 # Learning DWave
 
 Resources available in Leap: https://cloud.dwavesys.com/leap/resources
@@ -36,6 +35,11 @@ This pipeline is the main pipeline. Note, for Step2 forward you must also signup
 $ pip install dwave-ocean-sdk
 $ dwave config create
 
+```
+This .config file is located at:
+
+```
+nano /Users/mercicle/Library/Application\ Support/dwave/dwave.conf
 ```
 
 This is the main pipeline.
