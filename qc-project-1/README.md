@@ -1,6 +1,6 @@
 # Quantum Computing Final Project
 
-Welcome to my QC Project 2 code base!
+Welcome to my QC Project 1 code base!
 
 # Learning DWave
 
