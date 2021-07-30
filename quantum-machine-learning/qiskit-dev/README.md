@@ -9,7 +9,7 @@ Create an environment and install Qiskit with extra visualization support.
 
 conda create -n ENV_NAME python=3
 conda activate ENV_NAME
-pip install qiskit[visualization]
+pip install 'qiskit[visualization]'
 
 ```
 
