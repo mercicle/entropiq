@@ -10,15 +10,13 @@ from qiskit.opflow import Z, I, StateFn
 from qiskit.utils import QuantumInstance
 from qiskit.circuit import Parameter
 from qiskit.circuit.library import RealAmplitudes, ZZFeatureMap
-from qiskit.algorithms.optimizers import COBYLA, L_BFGS_B
+from qiskit.algorithms.optimizers import COBYLA
 
 from qiskit_machine_learning.neural_networks import TwoLayerQNN, CircuitQNN
-from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier, VQC
-from qiskit_machine_learning.algorithms.regressors import NeuralNetworkRegressor, VQR
+from qiskit_machine_learning.algorithms.classifiers import NeuralNetworkClassifier
 from qiskit_machine_learning.exceptions import QiskitMachineLearningError
 
 from typing import Union
-
 
 quantum_instance = QuantumInstance(Aer.get_backend('qasm_simulator'), shots = 1024)
 
@@ -82,7 +80,7 @@ plt.plot([-1, 1], [1, -1], '--', color='black')
 plt.show()
 
 ########################################
-##########   CircuitQNN   ###############
+##########   CircuitQNN   ##############
 ########################################
 # In this context, the `CircuitQNN` is expected to return $d$-dimensional probability vector as output, 
 # where $d$ denotes the number of classes. Sampling from a `QuantumCircuit` automatically results in a 
