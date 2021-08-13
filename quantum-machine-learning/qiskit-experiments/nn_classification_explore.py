@@ -24,11 +24,23 @@ from qiskit import IBMQ
 
 # https://qiskit.org/documentation/stubs/qiskit.providers.ibmq.AccountProvider.html
 
+# this is set in the .env using the decouple package config function
 IBMQ_TOKEN = config('IBMQ_TOKEN')
 provider = IBMQ.enable_account(IBMQ_TOKEN)
 
+#IBMQ.providers() 
+#IBMQ.load_account()
 
-quantum_instance = QuantumInstance(Aer.get_backend('qasm_simulator'), shots = 1024)
+use_simulator  = True 
+
+if use_simulator:
+    backend = Aer.get_backend('qasm_simulator')
+else:
+    provider = IBMQ.get_provider(hub="ibm-q", group="open", project="main")
+    backend = provider.get_backend("ibmq_santiago")
+
+quantum_instance = QuantumInstance(backend, shots = 1024)
+#quantum_instance = QuantumInstance(Aer.get_backend('qasm_simulator'), shots = 1024)
 
 # parity maps bitstrings to 0 or 1
 def parity(x):
