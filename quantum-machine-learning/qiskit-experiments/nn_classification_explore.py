@@ -18,12 +18,21 @@ from qiskit_machine_learning.exceptions import QiskitMachineLearningError
 
 from typing import Union
 
+from decouple import config
+
+from qiskit import IBMQ
+
+# https://qiskit.org/documentation/stubs/qiskit.providers.ibmq.AccountProvider.html
+
+IBMQ_TOKEN = config('IBMQ_TOKEN')
+provider = IBMQ.enable_account(IBMQ_TOKEN)
+
+
 quantum_instance = QuantumInstance(Aer.get_backend('qasm_simulator'), shots = 1024)
 
 # parity maps bitstrings to 0 or 1
 def parity(x):
     return '{:b}'.format(x).count('1') % 2
-
 
 ########################################
 ########################################
