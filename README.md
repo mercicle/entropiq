@@ -18,10 +18,6 @@ Welcome to my Quantum Machine Learning Repo 😺. Each of the individual quantum
     ├── dwave-experiments
     │   ├── dwave-mis-illustration
     │   └── quantum-enabled-drug-discovery
-    │       ├── helpers
-    │       ├── project-1-pdfs
-    │       ├── scratchwork
-    │       └── screenshots
     ├── pennylane-experiments
     ├── qiskit-experiments
     └── tensorflow-quantum-experiments
