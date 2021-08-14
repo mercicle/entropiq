@@ -98,6 +98,10 @@ for x, y_target, y_p in zip(X, y, y_predict):
     if y_target != y_p:
         plt.scatter(x[0], x[1], s=200, facecolors='none', edgecolors='r', linewidths=2)
 plt.plot([-1, 1], [1, -1], '--', color='black')
+plt.title('Classification with OpflowQNN')
+plt.xlabel('Random X')
+plt.ylabel('Random Y')
+ 
 plt.show()
 
 ########################################
