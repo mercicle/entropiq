@@ -6,6 +6,23 @@ import numpy as np
 import scipy
 import networkx as nx
 import copy
+import os
+
+repo_folder_name = 'dwave_testing'
+
+this_dir = os.getcwd()
+root_repo_dir = this_dir.split(repo_folder_name)[0] + repo_folder_name + '/'
+sys.path.append(os.path.abspath(root_repo_dir + '/quantum-machine-learning/pennylane-experiments/helpers/'))
+
+from helper_functions import *
+
+# create in and out data directories
+this_in_dir = this_dir+'/in-data'
+this_out_dir = this_dir+'/out-data'
+
+os.mkdir(this_in_dir)
+os.mkdir(this_out_dir)
+
 
 
 qubit_number = 4
@@ -17,6 +34,8 @@ ising_graph = nx.cycle_graph(qubit_number)
 
 print(f"Edges: {ising_graph.edges}")
 nx.draw(ising_graph)
+
+ising_graph.draw('ising_graph.png', prog='dot')
 
 
 # initialize the “unknown” target parameters that describe the
