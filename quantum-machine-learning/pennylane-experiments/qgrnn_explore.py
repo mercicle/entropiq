@@ -6,24 +6,26 @@ import numpy as np
 import scipy
 import networkx as nx
 import copy
-import os
+import os, sys
+
+import pygraphviz as pgv # pygraphviz should be available
+
 
 repo_folder_name = 'dwave_testing'
+current_dir = os.getcwd()
 
-this_dir = os.getcwd()
-root_repo_dir = this_dir.split(repo_folder_name)[0] + repo_folder_name + '/'
-sys.path.append(os.path.abspath(root_repo_dir + '/quantum-machine-learning/pennylane-experiments/helpers/'))
+root_repo_dir = current_dir.split(repo_folder_name)[0] + repo_folder_name + '/'
+this_dir = root_repo_dir + '/quantum-machine-learning/pennylane-experiments/'
 
-from helper_functions import *
-
-# create in and out data directories
-this_in_dir = this_dir+'/in-data'
-this_out_dir = this_dir+'/out-data'
+# create in/out data dirs
+this_in_dir = this_dir+'/in-data/'
+this_out_dir = this_dir+'/out-data/'
 
 os.mkdir(this_in_dir)
 os.mkdir(this_out_dir)
 
-
+sys.path.append(os.path.abspath(this_dir + '/helper_functions/'))
+from helpers import *
 
 qubit_number = 4
 qubits = range(qubit_number)
@@ -33,9 +35,10 @@ qubits = range(qubit_number)
 ising_graph = nx.cycle_graph(qubit_number)
 
 print(f"Edges: {ising_graph.edges}")
+plt.figure()
 nx.draw(ising_graph)
-
-ising_graph.draw('ising_graph.png', prog='dot')
+plt.title('Target Interaction Graph of Ising Hamiltonian')
+plt.savefig(this_out_dir+'ising_graph.png', format="PNG")
 
 
 # initialize the “unknown” target parameters that describe the
