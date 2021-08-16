@@ -13,7 +13,6 @@ Welcome to my Quantum Machine Learning Repo 😺. Each of the individual quantum
 
 ```
 ├── adiabatic-theorem-with-mathematica
-│   └── infinite-well-adiabatic-theorem-final-project.nb
 └── quantum-machine-learning
     ├── dwave-experiments
     │   ├── dwave-mis-illustration
