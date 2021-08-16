@@ -8,71 +8,26 @@ import networkx as nx
 import copy
 
 
-######################################################################
-# We also define some fixed values that are used throughout
-# the simulation.
-#
-
-
 qubit_number = 4
 qubits = range(qubit_number)
 
 
-######################################################################
-# In this
-# simulation, we don't have quantum data readily available to pass into
-# the QGRNN, so we have to generate it ourselves. To do this, we must
-# have knowledge of the target interaction graph and the target Hamiltonian.
-#
-# Let us use the following cyclic graph as the target interaction graph
-# of the Ising Hamiltonian:
-#
-
-
+# cyclic graph as target interaction graph of the Ising Hamiltonian:
 ising_graph = nx.cycle_graph(qubit_number)
 
 print(f"Edges: {ising_graph.edges}")
 nx.draw(ising_graph)
 
 
+# initialize the “unknown” target parameters that describe the
+# target Hamiltonian ( by sampling from a uniform probability distribution ranging from (-2, 2)
 
-######################################################################
-# We can then initialize the “unknown” target parameters that describe the
-# target Hamiltonian, :math:`\boldsymbol\alpha \ = \ \{\alpha^{(1)}, \ \alpha^{(2)}\}`.
-# Recall from the introduction that we have defined our parametrized
-# Ising Hamiltonian to be of the form:
-#
-# .. math::
-#
-#     \hat{H}_{\text{Ising}}(\boldsymbol\theta) \ = \ \displaystyle\sum_{(i, j) \in E}
-#     \theta_{ij}^{(1)} Z_{i} Z_{j} \ + \ \displaystyle\sum_{i} \theta_{i}^{(2)} Z_{i} \ + \
-#     \displaystyle\sum_{i} X_{i},
-#
-# where :math:`E` is the set of edges in the interaction graph, and
-# :math:`X_i` and :math:`Z_i` are the Pauli-X and Pauli-Z on the
-# :math:`i`-th qubit.
-#
-# For this tutorial, we choose the target parameters by sampling from
-# a uniform probability distribution ranging from :math:`-2` to :math:`2`, with
-# two-decimal precision.
-#
-
-target_weights = [0.56, 1.24, 1.67, -0.79]
-target_bias = [-1.44, -1.43, 1.18, -0.93]
+target_weights = [0.56, 1.24, 1.67, -0.79] #represents the :math:`ZZ` interaction parameters
+target_bias = [-1.44, -1.43, 1.18, -0.93] #represents the single-qubit :math:`Z` parameters.
 
 
-######################################################################
-# In theory, these parameters can
-# be any value we want, provided they are reasonably small enough that the QGRNN can reach them
-# in a tractable number of optimization steps.
-# In ``matrix_params``, the first list represents the :math:`ZZ` interaction parameters and
-# the second list represents the single-qubit :math:`Z` parameters.
-#
-# Finally,
 # we use this information to generate the matrix form of the
 # Ising model Hamiltonian in the computational basis:
-#
-
 
 def create_hamiltonian_matrix(n_qubits, graph, weights, bias):
 

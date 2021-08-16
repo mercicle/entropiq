@@ -6,13 +6,13 @@ Pennylane is developed by the Canadian company Xanadu, and is a Python library f
 # Installation
 
 ```
-pip install pennylane --upgrade
+pip3 install pennylane --upgrade
 ```
 
 Additional quantum frameworks and plugins from other vendors
 
 ```
-pip install pennylane-qiskit pennylane-cirq pennylane-forest
+pip3 install pennylane-qiskit pennylane-cirq pennylane-forest
 ```
 
 Qiskit by IBM, Cirl by Google and Forest by Rigetti
@@ -21,7 +21,7 @@ Qiskit by IBM, Cirl by Google and Forest by Rigetti
 ## ML Library integration
 
 ```
-pip install autograd "tensorflow>=1.13.2" jax jaxlib
+pip3 install autograd "tensorflow>=1.13.2" jax jaxlib
 conda install pytorch torchvision torchaudio -c pytorch
 ```
 
