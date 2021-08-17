@@ -35,49 +35,24 @@ qubits = range(qubit_number)
 ising_graph = nx.cycle_graph(qubit_number)
 
 print(f"Edges: {ising_graph.edges}")
-plt.figure()
+
+plt.figure(figsize=(10,5))
+ax = plt.gca()
+ax.set_title('Target Interaction Graph of Ising Hamiltonian')
 nx.draw(ising_graph)
-plt.title('Target Interaction Graph of Ising Hamiltonian')
-plt.savefig(this_out_dir+'ising_graph.png', format="PNG")
+_ = ax.axis('off')
+plt.savefig(this_out_dir+'target_interaction_graph_of_ising_hamiltonian.png', format="PNG")
 
 
 # initialize the “unknown” target parameters that describe the
 # target Hamiltonian ( by sampling from a uniform probability distribution ranging from (-2, 2)
 
-target_weights = [0.56, 1.24, 1.67, -0.79] #represents the :math:`ZZ` interaction parameters
-target_bias = [-1.44, -1.43, 1.18, -0.93] #represents the single-qubit :math:`Z` parameters.
+target_weights = [0.56, 1.24, 1.67, -0.79] # represents the :math:`ZZ` interaction parameters
+target_bias = [-1.44, -1.43, 1.18, -0.93]  # represents the single-qubit :math:`Z` parameters.
 
 
 # we use this information to generate the matrix form of the
 # Ising model Hamiltonian in the computational basis:
-
-def create_hamiltonian_matrix(n_qubits, graph, weights, bias):
-
-    full_matrix = np.zeros((2 ** n_qubits, 2 ** n_qubits))
-
-    # Creates the interaction component of the Hamiltonian
-    for i, edge in enumerate(graph.edges):
-        interaction_term = 1
-        for qubit in range(0, n_qubits):
-            if qubit in edge:
-                interaction_term = np.kron(interaction_term, qml.PauliZ.matrix)
-            else:
-                interaction_term = np.kron(interaction_term, np.identity(2))
-        full_matrix += weights[i] * interaction_term
-
-    # Creates the bias components of the matrix
-    for i in range(0, n_qubits):
-        z_term = x_term = 1
-        for j in range(0, n_qubits):
-            if j == i:
-                z_term = np.kron(z_term, qml.PauliZ.matrix)
-                x_term = np.kron(x_term, qml.PauliX.matrix)
-            else:
-                z_term = np.kron(z_term, np.identity(2))
-                x_term = np.kron(x_term, np.identity(2))
-        full_matrix += bias[i] * z_term + x_term
-
-    return full_matrix
 
 
 # Prints a visual representation of the Hamiltonian matrix
