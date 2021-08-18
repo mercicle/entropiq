@@ -36,7 +36,8 @@ low_energy_state = [(-0.054661080280306085 + 0.016713907320174026j),(0.122900036
                     (-0.06923183949694546 + 0.0211684344103713j),(0.15566094863283836 - 0.04760201916285508j),(0.014520590919500158 - 0.004441887836078486j),
                     (-0.032648113364535575 + 0.009988590222879195j),(-0.09694382811137187 + 0.02965579457620536j),(0.21796861485652747 - 0.06668776658411019j),
                     (-0.0027547112135013247 + 0.0008426289322652901j),(0.006193695872468649 - 0.0018948418969390599j),(0.018391279795405405 - 0.005625722994009138j),
-                    (-0.041350974715649635 + 0.012650711602265649j),]
+                    (-0.041350974715649635 + 0.012650711602265649j)]
+
 ######################################################################
 # Author notes: This state can be obtained by using a decoupled version of the
 # :doc:`Variational Quantum Eigensolver </demos/tutorial_vqe>` algorithm (VQE).
@@ -87,59 +88,18 @@ plt.savefig(this_out_dir+'target_hamiltonian_matrix.png', format="PNG")
 # and comparing it to the energy expectation of this low-energy state:
 
 res = np.vdot(low_energy_state, (hamiltonian_matrix @ low_energy_state))
-energy_exp = np.real_if_close(res)
+expected_energy = np.real_if_close(res)
 ground_state_energy = np.real_if_close(min(np.linalg.eig(hamiltonian_matrix)[0]))
 
-print(f"Energy Expectation: {energy_exp} Ground State Energy: {ground_state_energy}")
+print(f"Energy Expectation: {expected_energy} Ground State Energy: {ground_state_energy}")
 
-
-######################################################################
-# We have in fact found a low-energy, non-ground state,
-# as the energy expectation is slightly greater than the energy of the true ground
+# We have in fact found a low-energy, non-ground state
 # state. This, however, is only half of the information we need. We also require
 # a collection of time-evolved, low-energy states.
-# Evolving the low-energy state forward in time is fairly straightforward: all we
-# have to do is multiply the initial state by a time-evolution unitary. This operation
-# can be defined as a custom gate in PennyLane:
-
-
-def state_evolve(hamiltonian, qubits, time):
-
-    U = scipy.linalg.expm(-1j * hamiltonian * time)
-    qml.QubitUnitary(U, wires=qubits)
-
-
-######################################################################
-# We don't actually generate time-evolved quantum data quite yet,
-# but we now have all the pieces required for its preparation.
-
 
 ############################
 # Learning the Hamiltonian #
 ############################
-
-######################################################################
-# With the quantum data defined, we are able to construct the QGRNN and
-# learn the target Hamiltonian.
-# Each of the exponentiated
-# Hamiltonians in the QGRNN ansatz,
-# :math:`\hat{H}^{j}_{\text{Ising}}(\boldsymbol\mu)`, are the
-# :math:`ZZ`, :math:`Z`, and :math:`X` terms from the Ising
-# Hamiltonian. This gives:
-
-def qgrnn_layer(weights, bias, qubits, graph, trotter_step):
-
-    # Applies a layer of RZZ gates (based on a graph)
-    for i, edge in enumerate(graph.edges):
-        qml.MultiRZ(2 * weights[i] * trotter_step, wires=(edge[0], edge[1]))
-
-    # Applies a layer of RZ gates
-    for i, qubit in enumerate(qubits):
-        qml.RZ(2 * bias[i] * trotter_step, wires=qubit)
-
-    # Applies a layer of RX gates
-    for qubit in qubits:
-        qml.RX(2 * trotter_step, wires=qubit)
 
 
 ######################################################################
