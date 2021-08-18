@@ -5,6 +5,7 @@ import numpy as np
 import pennylane as qml
 import scipy
 
+random_number_generator = np.random.default_random_number_generator(seed=42)
 
 def create_hamiltonian_matrix(n_qubits, graph, weights, bias):
 
@@ -71,6 +72,29 @@ def qgrnn_layer(weights, bias, qubits, graph, trotter_step):
         qml.RX(2 * trotter_step, wires=qubit)
 
 
+# implement the QGRNN circuit for some given time value
+def qgrnn(control, weights, bias, time=None):
+
+    # Prepares the low energy state in the two registers
+    qml.QubitStateVector(np.kron(low_energy_state, low_energy_state), wires=reg1 + reg2)
+
+    # Evolves the first qubit register with the time-evolution circuit to
+    # prepare a piece of quantum data
+    state_evolve(hamiltonian_matrix, reg1, time)
+
+    # Applies the QGRNN layers to the second qubit register
+    depth = time / trotter_step  # P = t/Delta
+    for _ in range(0, int(depth)):
+        qgrnn_layer(weights, bias, reg2, complete_seed_ising_graph, trotter_step)
+
+    # Applies the SWAP test between the registers
+    swap_test(control, reg1, reg2)
+
+    # Returns the results of the SWAP test
+    return qml.expval(qml.PauliZ(control))
+
+
+
 ######################################################################
 # As was mentioned in the first section, the QGRNN has two
 # registers. In one register, some piece of quantum data
@@ -84,9 +108,9 @@ def qgrnn_layer(weights, bias, qubits, graph, trotter_step):
 # test <https://en.wikipedia.org/wiki/Swap_test>`__ between the registers:
 
 # After performing this procedure, the value returned from a measurement of the circuit is
-# :math:`\langle Z \rangle`, with respect to the ``control`` qubit.
+# :math:`\langle Z \rangle`, with respect to the ``index_of_control_qubit`` qubit.
 # The probability of measuring the :math:`|0\rangle` state
-# in this control qubit is related to both the fidelity
+# in this index_of_control_qubit qubit is related to both the fidelity
 # between registers and :math:`\langle Z \rangle`. Thus, with a bit of algebra,
 # we find that :math:`\langle Z \rangle` is equal to the fidelity.
 #
@@ -99,4 +123,18 @@ def swap_test(control, register1, register2):
         qml.CSWAP(wires=(control, reg1_qubit, reg2_qubit))
         
     qml.Hadamard(wires=control)
+
+
+def cost_function(weight_params, bias_params):
+
+    # Randomly samples times at which the QGRNN runs
+    times_sampled = random_number_generator.random(size=n_quantum_data) * max_time_perc
+
+    # Cycles through each of the sampled times and calculates the cost
+    total_cost = 0
+    for dt in times_sampled:
+        result = qgrnn_qnode(weight_params, bias_params, time = dt)
+        total_cost += -1 * result
+
+    return total_cost / n_quantum_data
 

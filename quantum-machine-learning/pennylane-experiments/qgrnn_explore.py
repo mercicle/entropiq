@@ -18,8 +18,8 @@ root_repo_dir = current_dir.split(repo_folder_name)[0] + repo_folder_name + '/'
 this_dir = root_repo_dir + '/quantum-machine-learning/pennylane-experiments/'
 
 # create in/out data dirs
-this_in_dir = this_dir+'/in-data/'
-this_out_dir = this_dir+'/out-data/'
+this_in_dir = this_dir+'in-data/'
+this_out_dir = this_dir+'out-data/'
 
 os.mkdir(this_in_dir)
 os.mkdir(this_out_dir)
@@ -29,6 +29,8 @@ from helpers import *
 
 qubit_number = 4
 qubits = range(qubit_number)
+
+random_number_generator = np.random.default_random_number_generator(seed=42)
 
 # QGRNN quantum data needed includes initial low-energy state, and a subsequent time-evolved states
 low_energy_state = [(-0.054661080280306085 + 0.016713907320174026j),(0.12290003656489545 - 0.03758500591109822j),(0.3649337966440005 - 0.11158863596657455j),
@@ -58,16 +60,16 @@ print(f"Edges: {ising_graph.edges}")
 plt.figure(figsize=(10,10))
 ax = plt.gca()
 ax.set_title('Target Interaction Graph of Ising Hamiltonian')
-nx.draw(G = ising_graph, pos = layout_coordinates)
+nx.draw(G = ising_graph, pos = layout_coordinates, width = 4)
+nx.draw_networkx_nodes(G=complete_seed_ising_graph, pos=complete_seed_layout_coordinates, edgecolors="white")
 _ = ax.axis('off')
 plt.savefig(this_out_dir+'target_interaction_graph_of_ising_hamiltonian.png', format="PNG")
-
 
 # initialize the “unknown” target parameters that describe the
 # target Hamiltonian ( by sampling from a uniform probability distribution ranging from (-2, 2)
 
-target_weights = [0.56, 1.24, 1.67, -0.79] # represents the :math:`ZZ` interaction parameters
-target_bias = [-1.44, -1.43, 1.18, -0.93]  # represents the single-qubit :math:`Z` parameters.
+target_weights = [0.56, 1.24, 1.67, -0.79] # qubit interaction parameters
+target_bias = [-1.44, -1.43, 1.18, -0.93]  # qubit parameters.
 
 # we use this information to generate the matrix form of the
 # Ising model Hamiltonian in the computational basis:
@@ -113,114 +115,48 @@ print(f"Energy Expectation: {expected_energy} Ground State Energy: {ground_state
 reg1 = tuple(range(qubit_number))  # First qubit register
 reg2 = tuple(range(qubit_number, 2 * qubit_number))  # Second qubit register
 
-control = 2 * qubit_number  # Index of control qubit
+index_of_control_qubit = 2 * qubit_number  # Index of index_of_control_qubit qubit
 trotter_step = 0.01  # Trotter step size
 
 # defines the interaction graph for the new qubit system
 
 complete_seed_ising_graph = nx.complete_graph(reg2)
 complete_seed_layout_coordinates = nx.circular_layout(complete_seed_ising_graph)
-
+num_edges = len(complete_seed_ising_graph.edges)
 print(f"Edges: {complete_seed_ising_graph.edges}")
 nx.draw(complete_seed_ising_graph)
 
 plt.figure(figsize=(10,10))
 ax = plt.gca()
 ax.set_title('Complete Seed Interaction Graph of Ising Hamiltonian')
-nx.draw(G = complete_seed_ising_graph, pos = complete_seed_layout_coordinates)
+nx.draw(G = complete_seed_ising_graph, pos = complete_seed_layout_coordinates, width=4)
+nx.draw_networkx_nodes(G=complete_seed_ising_graph, pos=complete_seed_layout_coordinates, edgecolors="white")
+
 _ = ax.axis('off')
 plt.savefig(this_out_dir+'complete_seed_interaction_graph_of_ising_hamiltonian.png', format="PNG")
 
+n_quantum_data = 15  # The number of pieces of quantum data that are used for each step n_quantum_data
+max_time_perc = 0.1  # The maximum value of time that can be used for quantum data
 
+####################### 
+# optimization set up #
+#######################
 
-# implement the QGRNN circuit for some given time value:
+qgrnn_dev = qml.device("default.qubit", wires=2 * qubit_number + 1) # Defines the new device
+qgrnn_qnode = qml.QNode(qgrnn, qgrnn_dev) # Defines the new QNode
 
-def qgrnn(weights, bias, time=None):
-
-    # Prepares the low energy state in the two registers
-    qml.QubitStateVector(np.kron(low_energy_state, low_energy_state), wires=reg1 + reg2)
-
-    # Evolves the first qubit register with the time-evolution circuit to
-    # prepare a piece of quantum data
-    state_evolve(hamiltonian_matrix, reg1, time)
-
-    # Applies the QGRNN layers to the second qubit register
-    depth = time / trotter_step  # P = t/Delta
-    for _ in range(0, int(depth)):
-        qgrnn_layer(weights, bias, reg2, complete_seed_ising_graph, trotter_step)
-
-    # Applies the SWAP test between the registers
-    swap_test(control, reg1, reg2)
-
-    # Returns the results of the SWAP test
-    return qml.expval(qml.PauliZ(control))
-
-
-######################################################################
-# We have the full QGRNN circuit, but we still need to define a cost function.
-# We know that
-# :math:`| \langle \psi(t) | U_{H}(\boldsymbol\mu, \ \Delta) |\psi_0\rangle |^2`
-# approaches :math:`1` as the states become more similar and approaches
-# :math:`0` as the states become orthogonal. Thus, we choose
-# to minimize the quantity
-# :math:`-| \langle \psi(t) | U_{H}(\boldsymbol\mu, \ \Delta) |\psi_0\rangle |^2`.
-# Since we are interested in calculating this value for many different
-# pieces of quantum data, the final cost function is the average
-# negative fidelity* between registers:
-#
-# .. math::
-#
-#     \mathcal{L}(\boldsymbol\mu, \ \Delta) \ = \ - \frac{1}{N} \displaystyle\sum_{i \ = \ 1}^{N} |
-#     \langle \psi(t_i) | \ U_{H}(\boldsymbol\mu, \ \Delta) \ |\psi_0\rangle |^2,
-#
-# where we use :math:`N` pieces of quantum data.
-# Before creating the cost function, we must define a few more fixed variables:
-
-N = 15  # The number of pieces of quantum data that are used for each step
-max_time = 0.1  # The maximum value of time that can be used for quantum data
-
-
-######################################################################
-# We then define the negative fidelity cost function:
-
-rng = np.random.default_rng(seed=42)
-
-def cost_function(weight_params, bias_params):
-
-    # Randomly samples times at which the QGRNN runs
-    times_sampled = rng.random(size=N) * max_time
-
-    # Cycles through each of the sampled times and calculates the cost
-    total_cost = 0
-    for dt in times_sampled:
-        result = qgrnn_qnode(weight_params, bias_params, time=dt)
-        total_cost += -1 * result
-
-    return total_cost / N
-
-
-######################################################################
-# Next we set up for optimization.
-#
-
-# Defines the new device
-qgrnn_dev = qml.device("default.qubit", wires=2 * qubit_number + 1)
-
-# Defines the new QNode
-qgrnn_qnode = qml.QNode(qgrnn, qgrnn_dev)
-
-steps = 300
-
+optimization_steps = 300
 optimizer = qml.AdamOptimizer(stepsize=0.5)
 
-weights = rng.random(size=len(complete_seed_ising_graph.edges)) - 0.5
-bias = rng.random(size=qubit_number) - 0.5
+weights = random_number_generator.random(size = num_edges) - 0.5
+bias = random_number_generator.random(size = qubit_number) - 0.5
 
 initial_weights = copy.copy(weights)
 initial_bias = copy.copy(bias)
 
-# optimization loop.
-for i in range(0, steps):
+# optimization loop
+for i in range(0, optimization_steps):
+    
     (weights, bias), cost = optimizer.step_and_cost(cost_function, weights, bias)
 
     # Prints the value of the cost function
@@ -235,30 +171,24 @@ for i in range(0, steps):
 # of the Hamiltonian to which they correspond and compare it to the
 # target Hamiltonian, and the initial guessed Hamiltonian:
 
-new_ham_matrix = create_hamiltonian_matrix(
-    qubit_number, nx.complete_graph(qubit_number), weights, bias
-)
-
-init_ham = create_hamiltonian_matrix(
-    qubit_number, nx.complete_graph(qubit_number), initial_weights, initial_bias
-)
+initial_hamiltonian_matrix = create_hamiltonian_matrix(qubit_number, nx.complete_graph(qubit_number), initial_weights, initial_bias)
+inferred_hamiltonian_matrix = create_hamiltonian_matrix(qubit_number, nx.complete_graph(qubit_number), weights, bias)
 
 fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(6, 6))
 
 axes[0].matshow(hamiltonian_matrix, vmin=-7, vmax=7, cmap="hot")
 axes[0].set_title("Target", y=1.13)
 
-axes[1].matshow(init_ham, vmin=-7, vmax=7, cmap="hot")
+axes[1].matshow(initial_hamiltonian_matrix, vmin=-7, vmax=7, cmap="hot")
 axes[1].set_title("Initial", y=1.13)
 
-axes[2].matshow(new_ham_matrix, vmin=-7, vmax=7, cmap="hot")
+axes[2].matshow(inferred_hamiltonian_matrix, vmin=-7, vmax=7, cmap="hot")
 axes[2].set_title("Learned", y=1.13)
 
 plt.subplots_adjust(wspace=0.3, hspace=0.3)
 plt.show()
 
 # These images look very similar, indicating that the QGRNN has done a good job learning the target Hamiltonian.
-#
 # We can also look at the exact values of the target and learned parameters.
 # Recall how the target
 # interaction graph has :math:`4` edges while the complete graph has :math:`6`.
