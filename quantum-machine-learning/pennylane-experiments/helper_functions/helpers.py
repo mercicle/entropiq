@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import pennylane as qml
 
 def create_hamiltonian_matrix(n_qubits, graph, weights, bias):
 

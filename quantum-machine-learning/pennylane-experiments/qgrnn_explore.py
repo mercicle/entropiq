@@ -30,7 +30,6 @@ from helpers import *
 qubit_number = 4
 qubits = range(qubit_number)
 
-
 # cyclic graph as target interaction graph of the Ising Hamiltonian:
 ising_graph = nx.cycle_graph(qubit_number)
 
@@ -50,31 +49,22 @@ plt.savefig(this_out_dir+'target_interaction_graph_of_ising_hamiltonian.png', fo
 target_weights = [0.56, 1.24, 1.67, -0.79] # represents the :math:`ZZ` interaction parameters
 target_bias = [-1.44, -1.43, 1.18, -0.93]  # represents the single-qubit :math:`Z` parameters.
 
-
 # we use this information to generate the matrix form of the
 # Ising model Hamiltonian in the computational basis:
 
+hamiltonian_matrix = create_hamiltonian_matrix(qubit_number, ising_graph, target_weights, target_bias)
 
-# Prints a visual representation of the Hamiltonian matrix
-ham_matrix = create_hamiltonian_matrix(qubit_number, ising_graph, target_weights, target_bias)
-plt.matshow(ham_matrix, cmap="hot")
+# prints a visual representation of the Hamiltonian matrix
+plt.matshow(hamiltonian_matrix, cmap="hot")
 plt.show()
 
-
-
-
-######################################################################
 # Preparing Quantum Data
-# ^^^^^^^^^^^^^^^^^^^^^^
-#
-
 
 ######################################################################
 # The collection of quantum data needed to run the QGRNN has two components:
 # (i) copies of a low-energy state, and (ii) a collection of time-evolved states, each of which are
 # simply the low-energy state evolved to different times.
 # The following is a low-energy state of the target Hamiltonian:
-#
 
 low_energy_state = [
     (-0.054661080280306085 + 0.016713907320174026j),
@@ -110,17 +100,13 @@ low_energy_state = [
 # We can verify that this is a low-energy
 # state by numerically finding the lowest eigenvalue of the Hamiltonian
 # and comparing it to the energy expectation of this low-energy state:
-#
 
-
-res = np.vdot(low_energy_state, (ham_matrix @ low_energy_state))
+res = np.vdot(low_energy_state, (hamiltonian_matrix @ low_energy_state))
 energy_exp = np.real_if_close(res)
 print(f"Energy Expectation: {energy_exp}")
 
-
-ground_state_energy = np.real_if_close(min(np.linalg.eig(ham_matrix)[0]))
+ground_state_energy = np.real_if_close(min(np.linalg.eig(hamiltonian_matrix)[0]))
 print(f"Ground State Energy: {ground_state_energy}")
-
 
 ######################################################################
 # We have in fact found a low-energy, non-ground state,
@@ -130,7 +116,6 @@ print(f"Ground State Energy: {ground_state_energy}")
 # Evolving the low-energy state forward in time is fairly straightforward: all we
 # have to do is multiply the initial state by a time-evolution unitary. This operation
 # can be defined as a custom gate in PennyLane:
-#
 
 
 def state_evolve(hamiltonian, qubits, time):
@@ -142,14 +127,11 @@ def state_evolve(hamiltonian, qubits, time):
 ######################################################################
 # We don't actually generate time-evolved quantum data quite yet,
 # but we now have all the pieces required for its preparation.
-#
 
 
-######################################################################
-# Learning the Hamiltonian
-# ^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-
+############################
+# Learning the Hamiltonian #
+############################
 
 ######################################################################
 # With the quantum data defined, we are able to construct the QGRNN and
@@ -159,8 +141,6 @@ def state_evolve(hamiltonian, qubits, time):
 # :math:`\hat{H}^{j}_{\text{Ising}}(\boldsymbol\mu)`, are the
 # :math:`ZZ`, :math:`Z`, and :math:`X` terms from the Ising
 # Hamiltonian. This gives:
-#
-
 
 def qgrnn_layer(weights, bias, qubits, graph, trotter_step):
 
@@ -188,8 +168,6 @@ def qgrnn_layer(weights, bias, qubits, graph, trotter_step):
 # :math:`| \langle \psi(t) | U_{H}(\Delta, \ \boldsymbol\mu) |\psi_0\rangle |^2`.
 # To calculate this value, we use a `SWAP
 # test <https://en.wikipedia.org/wiki/Swap_test>`__ between the registers:
-#
-
 
 def swap_test(control, register1, register2):
 
@@ -197,7 +175,6 @@ def swap_test(control, register1, register2):
     for reg1_qubit, reg2_qubit in zip(register1, register2):
         qml.CSWAP(wires=(control, reg1_qubit, reg2_qubit))
     qml.Hadamard(wires=control)
-
 
 ######################################################################
 # After performing this procedure, the value returned from a measurement of the circuit is
@@ -217,10 +194,8 @@ def swap_test(control, register1, register2):
 # is learned *automatically* as the target parameters are optimized. The
 # :math:`\boldsymbol\mu` parameters that correspond to edges that don't exist in
 # the target graph will simply approach :math:`0`.
-#
 
 # Defines some fixed values
-
 reg1 = tuple(range(qubit_number))  # First qubit register
 reg2 = tuple(range(qubit_number, 2 * qubit_number))  # Second qubit register
 
@@ -235,10 +210,7 @@ print(f"Edges: {new_ising_graph.edges}")
 nx.draw(new_ising_graph)
 
 
-######################################################################
-# With this done, we implement the QGRNN circuit for some given time value:
-#
-
+# implement the QGRNN circuit for some given time value:
 
 def qgrnn(weights, bias, time=None):
 
@@ -247,7 +219,7 @@ def qgrnn(weights, bias, time=None):
 
     # Evolves the first qubit register with the time-evolution circuit to
     # prepare a piece of quantum data
-    state_evolve(ham_matrix, reg1, time)
+    state_evolve(hamiltonian_matrix, reg1, time)
 
     # Applies the QGRNN layers to the second qubit register
     depth = time / trotter_step  # P = t/Delta
@@ -279,10 +251,7 @@ def qgrnn(weights, bias, time=None):
 #     \langle \psi(t_i) | \ U_{H}(\boldsymbol\mu, \ \Delta) \ |\psi_0\rangle |^2,
 #
 # where we use :math:`N` pieces of quantum data.
-#
-# Before creating the cost function, we must define a few more fixed
-# variables:
-#
+# Before creating the cost function, we must define a few more fixed variables:
 
 N = 15  # The number of pieces of quantum data that are used for each step
 max_time = 0.1  # The maximum value of time that can be used for quantum data
@@ -290,7 +259,7 @@ max_time = 0.1  # The maximum value of time that can be used for quantum data
 
 ######################################################################
 # We then define the negative fidelity cost function:
-#
+
 rng = np.random.default_rng(seed=42)
 
 def cost_function(weight_params, bias_params):
@@ -327,9 +296,7 @@ bias = rng.random(size=qubit_number) - 0.5
 initial_weights = copy.copy(weights)
 initial_bias = copy.copy(bias)
 
-######################################################################
-# All that remains is executing the optimization loop.
-
+# optimization loop.
 for i in range(0, steps):
     (weights, bias), cost = optimizer.step_and_cost(cost_function, weights, bias)
 
@@ -344,7 +311,6 @@ for i in range(0, steps):
 # With the learned parameters, we construct a visual representation
 # of the Hamiltonian to which they correspond and compare it to the
 # target Hamiltonian, and the initial guessed Hamiltonian:
-#
 
 new_ham_matrix = create_hamiltonian_matrix(
     qubit_number, nx.complete_graph(qubit_number), weights, bias
@@ -356,7 +322,7 @@ init_ham = create_hamiltonian_matrix(
 
 fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(6, 6))
 
-axes[0].matshow(ham_matrix, vmin=-7, vmax=7, cmap="hot")
+axes[0].matshow(hamiltonian_matrix, vmin=-7, vmax=7, cmap="hot")
 axes[0].set_title("Target", y=1.13)
 
 axes[1].matshow(init_ham, vmin=-7, vmax=7, cmap="hot")
@@ -368,21 +334,14 @@ axes[2].set_title("Learned", y=1.13)
 plt.subplots_adjust(wspace=0.3, hspace=0.3)
 plt.show()
 
-
-
-
-######################################################################
-# These images look very similar, indicating that the QGRNN has done a good job
-# learning the target Hamiltonian.
+# These images look very similar, indicating that the QGRNN has done a good job learning the target Hamiltonian.
 #
-# We can also look
-# at the exact values of the target and learned parameters.
+# We can also look at the exact values of the target and learned parameters.
 # Recall how the target
 # interaction graph has :math:`4` edges while the complete graph has :math:`6`.
 # Thus, as the QGRNN converges to the optimal solution, the weights corresponding to
 # edges :math:`(1, 3)` and :math:`(2, 0)` in the complete graph should go to :math:`0`, as
-# this indicates that they have no effect, and effectively do not exist in the learned
-# Hamiltonian.
+# this indicates that they have no effect, and effectively do not exist in the learned Hamiltonian.
 
 # We first pick out the weights of edges (1, 3) and (2, 0)
 # and then remove them from the list of target parameters
@@ -397,7 +356,6 @@ for ii, edge in enumerate(new_ising_graph.edges):
 
 ######################################################################
 # Then, we print all of the weights:
-#
 
 print("Target parameters     Learned parameters")
 print("Weights")
@@ -420,7 +378,6 @@ print(f"\nNon-Existing Edge Parameters: {[val.unwrap() for val in weights_noedge
 # Thus, the QGRNN is functioning properly, and has learned the target
 # Ising Hamiltonian to a high
 # degree of accuracy!
-#
 
 ######################################################################
 # References
@@ -429,4 +386,3 @@ print(f"\nNon-Existing Edge Parameters: {[val.unwrap() for val in weights_noedge
 # 1. Verdon, G., McCourt, T., Luzhnica, E., Singh, V., Leichenauer, S., &
 #    Hidary, J. (2019). Quantum Graph Neural Networks. arXiv preprint
 #    `arXiv:1909.12264 <https://arxiv.org/abs/1909.12264>`__.
-#
