@@ -5,7 +5,7 @@ import numpy as np
 import pennylane as qml
 import scipy
 
-random_number_generator = np.random.default_random_number_generator(seed=42)
+random_number_generator = np.random.default_rng(seed=42)
 
 def create_hamiltonian_matrix(n_qubits, graph, weights, bias):
 
@@ -71,15 +71,13 @@ def qgrnn_layer(weights, bias, qubits, graph, trotter_step):
     for qubit in qubits:
         qml.RX(2 * trotter_step, wires=qubit)
 
-
 # implement the QGRNN circuit for some given time value
-def qgrnn(control, weights, bias, time=None):
+def qgrnn(weights, bias, time=None):
 
     # Prepares the low energy state in the two registers
-    qml.QubitStateVector(np.kron(low_energy_state, low_energy_state), wires=reg1 + reg2)
+    qml.QubitStateVector(np.kron(low_energy_state, low_energy_state), wires = reg1 + reg2)
 
-    # Evolves the first qubit register with the time-evolution circuit to
-    # prepare a piece of quantum data
+    # Evolves the first qubit register with the time-evolution circuit to prepare a piece of quantum data
     state_evolve(hamiltonian_matrix, reg1, time)
 
     # Applies the QGRNN layers to the second qubit register
@@ -88,10 +86,10 @@ def qgrnn(control, weights, bias, time=None):
         qgrnn_layer(weights, bias, reg2, complete_seed_ising_graph, trotter_step)
 
     # Applies the SWAP test between the registers
-    swap_test(control, reg1, reg2)
+    swap_test(index_of_control_qubit, reg1, reg2)
 
     # Returns the results of the SWAP test
-    return qml.expval(qml.PauliZ(control))
+    return qml.expval(qml.PauliZ(index_of_control_qubit))
 
 
 

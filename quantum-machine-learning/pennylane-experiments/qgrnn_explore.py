@@ -15,14 +15,16 @@ repo_folder_name = 'dwave_testing'
 current_dir = os.getcwd()
 
 root_repo_dir = current_dir.split(repo_folder_name)[0] + repo_folder_name + '/'
-this_dir = root_repo_dir + '/quantum-machine-learning/pennylane-experiments/'
+this_dir = root_repo_dir + 'quantum-machine-learning/pennylane-experiments/'
 
 # create in/out data dirs
 this_in_dir = this_dir+'in-data/'
 this_out_dir = this_dir+'out-data/'
 
-os.mkdir(this_in_dir)
-os.mkdir(this_out_dir)
+if not os.path.exists(this_in_dir):
+    os.mkdir(this_in_dir)
+if not os.path.exists(this_out_dir):
+    os.mkdir(this_out_dir)
 
 sys.path.append(os.path.abspath(this_dir + '/helper_functions/'))
 from helpers import *
@@ -30,7 +32,7 @@ from helpers import *
 qubit_number = 4
 qubits = range(qubit_number)
 
-random_number_generator = np.random.default_random_number_generator(seed=42)
+random_number_generator = np.random.default_rng(seed=42)
 
 # QGRNN quantum data needed includes initial low-energy state, and a subsequent time-evolved states
 low_energy_state = [(-0.054661080280306085 + 0.016713907320174026j),(0.12290003656489545 - 0.03758500591109822j),(0.3649337966440005 - 0.11158863596657455j),
@@ -174,7 +176,9 @@ for i in range(0, optimization_steps):
 initial_hamiltonian_matrix = create_hamiltonian_matrix(qubit_number, nx.complete_graph(qubit_number), initial_weights, initial_bias)
 inferred_hamiltonian_matrix = create_hamiltonian_matrix(qubit_number, nx.complete_graph(qubit_number), weights, bias)
 
-fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(6, 6))
+fig, axes = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
+
+#ax.set_title('Comparison of Target, Initial, and Inferred Hamiltonian Matrix')
 
 axes[0].matshow(hamiltonian_matrix, vmin=-7, vmax=7, cmap="hot")
 axes[0].set_title("Target", y=1.13)
@@ -187,8 +191,10 @@ axes[2].set_title("Learned", y=1.13)
 
 plt.subplots_adjust(wspace=0.3, hspace=0.3)
 plt.show()
+# fig.suptitle('Main title')
+plt.savefig(this_out_dir+'compare_heatmaps_target_initial_inferred.png', format="PNG")
 
-# These images look very similar, indicating that the QGRNN has done a good job learning the target Hamiltonian.
+
 # We can also look at the exact values of the target and learned parameters.
 # Recall how the target
 # interaction graph has :math:`4` edges while the complete graph has :math:`6`.
