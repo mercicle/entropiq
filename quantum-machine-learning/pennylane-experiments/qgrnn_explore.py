@@ -30,15 +30,34 @@ from helpers import *
 qubit_number = 4
 qubits = range(qubit_number)
 
+# QGRNN quantum data needed includes initial low-energy state, and a subsequent time-evolved states
+low_energy_state = [(-0.054661080280306085 + 0.016713907320174026j),(0.12290003656489545 - 0.03758500591109822j),(0.3649337966440005 - 0.11158863596657455j),
+                    (-0.8205175732627094 + 0.25093231967092877j),(0.010369790825776609 - 0.0031706387262686003j),(-0.02331544978544721 + 0.007129899300113728j),
+                    (-0.06923183949694546 + 0.0211684344103713j),(0.15566094863283836 - 0.04760201916285508j),(0.014520590919500158 - 0.004441887836078486j),
+                    (-0.032648113364535575 + 0.009988590222879195j),(-0.09694382811137187 + 0.02965579457620536j),(0.21796861485652747 - 0.06668776658411019j),
+                    (-0.0027547112135013247 + 0.0008426289322652901j),(0.006193695872468649 - 0.0018948418969390599j),(0.018391279795405405 - 0.005625722994009138j),
+                    (-0.041350974715649635 + 0.012650711602265649j),]
+######################################################################
+# Author notes: This state can be obtained by using a decoupled version of the
+# :doc:`Variational Quantum Eigensolver </demos/tutorial_vqe>` algorithm (VQE).
+# choose a VQE ansatz such that the circuit cannot learn the exact ground state,
+# but it can get fairly close. Another way to arrive at the same result is
+# to perform VQE with a reasonable ansatz, but to terminate the algorithm
+# before it converges to the ground state. If we used the exact ground state
+# :math:`|\psi_0\rangle`, the time-dependence would be trivial and the
+# data would not provide enough information about the Hamiltonian parameters.
+
+
 # cyclic graph as target interaction graph of the Ising Hamiltonian:
 ising_graph = nx.cycle_graph(qubit_number)
+layout_coordinates = nx.circular_layout(ising_graph)
 
 print(f"Edges: {ising_graph.edges}")
 
-plt.figure(figsize=(10,5))
+plt.figure(figsize=(10,10))
 ax = plt.gca()
 ax.set_title('Target Interaction Graph of Ising Hamiltonian')
-nx.draw(ising_graph)
+nx.draw(G = ising_graph, pos = layout_coordinates)
 _ = ax.axis('off')
 plt.savefig(this_out_dir+'target_interaction_graph_of_ising_hamiltonian.png', format="PNG")
 
@@ -55,58 +74,24 @@ target_bias = [-1.44, -1.43, 1.18, -0.93]  # represents the single-qubit :math:`
 hamiltonian_matrix = create_hamiltonian_matrix(qubit_number, ising_graph, target_weights, target_bias)
 
 # prints a visual representation of the Hamiltonian matrix
+
+plt.figure(figsize=(10,10))
 plt.matshow(hamiltonian_matrix, cmap="hot")
-plt.show()
+#plt.show()
+plt.title('Target Hamiltonian Matrix')
+plt.xlabel('2^n States')
+plt.ylabel('2^n States')
+plt.savefig(this_out_dir+'target_hamiltonian_matrix.png', format="PNG")
 
-# Preparing Quantum Data
-
-######################################################################
-# The collection of quantum data needed to run the QGRNN has two components:
-# (i) copies of a low-energy state, and (ii) a collection of time-evolved states, each of which are
-# simply the low-energy state evolved to different times.
-# The following is a low-energy state of the target Hamiltonian:
-
-low_energy_state = [
-    (-0.054661080280306085 + 0.016713907320174026j),
-    (0.12290003656489545 - 0.03758500591109822j),
-    (0.3649337966440005 - 0.11158863596657455j),
-    (-0.8205175732627094 + 0.25093231967092877j),
-    (0.010369790825776609 - 0.0031706387262686003j),
-    (-0.02331544978544721 + 0.007129899300113728j),
-    (-0.06923183949694546 + 0.0211684344103713j),
-    (0.15566094863283836 - 0.04760201916285508j),
-    (0.014520590919500158 - 0.004441887836078486j),
-    (-0.032648113364535575 + 0.009988590222879195j),
-    (-0.09694382811137187 + 0.02965579457620536j),
-    (0.21796861485652747 - 0.06668776658411019j),
-    (-0.0027547112135013247 + 0.0008426289322652901j),
-    (0.006193695872468649 - 0.0018948418969390599j),
-    (0.018391279795405405 - 0.005625722994009138j),
-    (-0.041350974715649635 + 0.012650711602265649j),
-]
-
-
-######################################################################
-# This state can be obtained by using a decoupled version of the
-# :doc:`Variational Quantum Eigensolver </demos/tutorial_vqe>` algorithm (VQE).
-# Essentially, we choose a
-# VQE ansatz such that the circuit cannot learn the exact ground state,
-# but it can get fairly close. Another way to arrive at the same result is
-# to perform VQE with a reasonable ansatz, but to terminate the algorithm
-# before it converges to the ground state. If we used the exact ground state
-# :math:`|\psi_0\rangle`, the time-dependence would be trivial and the
-# data would not provide enough information about the Hamiltonian parameters.
-#
-# We can verify that this is a low-energy
-# state by numerically finding the lowest eigenvalue of the Hamiltonian
+# verify that this is a low-energy state by numerically finding the lowest eigenvalue of the Hamiltonian
 # and comparing it to the energy expectation of this low-energy state:
 
 res = np.vdot(low_energy_state, (hamiltonian_matrix @ low_energy_state))
 energy_exp = np.real_if_close(res)
-print(f"Energy Expectation: {energy_exp}")
-
 ground_state_energy = np.real_if_close(min(np.linalg.eig(hamiltonian_matrix)[0]))
-print(f"Ground State Energy: {ground_state_energy}")
+
+print(f"Energy Expectation: {energy_exp} Ground State Energy: {ground_state_energy}")
+
 
 ######################################################################
 # We have in fact found a low-energy, non-ground state,

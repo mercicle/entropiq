@@ -6,6 +6,9 @@ import pennylane as qml
 
 def create_hamiltonian_matrix(n_qubits, graph, weights, bias):
 
+    # np.kron: Kronecker product of two arrays.
+    # https://numpy.org/doc/stable/reference/generated/numpy.kron.html
+    
     full_matrix = np.zeros((2 ** n_qubits, 2 ** n_qubits))
 
     # Creates the interaction component of the Hamiltonian
@@ -16,6 +19,7 @@ def create_hamiltonian_matrix(n_qubits, graph, weights, bias):
                 interaction_term = np.kron(interaction_term, qml.PauliZ.matrix)
             else:
                 interaction_term = np.kron(interaction_term, np.identity(2))
+                
         full_matrix += weights[i] * interaction_term
 
     # Creates the bias components of the matrix
