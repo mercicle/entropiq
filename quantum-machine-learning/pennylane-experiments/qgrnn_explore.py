@@ -101,39 +101,8 @@ print(f"Energy Expectation: {expected_energy} Ground State Energy: {ground_state
 # Learning the Hamiltonian #
 ############################
 
-
-######################################################################
-# As was mentioned in the first section, the QGRNN has two
-# registers. In one register, some piece of quantum data
-# :math:`|\psi(t)\rangle` is prepared and in the other we have
-# :math:`U_{H}(\boldsymbol\mu, \ \Delta) |\psi_0\rangle`. We need a
-# way to measure the similarity between these states.
-# This can be done by using the fidelity, which is
-# simply the modulus squared of the inner product between the states,
-# :math:`| \langle \psi(t) | U_{H}(\Delta, \ \boldsymbol\mu) |\psi_0\rangle |^2`.
-# To calculate this value, we use a `SWAP
-# test <https://en.wikipedia.org/wiki/Swap_test>`__ between the registers:
-
-def swap_test(control, register1, register2):
-
-    qml.Hadamard(wires=control)
-    for reg1_qubit, reg2_qubit in zip(register1, register2):
-        qml.CSWAP(wires=(control, reg1_qubit, reg2_qubit))
-    qml.Hadamard(wires=control)
-
-######################################################################
-# After performing this procedure, the value returned from a measurement of the circuit is
-# :math:`\langle Z \rangle`, with respect to the ``control`` qubit.
-# The probability of measuring the :math:`|0\rangle` state
-# in this control qubit is related to both the fidelity
-# between registers and :math:`\langle Z \rangle`. Thus, with a bit of algebra,
-# we find that :math:`\langle Z \rangle` is equal to the fidelity.
-#
-# Before creating the full QGRNN and the cost function, we
-# define a few more fixed values. Among these is a "guessed"
-# interaction graph, which we set to be a
-# `complete graph <https://en.wikipedia.org/wiki/Complete_graph>`__. This choice is
-# motivated by the fact that any target interaction graph will be a subgraph
+# Before creating the full QGRNN and the cost function:
+# complete graph is the "guessed" interaction graph because any target interaction graph will be a subgraph
 # of this initial guess. Part of the idea behind the QGRNN is that
 # we don’t know the interaction graph, and it has to be learned. In this case, the graph
 # is learned *automatically* as the target parameters are optimized. The
@@ -147,12 +116,21 @@ reg2 = tuple(range(qubit_number, 2 * qubit_number))  # Second qubit register
 control = 2 * qubit_number  # Index of control qubit
 trotter_step = 0.01  # Trotter step size
 
-# Defines the interaction graph for the new qubit system
+# defines the interaction graph for the new qubit system
 
-new_ising_graph = nx.complete_graph(reg2)
+complete_seed_ising_graph = nx.complete_graph(reg2)
+complete_seed_layout_coordinates = nx.circular_layout(complete_seed_ising_graph)
 
-print(f"Edges: {new_ising_graph.edges}")
-nx.draw(new_ising_graph)
+print(f"Edges: {complete_seed_ising_graph.edges}")
+nx.draw(complete_seed_ising_graph)
+
+plt.figure(figsize=(10,10))
+ax = plt.gca()
+ax.set_title('Complete Seed Interaction Graph of Ising Hamiltonian')
+nx.draw(G = complete_seed_ising_graph, pos = complete_seed_layout_coordinates)
+_ = ax.axis('off')
+plt.savefig(this_out_dir+'complete_seed_interaction_graph_of_ising_hamiltonian.png', format="PNG")
+
 
 
 # implement the QGRNN circuit for some given time value:
@@ -169,7 +147,7 @@ def qgrnn(weights, bias, time=None):
     # Applies the QGRNN layers to the second qubit register
     depth = time / trotter_step  # P = t/Delta
     for _ in range(0, int(depth)):
-        qgrnn_layer(weights, bias, reg2, new_ising_graph, trotter_step)
+        qgrnn_layer(weights, bias, reg2, complete_seed_ising_graph, trotter_step)
 
     # Applies the SWAP test between the registers
     swap_test(control, reg1, reg2)
@@ -235,7 +213,7 @@ steps = 300
 
 optimizer = qml.AdamOptimizer(stepsize=0.5)
 
-weights = rng.random(size=len(new_ising_graph.edges)) - 0.5
+weights = rng.random(size=len(complete_seed_ising_graph.edges)) - 0.5
 bias = rng.random(size=qubit_number) - 0.5
 
 initial_weights = copy.copy(weights)
@@ -293,7 +271,7 @@ plt.show()
 
 weights_noedge = []
 weights_edge = []
-for ii, edge in enumerate(new_ising_graph.edges):
+for ii, edge in enumerate(complete_seed_ising_graph.edges):
     if (edge[0] - qubit_number, edge[1] - qubit_number) in ising_graph.edges:
         weights_edge.append(weights[ii])
     else:

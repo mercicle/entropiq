@@ -71,3 +71,32 @@ def qgrnn_layer(weights, bias, qubits, graph, trotter_step):
         qml.RX(2 * trotter_step, wires=qubit)
 
 
+######################################################################
+# As was mentioned in the first section, the QGRNN has two
+# registers. In one register, some piece of quantum data
+# :math:`|\psi(t)\rangle` is prepared and in the other we have
+# :math:`U_{H}(\boldsymbol\mu, \ \Delta) |\psi_0\rangle`. We need a
+# way to measure the similarity between these states.
+# This can be done by using the fidelity, which is
+# simply the modulus squared of the inner product between the states,
+# :math:`| \langle \psi(t) | U_{H}(\Delta, \ \boldsymbol\mu) |\psi_0\rangle |^2`.
+# To calculate this value, we use a `SWAP
+# test <https://en.wikipedia.org/wiki/Swap_test>`__ between the registers:
+
+# After performing this procedure, the value returned from a measurement of the circuit is
+# :math:`\langle Z \rangle`, with respect to the ``control`` qubit.
+# The probability of measuring the :math:`|0\rangle` state
+# in this control qubit is related to both the fidelity
+# between registers and :math:`\langle Z \rangle`. Thus, with a bit of algebra,
+# we find that :math:`\langle Z \rangle` is equal to the fidelity.
+#
+
+def swap_test(control, register1, register2):
+
+    qml.Hadamard(wires=control)
+    
+    for reg1_qubit, reg2_qubit in zip(register1, register2):
+        qml.CSWAP(wires=(control, reg1_qubit, reg2_qubit))
+        
+    qml.Hadamard(wires=control)
+
