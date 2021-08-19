@@ -21,20 +21,3 @@ Welcome to my Quantum Machine Learning Repo 😺. Each of the individual quantum
     ├── qiskit-experiments
     └── tensorflow-quantum-experiments
 ```
-
-These are the main scripts...
-
-```
-placeholder-1.py
-placeholder-2.py
-
-```
-
-# Data
-
-The in-data folder is git ignored so to download and replicate you must ...
-
-```
-...
-
-```
