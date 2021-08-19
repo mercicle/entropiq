@@ -82,6 +82,8 @@ def qgrnn(weights, bias, time=None):
 
     # Applies the QGRNN layers to the second qubit register
     depth = time / trotter_step  # P = t/Delta
+    print(f"depth: {depth} time:{time} trotter_step:{trotter_step}")
+
     for _ in range(0, int(depth)):
         qgrnn_layer(weights, bias, reg2, complete_seed_ising_graph, trotter_step)
 
