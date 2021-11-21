@@ -4,3 +4,4 @@ out-data
 __pycache__
 *toric_vm
 .env
+.Rproj.user
