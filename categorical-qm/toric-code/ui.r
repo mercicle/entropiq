@@ -1,30 +1,17 @@
-library(shiny)
+source('load-libraries.r')
 
-# Define UI for app that draws a histogram ----
-ui <- fluidPage(
+ui <- dashboardPage(skin = "black",
+  dashboardHeader(title = "Toric Code"),
+  dashboardSidebar(),
+  dashboardBody(
+    # Boxes need to be put in a row (or column)
+    fluidRow(
+      box(plotOutput("distPlot", height = 250)),
 
-  titlePanel("Toric Code"),
-
-  sidebarLayout(
-
-    # Sidebar panel for inputs ----
-    sidebarPanel(
-
-      # Input: Slider for the number of bins ----
-      sliderInput(inputId = "bins",
-                  label = "Number of bins:",
-                  min = 1,
-                  max = 50,
-                  value = 30)
-
-    ),
-
-    # Main panel for displaying outputs ----
-    mainPanel(
-
-      # Output: Histogram ----
-      plotOutput(outputId = "distPlot")
-
+      box(
+        title = "Controls",
+        sliderInput("slider", "Number of observations:", 1, 100, 50)
+      )
     )
   )
 )
