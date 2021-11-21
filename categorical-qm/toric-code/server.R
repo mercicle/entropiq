@@ -1,5 +1,5 @@
-library(shiny)
-library(igraph)
+
+source('load-libraries.r')
 source("ui.R")
 
 shinyServer(function(input, output, session) {
