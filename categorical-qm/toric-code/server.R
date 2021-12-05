@@ -5,9 +5,8 @@ source("ui.R")
 
 latex_toric_code <- function(in_lattice){
 
-  n.rows <- 
-    
   latex.string <- 'The Hamiltonian $$H_s(s) = -\\frac{1}{2} T(s) \\sum_{i=1}^{N} \\sigma_i^x + L(s) H_p(s)$$'
+  
 }
 
 shinyServer(function(input, output, session) {
