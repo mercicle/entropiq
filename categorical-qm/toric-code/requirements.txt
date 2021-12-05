@@ -2,3 +2,5 @@ numpy
 pandas
 pymongo[srv]
 python-dotenv
+notebook
+physics-tenpy
