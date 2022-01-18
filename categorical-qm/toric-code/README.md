@@ -21,6 +21,8 @@
 
 [What is the difference between general measurement and projective measurement?](https://physics.stackexchange.com/questions/184524/what-is-the-difference-between-general-measurement-and-projective-measurement)
 
+[SPIN ONE-HALF, BRAS, KETS, AND OPERATORS](https://ocw.mit.edu/courses/physics/8-05-quantum-physics-ii-fall-2013/lecture-notes/MIT8_05F13_Chap_02.pdf)
+
 # TeNPy
 
 [TeNPy Toric Code](https://tenpy.readthedocs.io/en/latest/notebooks/11_toric_code.html)
