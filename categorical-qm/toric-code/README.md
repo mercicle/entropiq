@@ -19,6 +19,8 @@
 
 [Area Law](https://www.nist.gov/system/files/documents/itl/math/slides_fernando_brandao.pdf)
 
+[What is the difference between general measurement and projective measurement?](https://physics.stackexchange.com/questions/184524/what-is-the-difference-between-general-measurement-and-projective-measurement)
+
 # TeNPy
 
 [TeNPy Toric Code](https://tenpy.readthedocs.io/en/latest/notebooks/11_toric_code.html)
