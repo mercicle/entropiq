@@ -48,7 +48,6 @@ if do_manual_unitary_test:
     is_unitary = np.allclose(this_projective_conjugate_transpose,this_projective_inverse)
 
 # rank 2 measurements
-
 R2_P_0 = R1_P_00 + R1_P_11
 R2_P_1 = R1_P_01 + R1_P_10
 
@@ -68,17 +67,18 @@ clifford_gate_dict = dict({'Hadamard': Operator(np.array([[ 0.707+0.j, 0.707-0.j
                            'sqrt_Z_phase': Operator(np.array([[1.+0.j, 0.+0.j],[0.+0.j, 0.+1.j]])), 
                            'conjugate_sqrt_Z_phase': Operator(np.array([[1.+0.j, 0.+0.j],[0.+0.j, 0.-1.j]]))
                            })
-
 clifford_gate_list = list(clifford_gate_dict.keys())
 
-
+# test using qiskit Operator.is_unitary()
 Operator.is_unitary(clifford_gate_dict[clifford_gate_list[0]])
 Operator.is_unitary(R1_P_00)
 
+# Setup the 1d qubit chain
 for qubit_index in range(0, num_qubits-1):
     print("Creating superposition of Qubit " + str(qubit_index))
     quantum_circuit.h(qubit_index)
-    
+
+# entangle neighbors i, i+1
 for qubit_index in range(0, num_qubits-1):
     next_qubit_index = qubit_index + 1
     print("Entangling Qubit " + str(qubit_index) + " and " + str(next_qubit_index))
@@ -110,9 +110,9 @@ for this_epoch in range(1, n_epochs):
             quantum_circuit.append(this_clifford, [qubit_index, next_qubit_index])
 
         else:
-            
+            # uses randomly selected from Haar measures using Qiskit qi.random_unitary()
             unitary_label = "rand_unit_" + str(qubit_index) + "_" + str(next_qubit_index)
-            quantum_circuit.append(qi.random_unitary(hilbert_space_vector_size_2qubits), [qubit_index, next_qubit_index], label = unitary_label)
+            quantum_circuit.append(qi.random_unitary(hilbert_space_vector_size_2qubits), [qubit_index, next_qubit_index])
             
     rho = qi.DensityMatrix.from_instruction(quantum_circuit)
     renyi_entropy_2nd = -1.0 * np.log2( np.real( np.trace( np.matmul(rho, rho) ) ) )
