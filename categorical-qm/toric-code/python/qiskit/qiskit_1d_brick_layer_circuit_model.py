@@ -48,7 +48,7 @@ R1_P_11 = np.outer(down_down_ket, down_down_ket)
 R2_P_0 = R1_P_00 + R1_P_11
 R2_P_1 = R1_P_01 + R1_P_10
 
-# coerce to qiskit operators 
+# coerce to qiskit operators
 R1_P_00 = Operator(R1_P_00)
 R1_P_01 = Operator(R1_P_01)
 R1_P_10 = Operator(R1_P_10)
@@ -60,9 +60,9 @@ R2_P_1 = Operator(R2_P_1)
 projective_dict = dict({'R1_P_00': R1_P_00, 'R1_P_01': R1_P_01, 'R1_P_10': R1_P_10, 'R1_P_11': R1_P_11})
 projective_list = list(projective_dict.keys())
 
-# under conjugation takes pauli strings to pauli strings 
-clifford_gate_dict = dict({'Hadamard': Operator(np.array([[ 0.707+0.j, 0.707-0.j],[ 0.707+0.j, -0.707+0.j]])), 
-                           'sqrt_Z_phase': Operator(np.array([[1.+0.j, 0.+0.j],[0.+0.j, 0.+1.j]])), 
+# under conjugation takes pauli strings to pauli strings
+clifford_gate_dict = dict({'Hadamard': Operator(np.array([[ 0.707+0.j, 0.707-0.j],[ 0.707+0.j, -0.707+0.j]])),
+                           'sqrt_Z_phase': Operator(np.array([[1.+0.j, 0.+0.j],[0.+0.j, 0.+1.j]])),
                            'conjugate_sqrt_Z_phase': Operator(np.array([[1.+0.j, 0.+0.j],[0.+0.j, 0.-1.j]]))
                            })
 
@@ -79,75 +79,74 @@ for qubit_index in range(0, num_qubits-1):
 use_unitary_set = 'Clifford Group' # 'Clifford Group' 'Random Unitaries'
 simulation_df = pd.DataFrame()
 for this_epoch in range(1, n_epochs):
-    
+
     print("Starting Epoch = " + str(this_epoch))
     for qubit_index in range(0, num_qubits-1):
-        
-        # qubit_index = 0 
+
+        # qubit_index = 0
         next_qubit_index = qubit_index + 1
         rand_uni_0to1_draw = np.random.uniform(0,1)
-        
+
         print("-- Starting Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
         if rand_uni_0to1_draw <= measurement_rate:
-            
+
             rand_uni_proj_choice = np.random.choice(projective_list)
             this_projective = projective_dict[rand_uni_proj_choice]
-            # projective measurement before the unitary gate 
-            
+            # projective measurement before the unitary gate
+
             #Operator.is_unitary(Operator(np.matmul(qi.random_unitary(hilbert_space_vector_size_2qubits), np.asmatrix(this_projective))))
             if rand_uni_proj_choice == 'R1_P_11':
-                
-                quantum_circuit.reset(qubit_index)
-                quantum_circuit.reset(next_qubit_index)
-                
-                quantum_circuit.x(qubit_index)
-                quantum_circuit.x(next_qubit_index)
-                
-            elif rand_uni_proj_choice == 'R1_P_01':
-                
-                quantum_circuit.reset(qubit_index)
-                quantum_circuit.reset(next_qubit_index)
-                
-                quantum_circuit.x(next_qubit_index)
-                                
-            elif rand_uni_proj_choice == 'R1_P_10':
-                
-                quantum_circuit.reset(qubit_index)
-                quantum_circuit.reset(next_qubit_index)
-                
-                quantum_circuit.x(qubit_index)
-                                
-            elif rand_uni_proj_choice == 'R1_P_00':
-                
+
                 quantum_circuit.reset(qubit_index)
                 quantum_circuit.reset(next_qubit_index)
 
-                
+                quantum_circuit.x(qubit_index)
+                quantum_circuit.x(next_qubit_index)
+
+            elif rand_uni_proj_choice == 'R1_P_01':
+
+                quantum_circuit.reset(qubit_index)
+                quantum_circuit.reset(next_qubit_index)
+
+                quantum_circuit.x(next_qubit_index)
+
+            elif rand_uni_proj_choice == 'R1_P_10':
+
+                quantum_circuit.reset(qubit_index)
+                quantum_circuit.reset(next_qubit_index)
+
+                quantum_circuit.x(qubit_index)
+
+            elif rand_uni_proj_choice == 'R1_P_00':
+
+                quantum_circuit.reset(qubit_index)
+                quantum_circuit.reset(next_qubit_index)
+
         if use_unitary_set == 'Clifford Group':
-            
+
             random_clifford = qi.random_clifford(num_qubits=2)
-            
+
             quantum_circuit.append(random_clifford, [qubit_index, next_qubit_index])
 
         elif use_unitary_set == 'Random Unitaries':
-            
+
             # uses randomly selected from Haar measures using Qiskit qi.random_unitary()
             unitary_label = "rand_unit_" + str(qubit_index) + "_" + str(next_qubit_index)
             quantum_circuit.append(qi.random_unitary(hilbert_space_vector_size_2qubits), [qubit_index, next_qubit_index])
-        
+
         else:
-            
+
             print("Now a supported set of unitaries.")
-            
+
     print("Starting Epoch = " + str(this_epoch) + " DensityMatrix calculations")
     rho = qi.DensityMatrix.from_instruction(quantum_circuit)
-    
+
     reduced_rho = qi.partial_trace(rho, subsystem_range)
 
     renyi_entropy_2nd = -1.0 * np.log2( np.real( np.trace( np.matmul(reduced_rho, reduced_rho) ) ) )
 
     simulation_df = simulation_df.append(pd.DataFrame.from_dict({'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate], 'epoch': [this_epoch], 'renyi_entropy_2nd': [renyi_entropy_2nd]}))
-    
+
 
 ################################################################
 ################################################################
