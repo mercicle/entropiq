@@ -24,14 +24,15 @@ simulator = QasmSimulator(method='matrix_product_state')
 
 line_divider_size = 50
 
-
 hilbert_space_vector_size_2qubits = 4
 n_epochs = 10
 measurement_rate = 0.3
 up_state = np.array([0,1])
-n_qubit_space = [16,32]
-measurement_rate_space = [x/10 for x in range(1,10)]
+n_qubit_space = [4,8] # 16,32
+measurement_rate_space = [x/100 for x in range(5,80,5)]
 
+subsystem_range_divider = 2
+projective_list = ['R1_P_00', 'R1_P_01', 'R1_P_10', 'R1_P_11']
 use_unitary_set = 'Clifford Group' # 'Clifford Group' 'Random Unitaries'
 simulation_df = pd.DataFrame()
 
@@ -44,7 +45,7 @@ for measurement_rate in measurement_rate_space:
         
         print("-- System Size =  " + str(num_qubits))
         
-        subsystem_range = list(range(0,int(np.round(num_qubits/4))))
+        subsystem_range = list(range(0,int(np.round(num_qubits/subsystem_range_divider))))
         quantum_circuit = QuantumCircuit(num_qubits, num_qubits)
         
         for qubit_index in range(0, num_qubits-1):
@@ -97,7 +98,7 @@ for measurement_rate in measurement_rate_space:
                         quantum_circuit.reset(next_qubit_index)
         
                 print("---- Starting Unitary Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
-    
+
                 if use_unitary_set == 'Clifford Group':
         
                     random_clifford = qi.random_clifford(num_qubits=2)
@@ -114,10 +115,10 @@ for measurement_rate in measurement_rate_space:
         
                     print("Now a supported set of unitaries.")
             
-            print("--- Ending Epoch = " + str(this_epoch))
             epoch_start_time = timeit.default_timer()
             epoch_time = timeit.default_timer() - epoch_start_time
-    
+            print("--- Epoch took " + str(np.round(epoch_time, 2)) + " seconds.")
+
             print("--- Reduced DensityMatrix Calculation " + str(this_epoch) + "")
             rho = qi.DensityMatrix.from_instruction(quantum_circuit)
             reduced_rho = qi.partial_trace(rho, subsystem_range)
@@ -147,3 +148,7 @@ for measurement_rate in measurement_rate_space:
 #https://quantumcomputing.stackexchange.com/questions/15868/applying-a-projector-to-a-qubit-in-a-qiskit-circuit
 
 #https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
+
+
+#  Error "too many subscripts in einsum" when system size > 10
+# https://quantumcomputing.stackexchange.com/questions/16753/error-too-many-subscripts-in-einsum-unitarygate
