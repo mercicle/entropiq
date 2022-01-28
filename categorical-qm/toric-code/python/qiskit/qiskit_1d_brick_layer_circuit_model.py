@@ -28,10 +28,10 @@ hilbert_space_vector_size_2qubits = 4
 n_epochs = 10
 measurement_rate = 0.3
 up_state = np.array([0,1])
-n_qubit_space = [4,8] # 16,32
+n_qubit_space = [x for x in range(3,10)] # 16,32
 measurement_rate_space = [x/100 for x in range(5,80,5)]
 
-subsystem_range_divider = 2
+subsystem_range_divider = 4
 projective_list = ['R1_P_00', 'R1_P_01', 'R1_P_10', 'R1_P_11']
 use_unitary_set = 'Clifford Group' # 'Clifford Group' 'Random Unitaries'
 simulation_df = pd.DataFrame()
@@ -63,11 +63,11 @@ for measurement_rate in measurement_rate_space:
                 next_qubit_index = qubit_index + 1
                 rand_uni_0to1_draw = np.random.uniform(0,1)
         
-                print("---- Starting Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
                 if rand_uni_0to1_draw <= measurement_rate:
-        
+
+                    print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
+
                     rand_uni_proj_choice = np.random.choice(projective_list)
-                    this_projective = projective_dict[rand_uni_proj_choice]
                     # projective measurement before the unitary gate
         
                     if rand_uni_proj_choice == 'R1_P_11':
@@ -126,6 +126,11 @@ for measurement_rate in measurement_rate_space:
         
             simulation_df = simulation_df.append(pd.DataFrame.from_dict({'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate], 'epoch': [this_epoch], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
         
+
+simulation_df.to_csv("./out-data/simulation_df.csv", sep=',')
+
+simulation_df_summary = simulation_df.group_by(['num_qubits','measurement_rate']).[['renyi_entropy_2nd']].mean().reset_index()
+
 
 ################################################################
 ################################################################

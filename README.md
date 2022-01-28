@@ -2,7 +2,7 @@
 
 Welcome to my Quantum Computing Repo 😺. Each of the individual quantum machine learning sub-folders have individual README's that include summaries and installation instructions for the respective libraries and frameworks.
 
-This repo uses both Python and R and [supabase](https://app.supabase.io/) for data management.
+This repo uses both Python and R code and [supabase](https://app.supabase.io/) and [MongoDB Atlas](https://cloud.mongodb.com/) for data management.
 
 # QC/QML Libraries
 

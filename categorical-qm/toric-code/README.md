@@ -1,6 +1,9 @@
 # Toric Code
 
 
+# Research Paper to Recapitulate
+
+[Quantum Zeno Effect and the Many-body Entanglement Transition](https://arxiv.org/pdf/1808.06134.pdf)
 
 # Topics
 
