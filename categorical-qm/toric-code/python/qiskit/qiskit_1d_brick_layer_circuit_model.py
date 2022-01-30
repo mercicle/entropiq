@@ -2,6 +2,7 @@
 #############################################################################################
 ## Using Qiskit to model 1d Brick Layer Many-body Entanglement Transition Simulation       ##
 #############################################################################################
+import os 
 import numpy as np
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from qiskit import execute
@@ -20,16 +21,19 @@ from qiskit.quantum_info import Clifford
 
 import timeit
 
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+
 simulator = QasmSimulator(method='matrix_product_state')
 
 line_divider_size = 50
 
 hilbert_space_vector_size_2qubits = 4
-n_epochs = 10
-measurement_rate = 0.3
+n_epochs = 100
 up_state = np.array([0,1])
 n_qubit_space = [x for x in range(3,10)] # 16,32
-measurement_rate_space = [x/100 for x in range(5,80,5)]
+measurement_rate_space = [x/100 for x in range(5, 80,5)]
 
 subsystem_range_divider = 4
 projective_list = ['R1_P_00', 'R1_P_01', 'R1_P_10', 'R1_P_11']
@@ -41,6 +45,8 @@ for measurement_rate in measurement_rate_space:
     print("="*line_divider_size)
     print("- Measurement Rate = " + str(measurement_rate))
         
+    measurement_rate_start_time = timeit.default_timer()
+
     for num_qubits in n_qubit_space:
         
         print("-- System Size =  " + str(num_qubits))
@@ -48,7 +54,7 @@ for measurement_rate in measurement_rate_space:
         subsystem_range = list(range(0,int(np.round(num_qubits/subsystem_range_divider))))
         quantum_circuit = QuantumCircuit(num_qubits, num_qubits)
         
-        for qubit_index in range(0, num_qubits-1):
+        for qubit_index in range(0, num_qubits):
             print("--- Setting Qubit " + str(qubit_index) + " in |↑> state")
             quantum_circuit.initialize(up_state, 0)
         
@@ -56,7 +62,7 @@ for measurement_rate in measurement_rate_space:
 
         for this_epoch in range(1, n_epochs):
         
-            print("--- Starting Epoch = " + str(this_epoch))
+            #print("--- Starting Epoch = " + str(this_epoch))
             for qubit_index in range(0, num_qubits-1):
         
                 # qubit_index = 0
@@ -65,7 +71,7 @@ for measurement_rate in measurement_rate_space:
         
                 if rand_uni_0to1_draw <= measurement_rate:
 
-                    print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
+                    #print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
 
                     rand_uni_proj_choice = np.random.choice(projective_list)
                     # projective measurement before the unitary gate
@@ -97,7 +103,7 @@ for measurement_rate in measurement_rate_space:
                         quantum_circuit.reset(qubit_index)
                         quantum_circuit.reset(next_qubit_index)
         
-                print("---- Starting Unitary Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
+                #print("---- Starting Unitary Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
 
                 if use_unitary_set == 'Clifford Group':
         
@@ -115,21 +121,40 @@ for measurement_rate in measurement_rate_space:
         
                     print("Now a supported set of unitaries.")
             
-            epoch_start_time = timeit.default_timer()
             epoch_time = timeit.default_timer() - epoch_start_time
-            print("--- Epoch took " + str(np.round(epoch_time, 2)) + " seconds.")
+            #print("--- Epoch took " + str(np.round(epoch_time, 2)) + " seconds.")
 
-            print("--- Reduced DensityMatrix Calculation " + str(this_epoch) + "")
+            #print("--- Reduced DensityMatrix Calculation " + str(this_epoch) + "")
             rho = qi.DensityMatrix.from_instruction(quantum_circuit)
             reduced_rho = qi.partial_trace(rho, subsystem_range)
             renyi_entropy_2nd = -1.0 * np.log2( np.real( np.trace( np.matmul(reduced_rho, reduced_rho) ) ) )
         
             simulation_df = simulation_df.append(pd.DataFrame.from_dict({'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate], 'epoch': [this_epoch], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
         
+    measrement_rate_value_time = timeit.default_timer() - measurement_rate_start_time
+    print("--- Measurement rate " + str(measurement_rate) + " took " + str(np.round(measrement_rate_value_time, 2)) + " seconds.")
 
-simulation_df.to_csv("./out-data/simulation_df.csv", sep=',')
+simulation_df.to_csv(os.getcwd() + "/out-data/simulation_df.csv", sep=',')
 
-simulation_df_summary = simulation_df.group_by(['num_qubits','measurement_rate']).[['renyi_entropy_2nd']].mean().reset_index()
+simulation_df_summary = simulation_df.groupby(['num_qubits','measurement_rate'])[['renyi_entropy_2nd']].mean().reset_index()
+
+simulation_df_summary.head()
+
+simulation_df_summary.to_csv(os.getcwd() + "/out-data/simulation_df_summary.csv", sep=',')
+
+sns.set(rc = {'figure.figsize':(12,12)})
+sns.set_style(style='whitegrid') 
+
+sim_plot = sns.lineplot(x='measurement_rate',
+                        y='renyi_entropy_2nd', 
+                        data = simulation_df_summary, 
+                        hue='num_qubits', 
+                        marker='o',
+                        linewidth = 3,
+                        markersize = 10)
+sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
+sim_plot.set_ylabel("2nd Renyi Entropy", fontsize = 20)
+plt.savefig(os.getcwd() + '/out-data/' + 'simulation-results.pdf')
 
 
 ################################################################
