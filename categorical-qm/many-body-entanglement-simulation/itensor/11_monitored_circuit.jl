@@ -85,10 +85,10 @@ end
 
 let
   Random.seed!(1234)
-  N = 10        # number of qubits
+  N = 16        # number of qubits
   depth = 100   # circuit's depth
   ntrials = 50  # number of random trials
-
+  
   # generate random circuits
   circuits = [[entangling_layer(N) for _ in 1:depth] for _ in 1:ntrials]
 

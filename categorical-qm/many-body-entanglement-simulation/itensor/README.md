@@ -23,3 +23,9 @@ To update packages
 ```
 julia> using Pkg; Pkg.update()
 ```
+
+[Juno Update](https://docs.junolab.org/stable/man/update/)
+```
+pkg> up Atom Juno
+
+```

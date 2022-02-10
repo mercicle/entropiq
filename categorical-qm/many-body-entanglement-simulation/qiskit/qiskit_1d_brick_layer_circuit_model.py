@@ -8,11 +8,12 @@ from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from qiskit import execute
 from qiskit.providers.aer import QasmSimulator
 
+from qiskit import Aer
 from qiskit.quantum_info.operators import Operator
 
 from qiskit.extensions.simulator.snapshot import snapshot
 
-import qiskit.quantum_info as qi
+import qiskit.quantum_info as qi, Statevector
 
 import pandas as pd
 from numpy.linalg import inv
@@ -27,11 +28,15 @@ import seaborn as sns
 
 simulator = QasmSimulator(method='matrix_product_state')
 
+backend = Aer.get_backend('statevector_simulator')
+
 line_divider_size = 50
 
 hilbert_space_vector_size_2qubits = 4
 n_epochs = 100
 up_state = np.array([0,1])
+random_probs_2q_test_vector = [0.25, 0.25, 0.25, 0.25]
+
 n_qubit_space = [x for x in range(3,10)] # 16,32
 measurement_rate_space = [x/100 for x in range(5, 80,5)]
 
@@ -73,7 +78,22 @@ for measurement_rate in measurement_rate_space:
 
                     #print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
 
-                    rand_uni_proj_choice = np.random.choice(projective_list)
+                    quantum_circuit.snapshot("many_qubits", qubits=[qubit_index,next_qubit_index])
+
+                    result = execute(quantum_circuit, backend, shots=1).result()
+
+                    snapshots = list(list(result.data()['snapshots']['statevector'].items())[0][1][0])
+
+                    this_state_vector = Statevector(snapshots)
+                    probs = this_state_vector.probabilities([qubit_index,next_qubit_index]).tolist()
+                    probs = [np.round(e, 2) for e in probs]
+                    
+                    is_uniform = (probs == random_probs_2q_test_vector)
+                    
+                    if !is_uniform:
+                        print("|.." + str(qubit_index) + "-" + str(next_qubit_index) + str("..> is not uniform probs anymore"))
+                    
+                    rand_uni_proj_choice = np.random.choice(projective_list, probs)
                     # projective measurement before the unitary gate
         
                     if rand_uni_proj_choice == 'R1_P_11':
