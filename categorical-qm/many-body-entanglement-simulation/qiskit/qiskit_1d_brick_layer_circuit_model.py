@@ -18,32 +18,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from numpy.linalg import inv
 
-
-import os 
-import numpy as np
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
-from qiskit import execute
-from qiskit.providers.aer import QasmSimulator
-
-from qiskit import Aer
-from qiskit.providers.aer import extensions  # import aer snapshot instructions
-
-from qiskit.quantum_info.operators import Operator
-
-from qiskit.extensions.simulator.snapshot import snapshot
-
-import qiskit.quantum_info as qi
-
-import pandas as pd
-from numpy.linalg import inv
-
-from qiskit.quantum_info import Clifford
-
-import timeit
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 from qiskit.quantum_info import Statevector
 import copy 
 
@@ -123,7 +97,7 @@ for measurement_rate in measurement_rate_space:
 
                 if rand_uni_0to1_draw <= measurement_rate:
 
-                    #print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
+                    print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
 
                     if use_unitary_set == 'Clifford Group':
              
@@ -134,27 +108,38 @@ for measurement_rate in measurement_rate_space:
                         #probs = this_state_vector.probabilities([qubit_index,next_qubit_index]).tolist()
                         #probs = [np.round(e, 2) for e in probs]
                         
-                        quantum_circuit_copy = copy.deepcopy(quantum_circuit)
-                        quantum_circuit_copy.save_statevector() # Save initial state
+                        #from qiskit.quantum_info import Statevector
 
+                        #quantum_circuit_copy = copy.deepcopy(quantum_circuit)
+                        #quantum_circuit_copy.save_statevector() # Save initial state
+
+                        #zero_state = Statevector(quantum_circuit)
+                        #final_state = zero_state.evolve(quantum_circuit)
+
+                        #reduced_state = qi.partial_trace(final_state,[qubit_index,next_qubit_index])
+
+                        rho = qi.DensityMatrix.from_instruction(quantum_circuit)
+                        unitary_pmf = rho.probabilities([qubit_index,next_qubit_index]).tolist()
+                        unitary_pmf = [np.round(prob,2) for prob in unitary_pmf]
+                        
                         ## experiment 
                         #quantum_circuit.save_statevector()
-                        result = sim.run(quantum_circuit_copy).result()    
-                        out_state = result.get_statevector()
-                        prob_dict = out_state.probabilities_dict([qubit_index,next_qubit_index])
+                        #result = sim.run(quantum_circuit_copy).result()    
+                        #out_state = result.get_statevector()
+                        #prob_dict = out_state.probabilities_dict([qubit_index,next_qubit_index])
                         
-                        these_prob_keys = prob_dict.keys()
-                        unitary_pmf = [] 
-                        for prob_key in projective_list:
-                            if prob_key in these_prob_keys:
-                                unitary_pmf.append(prob_dict[prob_key])
-                            else:
-                                unitary_pmf.append(0)
+                        #these_prob_keys = prob_dict.keys()
+                        #unitary_pmf = [] 
+                        #for prob_key in projective_list:
+                        #    if prob_key in these_prob_keys:
+                        #        unitary_pmf.append(prob_dict[prob_key])
+                        #    else:
+                        #        unitary_pmf.append(0)
 
                         is_uniform = (unitary_pmf == random_probs_2q_test_vector)
                         
                         if not is_uniform:
-                            print("|.." + str(qubit_index) + "-" + str(next_qubit_index) + str("..> is not uniform probs anymore"))
+                            print("|.." + str(qubit_index) + "-" + str(next_qubit_index) + str("..> is not uniform: ")+ ' - '.join([str(x) for x in unitary_pmf]))
       
                     elif use_unitary_set == 'Random Unitaries':
                    
@@ -164,7 +149,7 @@ for measurement_rate in measurement_rate_space:
                     
                     # projective measurement before the unitary gate
         
-                    if rand_uni_proj_choice == 'R1_P_11':
+                    if rand_uni_proj_choice == '11':
         
                         quantum_circuit.reset(qubit_index)
                         quantum_circuit.reset(next_qubit_index)
@@ -172,25 +157,25 @@ for measurement_rate in measurement_rate_space:
                         quantum_circuit.x(qubit_index)
                         quantum_circuit.x(next_qubit_index)
         
-                    elif rand_uni_proj_choice == 'R1_P_01':
+                    elif rand_uni_proj_choice == '01':
         
                         quantum_circuit.reset(qubit_index)
                         quantum_circuit.reset(next_qubit_index)
         
                         quantum_circuit.x(next_qubit_index)
         
-                    elif rand_uni_proj_choice == 'R1_P_10':
+                    elif rand_uni_proj_choice == '10':
         
                         quantum_circuit.reset(qubit_index)
                         quantum_circuit.reset(next_qubit_index)
         
                         quantum_circuit.x(qubit_index)
         
-                    elif rand_uni_proj_choice == 'R1_P_00':
+                    elif rand_uni_proj_choice == '00':
         
                         quantum_circuit.reset(qubit_index)
                         quantum_circuit.reset(next_qubit_index)
-        
+                
                 print("---- Starting Unitary Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
 
                 if use_unitary_set == 'Clifford Group':
@@ -217,6 +202,8 @@ for measurement_rate in measurement_rate_space:
 
             #print("--- Reduced DensityMatrix Calculation " + str(this_epoch) + "")
             rho = qi.DensityMatrix.from_instruction(quantum_circuit)
+            
+
             #QiskitError: 'Cannot apply Instruction: snapshot'
             
             reduced_rho = qi.partial_trace(rho, subsystem_range)
