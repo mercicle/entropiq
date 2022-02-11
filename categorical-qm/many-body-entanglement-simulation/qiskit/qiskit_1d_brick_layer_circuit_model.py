@@ -2,6 +2,23 @@
 #############################################################################################
 ## Using Qiskit to model 1d Brick Layer Many-body Entanglement Transition Simulation       ##
 #############################################################################################
+import os, timeit
+import numpy as np
+
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, Aer
+from qiskit.providers.aer import QasmSimulator, extensions
+
+from qiskit.circuit import Barrier
+from qiskit.extensions.simulator.snapshot import snapshot
+
+import qiskit.quantum_info as qi
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from numpy.linalg import inv
+
+
 import os 
 import numpy as np
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
@@ -27,10 +44,15 @@ import timeit
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from qiskit.quantum_info import Statevector
+import copy 
 
+                        
+                        
 simulator = QasmSimulator(method='matrix_product_state')
 
 backend = Aer.get_backend('statevector_simulator')
+sim = Aer.get_backend('aer_simulator')
 
 line_divider_size = 50
 
@@ -40,20 +62,22 @@ up_state = np.array([0,1])
 random_probs_2q_test_vector = [0.25, 0.25, 0.25, 0.25]
 
 max_qubits = 8
-n_qubit_space = [x for x in range(3,max_qubits)] # 16,32
+n_qubit_space = [x for x in range(3,max_qubits+1)] # 16,32
 min_measurement_rate = 5
-max_measurement_rate = 80
+max_measurement_rate = 50
 measurement_rate_space = [x/100 for x in range(min_measurement_rate, max_measurement_rate,5)]
 
 subsystem_range_divider = 4
-projective_list = ['R1_P_00', 'R1_P_01', 'R1_P_10', 'R1_P_11']
-use_unitary_set = 'Random Unitaries' # 'Clifford Group' 'Random Unitaries'
+projective_list = ['00', '01', '10', '11']
+
+use_unitary_set = 'Clifford Group' # 'Clifford Group' 'Random Unitaries'
+apply_snapshots = False
+
+# after_proj_prob_and_initstate_fix_
+custom_label = 'cliffords_wbarrier_fix_'
+sim_results_label = custom_label+str(max_qubits)+'qubits_'+'_mspace'+str(min_measurement_rate)+"to"+str(max_measurement_rate)
 simulation_df = pd.DataFrame()
 
-apply_snapshots = False
-# after_proj_prob_and_initstate_fix_
-custom_label = 'random_unitaries_and_initstate_fix_'
-sim_results_label = custom_label+str(max_qubits)+'qubits_'+'_mspace'+str(min_measurement_rate)+"to"+str(max_measurement_rate)
 for measurement_rate in measurement_rate_space:
     
     print("="*line_divider_size)
@@ -103,23 +127,40 @@ for measurement_rate in measurement_rate_space:
 
                     if use_unitary_set == 'Clifford Group':
              
-                        result = execute(quantum_circuit, backend, shots=1).result()
-                        snapshots = result.data()['snapshots']['statevector'][snapshot_name_string][0].tolist()
+                        #result = execute(quantum_circuit, backend, shots=1).result()
+                        #snapshots = result.data()['snapshots']['statevector'][snapshot_name_string][0].tolist()
     
-                        this_state_vector = qi.Statevector(snapshots)
-                        probs = this_state_vector.probabilities([qubit_index,next_qubit_index]).tolist()
-                        probs = [np.round(e, 2) for e in probs]
+                        #this_state_vector = qi.Statevector(snapshots)
+                        #probs = this_state_vector.probabilities([qubit_index,next_qubit_index]).tolist()
+                        #probs = [np.round(e, 2) for e in probs]
                         
-                        is_uniform = (probs == random_probs_2q_test_vector)
+                        quantum_circuit_copy = copy.deepcopy(quantum_circuit)
+                        quantum_circuit_copy.save_statevector() # Save initial state
+
+                        ## experiment 
+                        #quantum_circuit.save_statevector()
+                        result = sim.run(quantum_circuit_copy).result()    
+                        out_state = result.get_statevector()
+                        prob_dict = out_state.probabilities_dict([qubit_index,next_qubit_index])
+                        
+                        these_prob_keys = prob_dict.keys()
+                        unitary_pmf = [] 
+                        for prob_key in projective_list:
+                            if prob_key in these_prob_keys:
+                                unitary_pmf.append(prob_dict[prob_key])
+                            else:
+                                unitary_pmf.append(0)
+
+                        is_uniform = (unitary_pmf == random_probs_2q_test_vector)
                         
                         if not is_uniform:
                             print("|.." + str(qubit_index) + "-" + str(next_qubit_index) + str("..> is not uniform probs anymore"))
       
                     elif use_unitary_set == 'Random Unitaries':
                    
-                        probs = random_probs_2q_test_vector
+                        unitary_pmf = random_probs_2q_test_vector
                         
-                    rand_uni_proj_choice = np.random.choice(projective_list, p = probs)
+                    rand_uni_proj_choice = np.random.choice(projective_list, p = unitary_pmf)
                     
                     # projective measurement before the unitary gate
         
@@ -150,7 +191,7 @@ for measurement_rate in measurement_rate_space:
                         quantum_circuit.reset(qubit_index)
                         quantum_circuit.reset(next_qubit_index)
         
-                #print("---- Starting Unitary Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
+                print("---- Starting Unitary Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
 
                 if use_unitary_set == 'Clifford Group':
         
@@ -170,6 +211,9 @@ for measurement_rate in measurement_rate_space:
             
             epoch_time = timeit.default_timer() - epoch_start_time
             #print("--- Epoch took " + str(np.round(epoch_time, 2)) + " seconds.")
+            
+            # see below: qiskit-densitymatrix-from-instruction-when-snapshots-are-present
+            #quantum_circuit.data = [(Barrier(_inst[0].num_qubits), _inst[1], _inst[2]) if 'snapshot_' in _inst[0].name  else _inst for _inst in quantum_circuit.data]
 
             #print("--- Reduced DensityMatrix Calculation " + str(this_epoch) + "")
             rho = qi.DensityMatrix.from_instruction(quantum_circuit)
@@ -231,3 +275,6 @@ plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results
 
 #  Error "too many subscripts in einsum" when system size > 10
 # https://quantumcomputing.stackexchange.com/questions/16753/error-too-many-subscripts-in-einsum-unitarygate
+
+# quantumcomputing.stackexchange.com
+# https://quantumcomputing.stackexchange.com/questions/24044/qiskit-densitymatrix-from-instruction-when-snapshots-are-present/24046#24046
