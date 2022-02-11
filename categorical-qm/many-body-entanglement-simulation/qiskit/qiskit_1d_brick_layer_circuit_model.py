@@ -9,11 +9,13 @@ from qiskit import execute
 from qiskit.providers.aer import QasmSimulator
 
 from qiskit import Aer
+from qiskit.providers.aer import extensions  # import aer snapshot instructions
+
 from qiskit.quantum_info.operators import Operator
 
 from qiskit.extensions.simulator.snapshot import snapshot
 
-import qiskit.quantum_info as qi, Statevector
+import qiskit.quantum_info as qi
 
 import pandas as pd
 from numpy.linalg import inv
@@ -37,23 +39,31 @@ n_epochs = 100
 up_state = np.array([0,1])
 random_probs_2q_test_vector = [0.25, 0.25, 0.25, 0.25]
 
-n_qubit_space = [x for x in range(3,10)] # 16,32
-measurement_rate_space = [x/100 for x in range(5, 80,5)]
+max_qubits = 8
+n_qubit_space = [x for x in range(3,max_qubits)] # 16,32
+min_measurement_rate = 5
+max_measurement_rate = 80
+measurement_rate_space = [x/100 for x in range(min_measurement_rate, max_measurement_rate,5)]
 
 subsystem_range_divider = 4
 projective_list = ['R1_P_00', 'R1_P_01', 'R1_P_10', 'R1_P_11']
-use_unitary_set = 'Clifford Group' # 'Clifford Group' 'Random Unitaries'
+use_unitary_set = 'Random Unitaries' # 'Clifford Group' 'Random Unitaries'
 simulation_df = pd.DataFrame()
 
+apply_snapshots = False
+# after_proj_prob_and_initstate_fix_
+custom_label = 'random_unitaries_and_initstate_fix_'
+sim_results_label = custom_label+str(max_qubits)+'qubits_'+'_mspace'+str(min_measurement_rate)+"to"+str(max_measurement_rate)
 for measurement_rate in measurement_rate_space:
     
     print("="*line_divider_size)
     print("- Measurement Rate = " + str(measurement_rate))
-        
+    
     measurement_rate_start_time = timeit.default_timer()
 
     for num_qubits in n_qubit_space:
         
+        # num_qubits = 4
         print("-- System Size =  " + str(num_qubits))
         
         subsystem_range = list(range(0,int(np.round(num_qubits/subsystem_range_divider))))
@@ -61,39 +71,56 @@ for measurement_rate in measurement_rate_space:
         
         for qubit_index in range(0, num_qubits):
             print("--- Setting Qubit " + str(qubit_index) + " in |↑> state")
-            quantum_circuit.initialize(up_state, 0)
+            quantum_circuit.initialize(up_state, qubit_index)
         
+        if apply_snapshots:
+            for qubit_index in range(0, num_qubits):
+                
+                if qubit_index < num_qubits-1:
+                    next_qubit_index = qubit_index + 1
+                    snapshot_name_string = "snapshot_" + str(qubit_index) + "_" + str(next_qubit_index)
+                    print("--- Setting " + snapshot_name_string)
+                    quantum_circuit.snapshot(snapshot_name_string, qubits = [qubit_index,next_qubit_index])
+            
+        #quantum_circuit.snapshot("snapshot_all", qubits = list(range(0, num_qubits)))
+
         epoch_start_time = timeit.default_timer()
 
         for this_epoch in range(1, n_epochs):
         
+            # this_epoch=1
             #print("--- Starting Epoch = " + str(this_epoch))
             for qubit_index in range(0, num_qubits-1):
         
                 # qubit_index = 0
                 next_qubit_index = qubit_index + 1
                 rand_uni_0to1_draw = np.random.uniform(0,1)
-        
+                snapshot_name_string = "snapshot_" + str(qubit_index) + "_" + str(next_qubit_index)
+
                 if rand_uni_0to1_draw <= measurement_rate:
 
                     #print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
 
-                    quantum_circuit.snapshot("many_qubits", qubits=[qubit_index,next_qubit_index])
-
-                    result = execute(quantum_circuit, backend, shots=1).result()
-
-                    snapshots = list(list(result.data()['snapshots']['statevector'].items())[0][1][0])
-
-                    this_state_vector = Statevector(snapshots)
-                    probs = this_state_vector.probabilities([qubit_index,next_qubit_index]).tolist()
-                    probs = [np.round(e, 2) for e in probs]
+                    if use_unitary_set == 'Clifford Group':
+             
+                        result = execute(quantum_circuit, backend, shots=1).result()
+                        snapshots = result.data()['snapshots']['statevector'][snapshot_name_string][0].tolist()
+    
+                        this_state_vector = qi.Statevector(snapshots)
+                        probs = this_state_vector.probabilities([qubit_index,next_qubit_index]).tolist()
+                        probs = [np.round(e, 2) for e in probs]
+                        
+                        is_uniform = (probs == random_probs_2q_test_vector)
+                        
+                        if not is_uniform:
+                            print("|.." + str(qubit_index) + "-" + str(next_qubit_index) + str("..> is not uniform probs anymore"))
+      
+                    elif use_unitary_set == 'Random Unitaries':
+                   
+                        probs = random_probs_2q_test_vector
+                        
+                    rand_uni_proj_choice = np.random.choice(projective_list, p = probs)
                     
-                    is_uniform = (probs == random_probs_2q_test_vector)
-                    
-                    if !is_uniform:
-                        print("|.." + str(qubit_index) + "-" + str(next_qubit_index) + str("..> is not uniform probs anymore"))
-                    
-                    rand_uni_proj_choice = np.random.choice(projective_list, probs)
                     # projective measurement before the unitary gate
         
                     if rand_uni_proj_choice == 'R1_P_11':
@@ -146,21 +173,23 @@ for measurement_rate in measurement_rate_space:
 
             #print("--- Reduced DensityMatrix Calculation " + str(this_epoch) + "")
             rho = qi.DensityMatrix.from_instruction(quantum_circuit)
+            #QiskitError: 'Cannot apply Instruction: snapshot'
+            
             reduced_rho = qi.partial_trace(rho, subsystem_range)
             renyi_entropy_2nd = -1.0 * np.log2( np.real( np.trace( np.matmul(reduced_rho, reduced_rho) ) ) )
         
             simulation_df = simulation_df.append(pd.DataFrame.from_dict({'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate], 'epoch': [this_epoch], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
         
-    measrement_rate_value_time = timeit.default_timer() - measurement_rate_start_time
-    print("--- Measurement rate " + str(measurement_rate) + " took " + str(np.round(measrement_rate_value_time, 2)) + " seconds.")
+    measurement_rate_value_time = timeit.default_timer() - measurement_rate_start_time
+    print("--- Measurement rate " + str(measurement_rate) + " took " + str(np.round(measurement_rate_value_time/60, 2)) + " minutes.")
 
-simulation_df.to_csv(os.getcwd() + "/out-data/simulation_df.csv", sep=',')
+simulation_df.to_csv(os.getcwd() + "/out-data/"+sim_results_label+"_simulation_df.csv", sep=',')
 
 simulation_df_summary = simulation_df.groupby(['num_qubits','measurement_rate'])[['renyi_entropy_2nd']].mean().reset_index()
 
 simulation_df_summary.head()
 
-simulation_df_summary.to_csv(os.getcwd() + "/out-data/simulation_df_summary.csv", sep=',')
+simulation_df_summary.to_csv(os.getcwd() + "/out-data/"+sim_results_label+"_simulation_df_summary.csv", sep=',')
 
 sns.set(rc = {'figure.figsize':(12,12)})
 sns.set_style(style='whitegrid') 
@@ -174,7 +203,7 @@ sim_plot = sns.lineplot(x='measurement_rate',
                         markersize = 10)
 sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
 sim_plot.set_ylabel("2nd Renyi Entropy", fontsize = 20)
-plt.savefig(os.getcwd() + '/out-data/' + 'simulation-results.pdf')
+plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results.pdf')
 
 
 ################################################################
