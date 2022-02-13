@@ -30,17 +30,19 @@ sim = Aer.get_backend('aer_simulator')
 line_divider_size = 50
 
 hilbert_space_vector_size_2qubits = 4
-n_layers = 15
+n_layers = 100
 up_state = np.array([0,1])
 random_probs_2q_test_vector = [0.25, 0.25, 0.25, 0.25]
 
-max_qubits = 8
-n_qubit_space = [x for x in range(3,max_qubits+1)] # 16,32
-min_measurement_rate = 5
-max_measurement_rate = 50
-measurement_rate_space = [x/100 for x in range(min_measurement_rate, max_measurement_rate,5)]
+min_qubits = 8
+max_qubits = 9
+n_qubit_space = [x for x in range(min_qubits,max_qubits+1)] # 16,32
+min_measurement_rate = 10
+max_measurement_rate = 90
+measurement_rate_step = 10
+measurement_rate_space = [x/100 for x in range(min_measurement_rate, max_measurement_rate, measurement_rate_step)]
 
-n_simulations = 10
+n_simulations = 50
 simulation_space = list(range(0,n_simulations))
 subsystem_range_divider = 4
 projective_list = ['00', '01', '10', '11']
@@ -52,9 +54,13 @@ apply_snapshots = False
 custom_label = 'with_ensemble_ran_unitaries_'
 sim_results_label = custom_label+str(max_qubits)+'qubits_'+'_mspace'+str(min_measurement_rate)+"to"+str(max_measurement_rate)
 simulation_df = pd.DataFrame()
+layer_dict = dict()
 
 for this_simulation in simulation_space:
-        
+    
+    print("="*line_divider_size)
+    print("- Simulation = " + str(this_simulation))
+ 
     for measurement_rate in measurement_rate_space:
     
         print("="*line_divider_size)
@@ -86,6 +92,7 @@ for this_simulation in simulation_space:
     
             layer_start_time = timeit.default_timer()
             keep_layer = False
+            
             for this_layer in range(1, n_layers+1):
                     
                 # this_layer=1
@@ -99,7 +106,7 @@ for this_simulation in simulation_space:
     
                     if rand_uni_0to1_draw <= measurement_rate:
     
-                        print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
+                        #print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
     
                         if use_unitary_set == 'Clifford Group':
     
@@ -147,7 +154,7 @@ for this_simulation in simulation_space:
                             quantum_circuit.reset(qubit_index)
                             quantum_circuit.reset(next_qubit_index)
     
-                    print("---- Starting Unitary Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
+                    #print("---- Starting Unitary Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
     
                     if use_unitary_set == 'Clifford Group':
     
@@ -170,18 +177,29 @@ for this_simulation in simulation_space:
     
                 if this_layer == n_layers:
                     keep_layer = True
-                    
+                
                 # see below: qiskit-densitymatrix-from-instruction-when-snapshots-are-present
                 #quantum_circuit.data = [(Barrier(_inst[0].num_qubits), _inst[1], _inst[2]) if 'snapshot_' in _inst[0].name  else _inst for _inst in quantum_circuit.data]
     
                 #print("--- Reduced DensityMatrix Calculation " + str(this_layer) + "")
                 rho = qi.DensityMatrix.from_instruction(quantum_circuit)
-    
-    
-                #QiskitError: 'Cannot apply Instruction: snapshot'
+                    
+                if num_qubits == min_qubits and this_simulation == 0:
+                    decoherence_network = np.asmatrix(np.real(rho))
+                    layer_dict[this_layer] = decoherence_network
+
+                #plt.matshow(decoherence_network)
+                
+                # why doesn't this sum to one?
+                #np.sum(np.abs(decoherence_network[0,:]))
+                
+                diagonal_vector = np.diagonal(np.asmatrix(np.real(rho))).tolist()
     
                 reduced_rho = qi.partial_trace(rho, subsystem_range)
-                renyi_entropy_2nd = -1.0 * np.log2( np.real( np.trace( np.matmul(reduced_rho, reduced_rho) ) ) )
+                renyi_entropy_2nd = -1.0 * np.log2( np.real( reduced_rho.purity() ) )
+                
+                # https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#properties
+                # np.trace( np.matmul(reduced_rho, reduced_rho) ) == reduced_rho.purity()
     
                 simulation_df = simulation_df.append(pd.DataFrame.from_dict({'simulation': [this_simulation], 'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate], 'layer': [this_layer],'keep_layer': [keep_layer], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
     
@@ -241,3 +259,26 @@ plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results
 
 # quantumcomputing.stackexchange.com
 # https://quantumcomputing.stackexchange.com/questions/24044/qiskit-densitymatrix-from-instruction-when-snapshots-are-present/24046#24046
+
+# https://qiskit.org/documentation/stubs/qiskit.quantum_info.Statevector.probabilities.html
+
+
+import numpy as np
+import matplotlib.pyplot as plt 
+import matplotlib.animation as animation
+
+%matplotlib qt
+
+initial_matrix = -1*np.log2(np.abs(layer_dict[1]))
+
+def update(i):
+    initial_matrix = -1*np.log2(np.abs(layer_dict[i+1]))
+    matrix_matshow.set_array(initial_matrix)
+    plt.title("Layer "+str(i))
+
+fig, ax = plt.subplots()
+matrix_matshow = ax.matshow(initial_matrix, cmap=plt.cm.Greys_r)
+plt.colorbar(matrix_matshow)
+ani = animation.FuncAnimation(fig, update, frames=len(layer_dict.keys()), interval=500)
+plt.show()
+
