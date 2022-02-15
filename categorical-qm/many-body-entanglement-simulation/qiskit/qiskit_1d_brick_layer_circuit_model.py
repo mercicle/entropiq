@@ -15,11 +15,14 @@ import qiskit.quantum_info as qi
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
 import seaborn as sns
 from numpy.linalg import inv
 
 from qiskit.quantum_info import Statevector
 import copy
+
 
 
 simulator = QasmSimulator(method='matrix_product_state')
@@ -231,42 +234,9 @@ sim_plot.set_ylabel("2nd Renyi Entropy", fontsize = 20)
 plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results.pdf')
 
 
-################################################################
-################################################################
-################################################################
-
-# https://qiskit.org/documentation/apidoc/circuit_library.html
-# https://qiskit.org/textbook/ch-gates/multiple-qubits-entangled-states.html#multi-qubit-gates
-# https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.html
-# https://qiskit.org/documentation/tutorials/circuits_advanced/02_operators_overview.html
-# https://quantumcomputing.stackexchange.com/questions/4975/how-do-i-build-a-gate-from-a-matrix-on-qiskit
-# https://qiskit.org/documentation/stubs/qiskit.quantum_info.random_unitary.html
-
-# appending gates
-#https://qiskit.org/documentation/tutorials/circuits_advanced/02_operators_overview.html
-
-#https://qiskit.org/documentation/stubs/qiskit.quantum_info.Clifford.html
-#https://qiskit.org/documentation/stubs/qiskit.quantum_info.random_clifford.html
-#https://quantumcomputing.stackexchange.com/questions/14056/what-is-the-clifford-gates-selection-probability-distribution-used-in-the-genera
-
-#https://quantumcomputing.stackexchange.com/questions/15868/applying-a-projector-to-a-qubit-in-a-qiskit-circuit
-
-#https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
-
-
-#  Error "too many subscripts in einsum" when system size > 10
-# https://quantumcomputing.stackexchange.com/questions/16753/error-too-many-subscripts-in-einsum-unitarygate
-
-# quantumcomputing.stackexchange.com
-# https://quantumcomputing.stackexchange.com/questions/24044/qiskit-densitymatrix-from-instruction-when-snapshots-are-present/24046#24046
-
-# https://qiskit.org/documentation/stubs/qiskit.quantum_info.Statevector.probabilities.html
-
-
-import numpy as np
-import matplotlib.pyplot as plt 
-import matplotlib.animation as animation
-
+#################################
+###         Simulation        ###
+#################################
 %matplotlib qt
 
 initial_matrix = -1*np.log2(np.abs(layer_dict[1]))
@@ -282,3 +252,6 @@ plt.colorbar(matrix_matshow)
 ani = animation.FuncAnimation(fig, update, frames=len(layer_dict.keys()), interval=500)
 plt.show()
 
+################################################################
+################################################################
+################################################################
