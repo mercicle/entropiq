@@ -37,15 +37,15 @@ n_layers = 100
 up_state = np.array([0,1])
 random_probs_2q_test_vector = [0.25, 0.25, 0.25, 0.25]
 
-min_qubits = 8
-max_qubits = 9
+min_qubits = 6
+max_qubits = 8
 n_qubit_space = [x for x in range(min_qubits,max_qubits+1)] # 16,32
 min_measurement_rate = 10
 max_measurement_rate = 90
 measurement_rate_step = 10
 measurement_rate_space = [x/100 for x in range(min_measurement_rate, max_measurement_rate, measurement_rate_step)]
 
-n_simulations = 50
+n_simulations = 1
 simulation_space = list(range(0,n_simulations))
 subsystem_range_divider = 4
 projective_list = ['00', '01', '10', '11']
@@ -54,8 +54,8 @@ use_unitary_set = 'Random Unitaries' # 'Clifford Group' 'Random Unitaries'
 apply_snapshots = False
 
 # after_proj_prob_and_initstate_fix_
-custom_label = 'with_ensemble_ran_unitaries_'
-sim_results_label = custom_label+str(max_qubits)+'qubits_'+'_mspace'+str(min_measurement_rate)+"to"+str(max_measurement_rate)
+custom_label = 'layer_traj_experiment_'
+sim_results_label = custom_label+ str(n_simulations) + "sims_" + str(max_qubits)+'qubits_'+'_mspace'+str(min_measurement_rate)+"to"+str(max_measurement_rate)
 simulation_df = pd.DataFrame()
 layer_dict = dict()
 
@@ -80,7 +80,7 @@ for this_simulation in simulation_space:
             quantum_circuit = QuantumCircuit(num_qubits, num_qubits)
     
             for qubit_index in range(0, num_qubits):
-                print("--- Setting Qubit " + str(qubit_index) + " in |↑> state")
+                #print("--- Setting Qubit " + str(qubit_index) + " in |↑> state")
                 quantum_circuit.initialize(up_state, qubit_index)
     
             if apply_snapshots:
@@ -235,6 +235,35 @@ plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results
 
 
 #################################
+###     Layer Analysis        ###
+#################################
+
+#simulation_df['log_renyi_entropy_2nd'] = simulation_df.apply(lambda row: np.log10(row['renyi_entropy_2nd']), axis=1)
+# example: https://seaborn.pydata.org/examples/faceted_lineplot.html
+
+sns.set(rc = {'figure.figsize':(12,12)})
+sns.set_style(style='whitegrid')
+
+size_order = list(np.unique(simulation_df.measurement_rate))
+n_colors = len(size_order)
+palette = sns.color_palette("rocket_r",10)[0:n_colors]
+# sns.color_palette("rocket_r",10)
+# sns.color_palette("RdPu", 10)
+sns.relplot(
+    data = simulation_df,
+    x="layer", y="renyi_entropy_2nd",
+    hue="measurement_rate", 
+    #size = "measurement_rate", 
+    #size_order = size_order,
+    col="num_qubits",
+    kind="line", palette=palette,
+    height=5, aspect=.75, facet_kws=dict(sharex=False),
+)
+plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results-layer-evolution.pdf')
+
+
+
+#################################
 ###         Simulation        ###
 #################################
 %matplotlib qt
@@ -244,12 +273,22 @@ initial_matrix = -1*np.log2(np.abs(layer_dict[1]))
 def update(i):
     initial_matrix = -1*np.log2(np.abs(layer_dict[i+1]))
     matrix_matshow.set_array(initial_matrix)
-    plt.title("Layer "+str(i))
+    plt.title("Density Matrix ρ Evolution - Layer " + str(i), fontweight='bold',fontsize=15)
 
 fig, ax = plt.subplots()
 matrix_matshow = ax.matshow(initial_matrix, cmap=plt.cm.Greys_r)
 plt.colorbar(matrix_matshow)
-ani = animation.FuncAnimation(fig, update, frames=len(layer_dict.keys()), interval=500)
+ani = animation.FuncAnimation(fig, update, frames=len(layer_dict.keys()), interval=1000)
+#plt.title("Density Matrix ρ Evolution")
+ax.text(75, 25, '-1*log2(ρ_ij)', bbox={'facecolor': 'white', 'pad': 10},
+        fontsize=15,
+        fontweight='bold')
+ax.text(75, 0, 'Smaller \nDecoherence\nProbability', bbox={'facecolor': 'white', 'pad': 10},
+        fontsize=15,
+        fontweight='bold')
+ax.text(75, 65, 'Larger \nDecoherence\nProbability', bbox={'facecolor': 'white', 'pad': 10},
+        fontsize=15,
+        fontweight='bold')
 plt.show()
 
 ################################################################
