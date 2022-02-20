@@ -33,21 +33,21 @@ sim = Aer.get_backend('aer_simulator')
 line_divider_size = 50
 
 hilbert_space_vector_size_2qubits = 4
-n_layers = 100
+n_layers = 20
 up_state = np.array([0,1])
 random_probs_2q_test_vector = [0.25, 0.25, 0.25, 0.25]
 
 min_qubits = 6
 max_qubits = 8
 n_qubit_space = [x for x in range(min_qubits,max_qubits+1)] # 16,32
-min_measurement_rate = 10
-max_measurement_rate = 90
+min_measurement_rate = 20
+max_measurement_rate = 80
 measurement_rate_step = 10
 measurement_rate_space = [x/100 for x in range(min_measurement_rate, max_measurement_rate, measurement_rate_step)]
 
-n_simulations = 1
+n_simulations = 10
 simulation_space = list(range(0,n_simulations))
-subsystem_range_divider = 4
+subsystem_range_divider = 2
 projective_list = ['00', '01', '10', '11']
 
 use_unitary_set = 'Random Unitaries' # 'Clifford Group' 'Random Unitaries'
@@ -91,7 +91,6 @@ for this_simulation in simulation_space:
                         snapshot_name_string = "snapshot_" + str(qubit_index) + "_" + str(next_qubit_index)
                         print("--- Setting " + snapshot_name_string)
                         quantum_circuit.snapshot(snapshot_name_string, qubits = [qubit_index,next_qubit_index])
-    
     
             layer_start_time = timeit.default_timer()
             keep_layer = False
@@ -198,12 +197,14 @@ for this_simulation in simulation_space:
                 
                 diagonal_vector = np.diagonal(np.asmatrix(np.real(rho))).tolist()
     
+                np.diagonal(np.asmatrix(np.real(reduced_rho))).tolist()
+                
                 reduced_rho = qi.partial_trace(rho, subsystem_range)
                 renyi_entropy_2nd = -1.0 * np.log2( np.real( reduced_rho.purity() ) )
                 
                 # https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#properties
                 # np.trace( np.matmul(reduced_rho, reduced_rho) ) == reduced_rho.purity()
-    
+        
                 simulation_df = simulation_df.append(pd.DataFrame.from_dict({'simulation': [this_simulation], 'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate], 'layer': [this_layer],'keep_layer': [keep_layer], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
     
         measurement_rate_value_time = timeit.default_timer() - measurement_rate_start_time
@@ -211,7 +212,6 @@ for this_simulation in simulation_space:
 
 simulation_df.to_csv(os.getcwd() + "/out-data/"+sim_results_label+"_simulation_df.csv", sep=',')
 
-#[simulation_df.keep_layer == True]
 simulation_df_final = simulation_df[simulation_df.keep_layer == True].sort_values(by=['num_qubits', 'measurement_rate','layer'])
 simulation_df_summary = simulation_df.groupby(['num_qubits','measurement_rate'])[['renyi_entropy_2nd']].mean().reset_index()
 
@@ -244,6 +244,12 @@ plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results
 sns.set(rc = {'figure.figsize':(12,12)})
 sns.set_style(style='whitegrid')
 
+fig, ax = plt.subplots()
+
+simulation_df.renyi_entropy_2nd.hist()
+plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results-renyi-hist.pdf')
+
+
 size_order = list(np.unique(simulation_df.measurement_rate))
 n_colors = len(size_order)
 palette = sns.color_palette("rocket_r",10)[0:n_colors]
@@ -251,14 +257,16 @@ palette = sns.color_palette("rocket_r",10)[0:n_colors]
 # sns.color_palette("RdPu", 10)
 sns.relplot(
     data = simulation_df,
-    x="layer", y="renyi_entropy_2nd",
+    x="layer", 
+    y="renyi_entropy_2nd",
     hue="measurement_rate", 
     #size = "measurement_rate", 
     #size_order = size_order,
     col="num_qubits",
     kind="line", palette=palette,
-    height=5, aspect=.75, facet_kws=dict(sharex=False),
+    facet_kws=dict(sharex=False)
 )
+#height=5, aspect=.75, 
 plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results-layer-evolution.pdf')
 
 
