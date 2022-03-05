@@ -32,7 +32,7 @@ let
   for this_sim in simulation_space
     this_layer_results = []
     for this_layer in layer_space
-      @printf("Simulation = %.2f  Layer = %.5f \n", this_sim, this_layer)
+      @printf("Simulation = %.3i  Layer = %.3i \n", this_sim, this_layer)
       this_entangled_layer = entangling_layer(num_qubits)
       push!(this_layer_results, this_entangled_layer)
     end
@@ -42,32 +42,52 @@ let
   # loop over projective measurement probability (per site)
   for measurement_rate in measurement_rate_space
 
-    @time begin
       svn = []
-      num_monitored_qubits = nqubits(circuits[1])
-      for circuit in circuits
+      num_monitored_qubits = nqubits(circuits_results[1])
+      for this_circuit in circuits_results
+
          # initialize state ψ = |000…⟩
          ψ = productstate(num_monitored_qubits)
+
          # sweep over layers
-         for layer in circuit
-           # apply entangling unitary
-           ψ = runcircuit(ψ, layer; cutoff = 1e-8)
+         for this_layer in this_circuit
+
+           ψ = runcircuit(ψ, this_layer; cutoff = 1e-8) # apply entangling unitary
+
            # perform measurements
-           for j in 1:num_monitored_qubits
-             measurement_rate > rand() && projective_measurement!(ψ, j)
-           end
-         end
+           for monitored_qubit_index in 1:num_monitored_qubits
+             if measurement_rate > rand()
+
+               #projective_measurement!(ψ, monitored_qubit_index)
+               ψ = orthogonalize!(ψ, monitored_qubit_index)
+               ϕ = ψ[monitored_qubit_index]
+
+               ρ = prime(ϕ, tags = "Site") * dag(ϕ) # 1-qubit reduced density matrix
+               prob = real.(diag(array(ρ))) # Outcome probabilities
+               σ = (rand() < prob[1] ? 0 : 1) # Sample
+               projection_string = "Π"*"$(σ)"
+               ψ = runcircuit(ψ, (projection_string, monitored_qubit_index)) # Projection
+               normalize!(ψ)
+             end # if measurement_rate > rand()
+           end # for monitored_qubit_index in 1:num_monitored_qubits
+         end # for this_layer in this_circuit
          push!(svn, entanglemententropy(ψ))
-      end
-    end
 
-    @printf("Measurement Rate = %.2f  S(ρ) = %.5f ± %.1E \n", measurement_rate, mean(svn), sem(svn))
-  end
+      end # for this_circuit in circuits_results
+      @printf("Measurement Rate = %.2f  S(ρ) = %.5f ± %.1E \n", measurement_rate, mean(svn), sem(svn))
 
-end
+    end # for measurement_rate in measurement_rate_space
+
+end # let scope
 
 # Von Neumann entropy at center bond
+# https://en.wikipedia.org/wiki/Von_Neumann_entropy
+# http://www.scholarpedia.org/article/Quantum_entropies
+# "von Neumann entropy is a limiting case of the Rényi entropy" lim α→1 Sα(ρ) = S(ρ)
+# Given a family of entropies {Sα(ρ)}α, where α is some index, the entropies are monotonic in α∈ℝ
+
 function entanglemententropy(ψ₀::MPS)
+
   ψ = normalize!(copy(ψ₀))
   N = length(ψ)
   bond = N ÷ 2
