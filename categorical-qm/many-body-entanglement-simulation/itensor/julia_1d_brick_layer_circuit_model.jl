@@ -21,18 +21,47 @@ gate(::GateName"Π1") =
 let
 
   Random.seed!(1234)
-  num_qubits = 16
+  num_qubits = 8
   n_layers = 100
   n_simulations = 50
   measurement_rate_space = 0.0:0.02:0.2
+  simulation_space = 1:n_simulations
+  layer_space = 1:n_layers
 
-  # generate random circuits
-  circuits = [[entangling_layer(num_qubits) for _ in 1:n_layers] for _ in 1:n_simulations]
+  circuits_results = []
+  for this_sim in simulation_space
+    this_layer_results = []
+    for this_layer in layer_space
+      @printf("Simulation = %.2f  Layer = %.5f \n", this_sim, this_layer)
+      this_entangled_layer = entangling_layer(num_qubits)
+      push!(this_layer_results, this_entangled_layer)
+    end
+    push!(circuits_results, this_layer_results)
+  end
 
   # loop over projective measurement probability (per site)
-  for p in measurement_rate_space
-   t = @elapsed svn = monitored_circuits(circuits, p)
-   @printf("p = %.2f  S(ρ) = %.5f ± %.1E\t(elapsed = %.2fs)\n", p, mean(svn), sem(svn), t)
+  for measurement_rate in measurement_rate_space
+
+    @time begin
+      svn = []
+      num_monitored_qubits = nqubits(circuits[1])
+      for circuit in circuits
+         # initialize state ψ = |000…⟩
+         ψ = productstate(num_monitored_qubits)
+         # sweep over layers
+         for layer in circuit
+           # apply entangling unitary
+           ψ = runcircuit(ψ, layer; cutoff = 1e-8)
+           # perform measurements
+           for j in 1:num_monitored_qubits
+             measurement_rate > rand() && projective_measurement!(ψ, j)
+           end
+         end
+         push!(svn, entanglemententropy(ψ))
+      end
+    end
+
+    @printf("Measurement Rate = %.2f  S(ρ) = %.5f ± %.1E \n", measurement_rate, mean(svn), sem(svn))
   end
 
 end
