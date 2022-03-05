@@ -29,3 +29,13 @@ julia> using Pkg; Pkg.update()
 pkg> up Atom Juno
 
 ```
+
+# Running on Hyak
+
+[Hyak Julia Programming](https://wiki.cac.washington.edu/display/hyakusers/Hyak+Julia+programming)
+
+# Links
+
+UW RCC https://app.slack.com/client/T2TL8A63C/C2TL30RH7
+https://wiki.cac.washington.edu/display/hyakusers/Hyak+Julia+programming
+http://depts.washington.edu/uwrcc/getting-started-2/getting-started/
