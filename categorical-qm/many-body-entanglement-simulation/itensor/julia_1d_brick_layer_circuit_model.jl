@@ -2,12 +2,26 @@
 # this starter code was graciously added by ITensor and PastaQ maintainers
 # https://raw.githubusercontent.com/GTorlai/PastaQ.jl/master/examples/11_monitored_circuit.jl
 
+# Julia help docs
+# https://docs.julialang.org/en/v1/manual/style-guide/#bang-convention
+# https://docs.julialang.org/en/v1/manual/control-flow/
+# https://docs.julialang.org/en/v1/manual/variables-and-scoping/
+# https://sodocumentation.net/julia-lang
+
+# ρ = prime(ϕ, tags = "Site")
+# https://www.itensor.org/docs.cgi?vers=cppv2&page=tutorials/primes
+
+Pkg.add("StatsBase")
+Pkg.add("Distributions")
+
 using PastaQ
 using ITensors
 using Random
 using Printf
 using LinearAlgebra
-using StatsBase: mean, sem
+using StatsBase: mean, sem, sample as stats_sample, Weights
+
+using Distributions
 
 # define the two measurement projectors
 import PastaQ: gate
@@ -18,6 +32,29 @@ gate(::GateName"Π1") =
   [0 0
    0 1]
 
+gate(::GateName"Π00") =
+[0, 0, 0, 0
+ 0, 0, 0, 0
+ 0, 0, 0, 0
+ 0, 0, 0, 1]
+gate(::GateName"Π10") =
+[0, 0, 0, 0
+ 0, 1, 0, 0
+ 0, 0, 0, 0
+ 0, 0, 0, 0]
+
+gate(::GateName"Π01") =
+[0, 0, 0, 0
+ 0, 0, 0, 0
+ 0, 0, 1, 0
+ 0, 0, 0, 0]
+
+gate(::GateName"Π11") =
+[1, 0, 0, 0
+ 0, 0, 0, 0
+ 0, 0, 0, 0
+ 0, 0, 0, 0]
+
 let
 
   Random.seed!(1234)
@@ -27,6 +64,15 @@ let
   measurement_rate_space = 0.0:0.02:0.2
   simulation_space = 1:n_simulations
   layer_space = 1:n_layers
+  do_single_qubit_projections = true
+  projective_list = [ "00"; "01"; "10"; "11"]
+
+  qubit_index_space = nothing
+  if do_single_qubit_projections
+    qubit_index_space = 1:num_monitored_qubits
+  else
+    qubit_index_space = 1:(num_monitored_qubits-1)
+  end
 
   circuits_results = []
   for this_sim in simulation_space
@@ -55,18 +101,32 @@ let
            ψ = runcircuit(ψ, this_layer; cutoff = 1e-8) # apply entangling unitary
 
            # perform measurements
-           for monitored_qubit_index in 1:num_monitored_qubits
+           for qubit_index in qubit_index_space
+
              if measurement_rate > rand()
 
                #projective_measurement!(ψ, monitored_qubit_index)
-               ψ = orthogonalize!(ψ, monitored_qubit_index)
-               ϕ = ψ[monitored_qubit_index]
+               if do_single_qubit_projections
 
-               ρ = prime(ϕ, tags = "Site") * dag(ϕ) # 1-qubit reduced density matrix
-               prob = real.(diag(array(ρ))) # Outcome probabilities
-               σ = (rand() < prob[1] ? 0 : 1) # Sample
+                   ψ = orthogonalize!(ψ, qubit_index)
+                   ϕ = ψ[qubit_index]
+
+                   ρ = prime(ϕ, tags = "Site") * dag(ϕ) # 1-qubit reduced density matrix
+                   prob = real.(diag(array(ρ))) # Outcome probabilities
+                   σ = (rand() < prob[1] ? 0 : 1) # random sample
+
+               else
+                   next_qubit_index = qubit_index + 1
+                   ψ = orthogonalize!(ψ, qubit_index:next_qubit_index)
+                   ϕ = ψ[qubit_index:next_qubit_index]
+
+                   ρ = prime(ϕ, tags = "Site") * dag(ϕ) # 1-qubit reduced density matrix
+                   unitary_pmf = real.(diag(array(ρ))) # Outcome probabilities
+                   σ = wsample(projective_list, unitary_pmf, 1)[1]
+               end
+
                projection_string = "Π"*"$(σ)"
-               ψ = runcircuit(ψ, (projection_string, monitored_qubit_index)) # Projection
+               ψ = runcircuit(ψ, (projection_string, qubit_index)) # Projection
                normalize!(ψ)
              end # if measurement_rate > rand()
            end # for monitored_qubit_index in 1:num_monitored_qubits
