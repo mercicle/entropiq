@@ -96,100 +96,112 @@ gate(::GateName"Π11") =
 let
 
   Random.seed!(1234)
-  num_qubits = 8
+  num_qubit_space = 10:1:20
   n_layers = 100
   n_simulations = 50
-  measurement_rate_space = 0.0:0.02:0.2
+  measurement_rate_space = 0.05:0.05:0.50
   simulation_space = 1:n_simulations
   layer_space = 1:n_layers
 
   do_single_qubit_projections = true
   qubit_index_space = nothing
-  if do_single_qubit_projections
-    qubit_index_space = 1:num_qubits
-  else
-    qubit_index_space = 1:(num_qubits-1)
-  end
 
+  von_neumann_entropies = []
   projective_list = [ "00"; "01"; "10"; "11"]
 
   simulation_df = DataFrame()
 
-  circuit_simulations = []
-  for this_sim in simulation_space
-    layers = []
-    for this_layer in layer_space
-      @printf("Simulation = %.3i  Layer = %.3i \n", this_sim, this_layer)
+  for num_qubits in num_qubit_space
 
-      layer_odd  = randomlayer("RandomUnitary",[(j,j+1) for j in 1:2:num_qubits-1])
-      layer_even = randomlayer("RandomUnitary",[(j,j+1) for j in 2:2:num_qubits-1])
-      this_entangled_layer = [layer_odd..., layer_even...]
+    @printf("# Qubits = %.3i \n", num_qubits)
 
-      push!(layers, this_entangled_layer)
+    if do_single_qubit_projections
+      qubit_index_space = 1:num_qubits
+    else
+      qubit_index_space = 1:(num_qubits-1)
     end
-    push!(circuit_simulations, layers)
-  end
 
-  # loop over projective measurement probability (per site)
-  for measurement_rate in measurement_rate_space
 
-      for this_circuit in circuit_simulations
+    circuit_simulations = []
+    for this_sim in simulation_space
+      layers = []
+      for this_layer in layer_space
+        @printf("# Qubits = %.3i  Simulation = %.3i  Layer = %.3i \n", num_qubits, this_sim, this_layer)
 
-         # initialize state ψ = |000…⟩
-         ψ = productstate(num_qubits)
+        layer_odd  = randomlayer("RandomUnitary",[(j,j+1) for j in 1:2:num_qubits-1])
+        layer_even = randomlayer("RandomUnitary",[(j,j+1) for j in 2:2:num_qubits-1])
+        this_entangled_layer = [layer_odd..., layer_even...]
 
-         von_neumann_entropies = []
-         # sweep over layers
-         for this_layer in this_circuit
+        push!(layers, this_entangled_layer)
+      end
+      push!(circuit_simulations, layers)
+    end
 
-           ψ = runcircuit(ψ, this_layer; cutoff = 1e-8) # apply entangling unitary
+    # loop over projective measurement probability (per site)
+    for measurement_rate in measurement_rate_space
 
-           # perform measurements
-           for qubit_index in qubit_index_space
+        for this_circuit in circuit_simulations
 
-             if measurement_rate > rand()
+           # initialize state ψ = |000…⟩
+           ψ = productstate(num_qubits)
 
-               #projective_measurement!(ψ, qubit_index)
-               if do_single_qubit_projections
+           von_neumann_entropies = []
+           # sweep over layers
+           for this_layer in this_circuit
 
-                   ψ = orthogonalize!(ψ, qubit_index)
-                   ϕ = ψ[qubit_index]
+             ψ = runcircuit(ψ, this_layer; cutoff = 1e-8) # apply entangling unitary
 
-                   ρ = prime(ϕ, tags = "Site") * dag(ϕ) # 1-qubit reduced density matrix
-                   prob = real.(diag(array(ρ))) # Outcome probabilities
-                   σ = (rand() < prob[1] ? 0 : 1) # random sample
+             # perform measurements
+             for qubit_index in qubit_index_space
 
-               else
-                   next_qubit_index = qubit_index + 1
-                   ψ = orthogonalize!(ψ, qubit_index:next_qubit_index)
-                   ϕ = ψ[qubit_index:next_qubit_index]
+               if measurement_rate > rand()
 
-                   ρ = prime(ϕ, tags = "Site") * dag(ϕ)
-                   unitary_pmf = real.(diag(array(ρ))) # Outcome probabilities
-                   σ = wsample(projective_list, unitary_pmf, 1)[1]
-               end
+                 #projective_measurement!(ψ, qubit_index)
+                 if do_single_qubit_projections
 
-               projection_string = "Π"*"$(σ)"
-               ψ = runcircuit(ψ, (projection_string, qubit_index)) # Projection
-               normalize!(ψ)
+                     ψ = orthogonalize!(ψ, qubit_index)
+                     ϕ = ψ[qubit_index]
 
-             end # if measurement_rate > rand()
+                     ρ = prime(ϕ, tags = "Site") * dag(ϕ) # 1-qubit reduced density matrix
+                     prob = real.(diag(array(ρ))) # Outcome probabilities
+                     σ = (rand() < prob[1] ? 0 : 1) # random sample
 
-           end # for qubit_index in qubit_index_space
-         end # for this_layer in this_circuit
-         push!(von_neumann_entropies, entanglemententropy(ψ))
+                 else
 
-      end # for this_circuit in circuit_simulations
+                     next_qubit_index = qubit_index + 1
+                     ψ = orthogonalize!(ψ, qubit_index:next_qubit_index)
+                     ϕ = ψ[qubit_index:next_qubit_index]
 
-      mean_entropy = mean(von_neumann_entropies)
-      se_mean_entropy = sem(von_neumann_entropies)
-      @printf("Measurement Rate = %.2f  S(ρ) = %.5f ± %.1E \n", measurement_rate, mean_entropy, se_mean_entropy)
+                     ρ = prime(ϕ, tags = "Site") * dag(ϕ)
+                     unitary_pmf = real.(diag(array(ρ))) # Outcome probabilities
+                     σ = wsample(projective_list, unitary_pmf, 1)[1]
 
-      #append(pd.DataFrame.from_dict({'simulation': [this_simulation], 'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate],
-      #'layer': [this_layer],'keep_layer': [keep_layer], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
-      this_simulation_df = DataFrame(measurement_rate = measurement_rate, mean_entropy = mean_entropy, se_mean_entropy=se_mean_entropy)
-      simulation_df = [simulation_df; this_simulation_df]
+                 end
 
-    end # for measurement_rate in measurement_rate_space
+                 projection_string = "Π"*"$(σ)"
+                 ψ = runcircuit(ψ, (projection_string, qubit_index)) # Projection
+                 normalize!(ψ)
+
+               end # if measurement_rate > rand()
+
+             end # for qubit_index in qubit_index_space
+
+           end # for this_layer in this_circuit
+           push!(von_neumann_entropies, entanglemententropy(ψ))
+
+        end # for this_circuit in circuit_simulations
+
+        mean_entropy = mean(von_neumann_entropies)
+        se_mean_entropy = sem(von_neumann_entropies)
+        @printf("# Qubits = %.3i Measurement Rate = %.2f  S(ρ) = %.5f ± %.1E \n", num_qubits, measurement_rate, mean_entropy, se_mean_entropy)
+
+        #append(pd.DataFrame.from_dict({'simulation': [this_simulation], 'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate],
+        #'layer': [this_layer],'keep_layer': [keep_layer], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
+        this_simulation_df = DataFrame(num_qubits = num_qubits, measurement_rate = measurement_rate, mean_entropy = mean_entropy, se_mean_entropy=se_mean_entropy)
+        simulation_df = [simulation_df; this_simulation_df]
+
+      end # for measurement_rate in measurement_rate_space
+
+    end # for num_qubits in num_qubit_space
 
 end # let scope
