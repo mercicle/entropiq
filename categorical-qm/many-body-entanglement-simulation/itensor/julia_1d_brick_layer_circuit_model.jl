@@ -69,7 +69,7 @@ gate(::GateName"Π11") =
  0 0 0 0
  0 0 0 0]
 
- # Von Neumann entropy at center bond
+ # Von Neumann entropy at center bond von_neumann_entropy
  # https://en.wikipedia.org/wiki/Von_Neumann_entropy
  # http://www.scholarpedia.org/article/Quantum_entropies
  # "von Neumann entropy is a limiting case of the Rényi entropy" lim α→1 Sα(ρ) = S(ρ)
@@ -133,13 +133,12 @@ let
   # loop over projective measurement probability (per site)
   for measurement_rate in measurement_rate_space
 
-      svn = []
-      num_qubits = nqubits(circuit_simulations[1])
       for this_circuit in circuit_simulations
 
          # initialize state ψ = |000…⟩
          ψ = productstate(num_qubits)
 
+         von_neumann_entropies = []
          # sweep over layers
          for this_layer in this_circuit
 
@@ -150,7 +149,7 @@ let
 
              if measurement_rate > rand()
 
-               #projective_measurement!(ψ, monitored_qubit_index)
+               #projective_measurement!(ψ, qubit_index)
                if do_single_qubit_projections
 
                    ψ = orthogonalize!(ψ, qubit_index)
@@ -173,15 +172,17 @@ let
                projection_string = "Π"*"$(σ)"
                ψ = runcircuit(ψ, (projection_string, qubit_index)) # Projection
                normalize!(ψ)
+
              end # if measurement_rate > rand()
-           end # for monitored_qubit_index in 1:num_qubits
+
+           end # for qubit_index in qubit_index_space
          end # for this_layer in this_circuit
-         push!(svn, entanglemententropy(ψ))
+         push!(von_neumann_entropies, entanglemententropy(ψ))
 
       end # for this_circuit in circuit_simulations
 
-      mean_entropy = mean(svn)
-      se_mean_entropy = sem(svn)
+      mean_entropy = mean(von_neumann_entropies)
+      se_mean_entropy = sem(von_neumann_entropies)
       @printf("Measurement Rate = %.2f  S(ρ) = %.5f ± %.1E \n", measurement_rate, mean_entropy, se_mean_entropy)
 
       #append(pd.DataFrame.from_dict({'simulation': [this_simulation], 'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate],
