@@ -21,11 +21,35 @@
 #https://www.reddit.com/r/Julia/comments/9p3ttr/clearing_workspace_atom/
 # ctrl-j + ctrl-k will kill the current Julia process and start a new session.
 
+# Embed Julia into Python
+# https://towardsdatascience.com/how-to-embed-your-julia-code-into-python-to-speed-up-performance-e3ff0a94b6e
+# https://syl1.gitbook.io/julia-language-a-concise-tutorial/language-core/interfacing-julia-with-other-languages
+
+import Pkg
+
+Pkg.add("ITensors") #https://arxiv.org/abs/2007.14822
+Pkg.add("PastaQ") #https://github.com/GTorlai/PastaQ.jl
+
 Pkg.add("StatsBase")
 Pkg.add("Distributions")
 Pkg.add("DataFrames")
 Pkg.add("CSV")
-Pkg.add("PastaQ")
+
+# https://github.com/felipenoris/Mongoc.jl
+# https://felipenoris.github.io/Mongoc.jl/stable/
+Pkg.add("Mongoc")
+
+# https://juliapackages.com/p/awss3
+
+# https://github.com/invenia/LibPQ.jl
+# https://juliapackages.com/p/libpq
+
+
+# using LibPQ: Connection
+# conn = Connection("""host = wrds-pgdata.wharton.upenn.edu port = port
+#                      user='username' password='password'
+#                      sslmode = 'require' dbname = wrds
+#                   """)
 
 
 using PastaQ
