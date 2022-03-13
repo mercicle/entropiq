@@ -27,8 +27,8 @@
 
 import Pkg
 
-Pkg.add("ITensors") #https://arxiv.org/abs/2007.14822
-Pkg.add("PastaQ") #https://github.com/GTorlai/PastaQ.jl
+Pkg.add("ITensors") # https://arxiv.org/pdf/2007.14822.pdf
+Pkg.add("PastaQ") # https://github.com/GTorlai/PastaQ.jl
 
 Pkg.add("StatsBase")
 Pkg.add("Distributions")
@@ -43,8 +43,6 @@ Pkg.add("Mongoc")
 
 # https://github.com/invenia/LibPQ.jl
 # https://juliapackages.com/p/libpq
-
-
 # using LibPQ: Connection
 # conn = Connection("""host = wrds-pgdata.wharton.upenn.edu port = port
 #                      user='username' password='password'
@@ -52,9 +50,11 @@ Pkg.add("Mongoc")
 #                   """)
 
 
-using PastaQ
 using ITensors
 using ITensors: dim as itensor_dim
+
+using PastaQ
+
 using Random
 using Printf
 using LinearAlgebra
@@ -63,7 +63,7 @@ using StatsBase: mean, sem
 using Distributions
 
 using DataFrames
-using CSV
+#using CSV
 
 import PastaQ: gate
 
@@ -104,6 +104,16 @@ gate(::GateName"Π11") =
  # Given a family of entropies {Sα(ρ)}α, where α is some index, the entropies are monotonic in α∈ℝ
 
 function entanglemententropy(ψ₀::MPS)
+
+   # https://qiskit.org/documentation/_modules/qiskit/quantum_info/states/utils.html#partial_trace
+   # https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#reduced
+
+   # http://itensor.org/docs.cgi?vers=cppv3&page=formulas/mps_two_rdm
+
+   # "Among physicists, this is often called "tracing out" or "tracing over" W to leave only an operator on V in the context where W and V are Hilbert spaces associated with quantum systems (see below)."
+   # https://en.wikipedia.org/wiki/Partial_trace#:~:text=In%20linear%20algebra%20and%20functional,is%20an%20operator%2Dvalued%20function.
+
+   # http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf
 
    ψ = normalize!(copy(ψ₀))
    N = length(ψ)
