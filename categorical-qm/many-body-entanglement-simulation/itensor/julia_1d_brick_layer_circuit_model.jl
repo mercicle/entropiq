@@ -1,4 +1,6 @@
 
+# https://github.com/GTorlai/PastaQ.jl
+
 # this starter code was graciously added by ITensor and PastaQ maintainers
 # https://raw.githubusercontent.com/GTorlai/PastaQ.jl/master/examples/11_monitored_circuit.jl
 
@@ -23,6 +25,7 @@ Pkg.add("StatsBase")
 Pkg.add("Distributions")
 Pkg.add("DataFrames")
 Pkg.add("CSV")
+Pkg.add("PastaQ")
 
 
 using PastaQ

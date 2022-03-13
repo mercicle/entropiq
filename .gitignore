@@ -5,3 +5,5 @@ __pycache__
 *toric_vm
 .env
 .Rproj.user
+.Rhistory
+.DS_Store
