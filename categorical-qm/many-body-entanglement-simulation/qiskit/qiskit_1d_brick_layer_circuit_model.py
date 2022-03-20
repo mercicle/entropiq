@@ -51,7 +51,6 @@ subsystem_range_divider = 2
 projective_list = ['00', '01', '10', '11']
 
 use_unitary_set = 'Random Unitaries' # 'Clifford Group' 'Random Unitaries'
-apply_snapshots = False
 
 # after_proj_prob_and_initstate_fix_
 custom_label = 'layer_traj_experiment_'
@@ -82,15 +81,6 @@ for this_simulation in simulation_space:
             for qubit_index in range(0, num_qubits):
                 #print("--- Setting Qubit " + str(qubit_index) + " in |↑> state")
                 quantum_circuit.initialize(up_state, qubit_index)
-
-            if apply_snapshots:
-                for qubit_index in range(0, num_qubits):
-
-                    if qubit_index < num_qubits-1:
-                        next_qubit_index = qubit_index + 1
-                        snapshot_name_string = "snapshot_" + str(qubit_index) + "_" + str(next_qubit_index)
-                        print("--- Setting " + snapshot_name_string)
-                        quantum_circuit.snapshot(snapshot_name_string, qubits = [qubit_index,next_qubit_index])
 
             layer_start_time = timeit.default_timer()
             keep_layer = False
