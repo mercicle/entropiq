@@ -114,7 +114,7 @@ gate(::GateName"Π11") =
  # "von Neumann entropy is a limiting case of the Rényi entropy" lim α→1 Sα(ρ) = S(ρ)
  # Given a family of entropies {Sα(ρ)}α, where α is some index, the entropies are monotonic in α∈ℝ
 
-function entanglemententropy(ψ₀::MPS)
+function entanglemententropy(ψ₀::MPS, subsystem_divider::Int)
 
    # https://qiskit.org/documentation/_modules/qiskit/quantum_info/states/utils.html#partial_trace
    # https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#reduced
@@ -128,7 +128,7 @@ function entanglemententropy(ψ₀::MPS)
 
    ψ = normalize!(copy(ψ₀))
    N = length(ψ)
-   bond = N ÷ 2
+   bond = trunc(Int, N/subsystem_divider)
    orthogonalize!(ψ, bond)
 
    row_inds = (linkind(ψ, bond - 1), siteind(ψ, bond))
@@ -151,12 +151,14 @@ end
 #let
 
 Random.seed!(1234)
-num_qubit_space = 10:1:12
-n_layers = 100
+num_qubit_space = 6:1:9
+n_layers = 20
 n_simulations = 10
-measurement_rate_space = 0.05:0.05:0.15
+measurement_rate_space = 0.10:0.10:0.80
 simulation_space = 1:n_simulations
 layer_space = 1:n_layers
+
+subsystem_range_divider = 2
 
 do_single_qubit_projections = false
 qubit_index_space = nothing
