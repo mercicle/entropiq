@@ -212,7 +212,8 @@ simulation_df_summary.head()
 simulation_df_summary.to_csv(os.getcwd() + "/out-data/"+sim_results_label+"_simulation_df_summary.csv", sep=',')
 
 
-pickle.dump( favorite_color, open( "save.p", "wb" ) )
+decoherence_network_path = os.getcwd() + '/out-data/' + sim_results_label + '_decoherence_network.p'
+pickle.dump( layer_dict, open( decoherence_network_path, "wb" ) )
 
 
 sns.set(rc = {'figure.figsize':(12,12)})

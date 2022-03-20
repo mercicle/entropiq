@@ -66,6 +66,7 @@ using DataFrames
 using XLSX
 import PastaQ: gate
 
+save_dir = string(@__DIR__, "categorical-qm/many-body-entanglement-simulation/itensor/out_data/")
 
 #using Mongoc
 
@@ -298,4 +299,4 @@ end # for num_qubits in num_qubit_space
 
 #end # let scope
 
-XLSX.writetable("simulation_df.xlsx", simulation_df)
+XLSX.writetable(string(save_dir, "simulation_df.xlsx"), simulation_df)
