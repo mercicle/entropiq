@@ -203,7 +203,7 @@ for this_simulation in simulation_space:
         measurement_rate_value_time = timeit.default_timer() - measurement_rate_start_time
         print("--- Measurement rate " + str(measurement_rate) + " took " + str(np.round(measurement_rate_value_time/60, 2)) + " minutes.")
 
-simulation_df.to_csv(os.getcwd() + "/out-data/"+sim_results_label+"_simulation_df.csv", sep=',')
+simulation_df.to_csv(os.getcwd() + "/out-data/" + sim_results_label+"_simulation_df.csv", sep=',')
 
 simulation_df_final = simulation_df[simulation_df.keep_layer == True].sort_values(by=['num_qubits', 'measurement_rate','layer'])
 
@@ -215,10 +215,30 @@ simulation_df_summary.to_csv(os.getcwd() + "/out-data/"+sim_results_label+"_simu
 decoherence_network_path = os.getcwd() + '/out-data/' + sim_results_label + '_decoherence_network.p'
 pickle.dump( layer_dict, open( decoherence_network_path, "wb" ) )
 
+################################
+## Results - Only Final Layer ##
+################################
+simulation_df_final_summary = simulation_df_final.groupby(['num_qubits','measurement_rate'])[['renyi_entropy_2nd']].mean().reset_index()
 
 sns.set(rc = {'figure.figsize':(12,12)})
 sns.set_style(style='whitegrid')
+sim_plot = sns.lineplot(x='measurement_rate',
+                        y='renyi_entropy_2nd',
+                        data = simulation_df_final_summary,
+                        hue='num_qubits',
+                        marker='o',
+                        linewidth = 3,
+                        markersize = 10)
+sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
+sim_plot.set_ylabel("2nd Renyi Entropy", fontsize = 20)
+plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results-only-converged.pdf')
 
+
+############################
+############################
+############################
+sns.set(rc = {'figure.figsize':(12,12)})
+sns.set_style(style='whitegrid')
 sim_plot = sns.lineplot(x='measurement_rate',
                         y='renyi_entropy_2nd',
                         data = simulation_df_summary,
@@ -296,3 +316,22 @@ plt.show()
 ################################################################
 ################################################################
 ################################################################
+
+julia_results_file_name = "qiskit_comparison_simulation_df.xlsx"
+julia_results_dir = os.getcwd().replace("/qiskit","") + "/itensor/out_data/"
+julia_path = julia_results_dir+julia_results_file_name
+julia_df_final_summary = pd.read_excel(julia_path)
+
+sns.set(rc = {'figure.figsize':(12,12)})
+sns.set_style(style='whitegrid')
+sim_plot = sns.lineplot(x='measurement_rate',
+                        y='mean_entropy',
+                        data = julia_df_final_summary,
+                        hue='num_qubits',
+                        marker='o',
+                        linewidth = 3,
+                        markersize = 10)
+sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
+sim_plot.set_ylabel("Von Neumann Entropy", fontsize = 20)
+sim_plot.set_title('Julia ITensor Simulation Results')
+plt.savefig(julia_results_dir + '_qiskit_comparison_simulation.pdf')

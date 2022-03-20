@@ -66,7 +66,7 @@ using DataFrames
 using XLSX
 import PastaQ: gate
 
-save_dir = string(@__DIR__, "categorical-qm/many-body-entanglement-simulation/itensor/out_data/")
+save_dir = string(@__DIR__, "/out_data/")
 
 #using Mongoc
 
@@ -151,8 +151,9 @@ end
 
 #let
 
+custom_label = "qiskit_comparison_"
 Random.seed!(1234)
-num_qubit_space = 6:1:9
+num_qubit_space = 6:1:10
 n_layers = 20
 n_simulations = 10
 measurement_rate_space = 0.10:0.10:0.80
@@ -299,4 +300,4 @@ end # for num_qubits in num_qubit_space
 
 #end # let scope
 
-XLSX.writetable(string(save_dir, "simulation_df.xlsx"), simulation_df)
+XLSX.writetable(string(save_dir,custom_label, "simulation_df.xlsx"), simulation_df)
