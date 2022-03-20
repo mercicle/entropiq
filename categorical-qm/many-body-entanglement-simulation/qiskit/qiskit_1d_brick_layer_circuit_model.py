@@ -24,11 +24,15 @@ from qiskit.quantum_info import Statevector
 import copy
 
 
-
 simulator = QasmSimulator(method='matrix_product_state')
-
 backend = Aer.get_backend('statevector_simulator')
 sim = Aer.get_backend('aer_simulator')
+
+def isodd(num):
+    return num % 2 == 1
+
+def iseven(num):
+    return num % 2 != 1
 
 line_divider_size = 50
 
@@ -38,7 +42,7 @@ up_state = np.array([0,1])
 random_probs_2q_test_vector = [0.25, 0.25, 0.25, 0.25]
 
 min_qubits = 6
-max_qubits = 8
+max_qubits = 9
 n_qubit_space = [x for x in range(min_qubits,max_qubits+1)] # 16,32
 min_measurement_rate = 20
 max_measurement_rate = 80
@@ -85,103 +89,100 @@ for this_simulation in simulation_space:
             layer_start_time = timeit.default_timer()
             keep_layer = False
 
-            for this_layer in range(1, n_layers+1):
+            for this_layer_index in range(1, n_layers+1):
 
-                # this_layer=1
-                #print("--- Starting layer = " + str(this_layer))
+                # this_layer_index=1
+                #print("--- Starting layer = " + str(this_layer_index))
                 for qubit_index in range(0, num_qubits-1):
 
                     # qubit_index = 0
                     next_qubit_index = qubit_index + 1
                     rand_uni_0to1_draw = np.random.uniform(0,1)
-                    snapshot_name_string = "snapshot_" + str(qubit_index) + "_" + str(next_qubit_index)
 
-                    if rand_uni_0to1_draw <= measurement_rate:
-
-                        #print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
-
+                    if ((isodd(this_layer_index) and isodd(qubit_index)) or (iseven(this_layer_index) and iseven(qubit_index))):
+    
+                        if rand_uni_0to1_draw <= measurement_rate:
+    
+                            #print("---- Adding Projective Measurement " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
+    
+                            if use_unitary_set == 'Clifford Group':
+    
+                                rho = qi.DensityMatrix.from_instruction(quantum_circuit)
+                                unitary_pmf = rho.probabilities([qubit_index,next_qubit_index]).tolist()
+                                unitary_pmf = [np.round(prob,2) for prob in unitary_pmf]
+    
+                                is_uniform = (unitary_pmf == random_probs_2q_test_vector)
+    
+                                if not is_uniform:
+                                    print("|.." + str(qubit_index) + "-" + str(next_qubit_index) + str("..> is not uniform: ")+ ' - '.join([str(x) for x in unitary_pmf]))
+    
+                            elif use_unitary_set == 'Random Unitaries':
+    
+                                unitary_pmf = random_probs_2q_test_vector
+    
+                            rand_uni_proj_choice = np.random.choice(projective_list, p = unitary_pmf)
+    
+                            # projective measurement before the unitary gate
+    
+                            if rand_uni_proj_choice == '11':
+    
+                                quantum_circuit.reset(qubit_index)
+                                quantum_circuit.reset(next_qubit_index)
+    
+                                quantum_circuit.x(qubit_index)
+                                quantum_circuit.x(next_qubit_index)
+    
+                            elif rand_uni_proj_choice == '01':
+    
+                                quantum_circuit.reset(qubit_index)
+                                quantum_circuit.reset(next_qubit_index)
+    
+                                quantum_circuit.x(next_qubit_index)
+    
+                            elif rand_uni_proj_choice == '10':
+    
+                                quantum_circuit.reset(qubit_index)
+                                quantum_circuit.reset(next_qubit_index)
+    
+                                quantum_circuit.x(qubit_index)
+    
+                            elif rand_uni_proj_choice == '00':
+    
+                                quantum_circuit.reset(qubit_index)
+                                quantum_circuit.reset(next_qubit_index)
+    
+                        #print("---- Starting Unitary Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
+    
                         if use_unitary_set == 'Clifford Group':
-
-                            rho = qi.DensityMatrix.from_instruction(quantum_circuit)
-                            unitary_pmf = rho.probabilities([qubit_index,next_qubit_index]).tolist()
-                            unitary_pmf = [np.round(prob,2) for prob in unitary_pmf]
-
-                            is_uniform = (unitary_pmf == random_probs_2q_test_vector)
-
-                            if not is_uniform:
-                                print("|.." + str(qubit_index) + "-" + str(next_qubit_index) + str("..> is not uniform: ")+ ' - '.join([str(x) for x in unitary_pmf]))
-
+    
+                            random_clifford = qi.random_clifford(num_qubits=2)
+    
+                            quantum_circuit.append(random_clifford, [qubit_index, next_qubit_index])
+    
                         elif use_unitary_set == 'Random Unitaries':
-
-                            unitary_pmf = random_probs_2q_test_vector
-
-                        rand_uni_proj_choice = np.random.choice(projective_list, p = unitary_pmf)
-
-                        # projective measurement before the unitary gate
-
-                        if rand_uni_proj_choice == '11':
-
-                            quantum_circuit.reset(qubit_index)
-                            quantum_circuit.reset(next_qubit_index)
-
-                            quantum_circuit.x(qubit_index)
-                            quantum_circuit.x(next_qubit_index)
-
-                        elif rand_uni_proj_choice == '01':
-
-                            quantum_circuit.reset(qubit_index)
-                            quantum_circuit.reset(next_qubit_index)
-
-                            quantum_circuit.x(next_qubit_index)
-
-                        elif rand_uni_proj_choice == '10':
-
-                            quantum_circuit.reset(qubit_index)
-                            quantum_circuit.reset(next_qubit_index)
-
-                            quantum_circuit.x(qubit_index)
-
-                        elif rand_uni_proj_choice == '00':
-
-                            quantum_circuit.reset(qubit_index)
-                            quantum_circuit.reset(next_qubit_index)
-
-                    #print("---- Starting Unitary Operation " + str(qubit_index) + "-🬀-" + str(next_qubit_index))
-
-                    if use_unitary_set == 'Clifford Group':
-
-                        random_clifford = qi.random_clifford(num_qubits=2)
-
-                        quantum_circuit.append(random_clifford, [qubit_index, next_qubit_index])
-
-                    elif use_unitary_set == 'Random Unitaries':
-
-                        # uses randomly selected from Haar measures using Qiskit qi.random_unitary()
-                        unitary_label = "rand_unit_" + str(qubit_index) + "_" + str(next_qubit_index)
-                        quantum_circuit.append(qi.random_unitary(hilbert_space_vector_size_2qubits), [qubit_index, next_qubit_index])
-
-                    else:
-
-                        print("Now a supported set of unitaries.")
+    
+                            # uses randomly selected from Haar measures using Qiskit qi.random_unitary()
+                            unitary_label = "rand_unit_" + str(qubit_index) + "_" + str(next_qubit_index)
+                            quantum_circuit.append(qi.random_unitary(hilbert_space_vector_size_2qubits), [qubit_index, next_qubit_index])
+    
+                        else:
+    
+                            print("Now a supported set of unitaries.")
 
                 layer_time = timeit.default_timer() - layer_start_time
                 #print("--- layer took " + str(np.round(layer_time, 2)) + " seconds.")
 
-                if this_layer == n_layers:
+                if this_layer_index == n_layers:
                     keep_layer = True
 
-                # see below: qiskit-densitymatrix-from-instruction-when-snapshots-are-present
-                #quantum_circuit.data = [(Barrier(_inst[0].num_qubits), _inst[1], _inst[2]) if 'snapshot_' in _inst[0].name  else _inst for _inst in quantum_circuit.data]
-
-                #print("--- Reduced DensityMatrix Calculation " + str(this_layer) + "")
+                #print("--- Reduced DensityMatrix Calculation " + str(this_layer_index) + "")
                 rho = qi.DensityMatrix.from_instruction(quantum_circuit)
 
                 if num_qubits == min_qubits and this_simulation == 0:
                     decoherence_network = np.asmatrix(np.real(rho))
-                    layer_dict[this_layer] = decoherence_network
+                    layer_dict[this_layer_index] = decoherence_network
 
                 #plt.matshow(decoherence_network)
-
                 # why doesn't this sum to one?
                 #np.sum(np.abs(decoherence_network[0,:]))
 
@@ -195,7 +196,7 @@ for this_simulation in simulation_space:
                 # https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#properties
                 # np.trace( np.matmul(reduced_rho, reduced_rho) ) == reduced_rho.purity()
 
-                simulation_df = simulation_df.append(pd.DataFrame.from_dict({'simulation': [this_simulation], 'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate], 'layer': [this_layer],'keep_layer': [keep_layer], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
+                simulation_df = simulation_df.append(pd.DataFrame.from_dict({'simulation': [this_simulation], 'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate], 'layer': [this_layer_index],'keep_layer': [keep_layer], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
     
         measurement_rate_value_time = timeit.default_timer() - measurement_rate_start_time
         print("--- Measurement rate " + str(measurement_rate) + " took " + str(np.round(measurement_rate_value_time/60, 2)) + " minutes.")

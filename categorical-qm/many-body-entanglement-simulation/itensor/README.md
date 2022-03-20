@@ -68,6 +68,39 @@ pkg> up Atom Juno
 
 ```
 
+## CSV still doesn't precompile
+```
+(@v1.7) pkg>  up Parsers
+    Updating registry at `~/.julia/registries/General.toml`
+  No Changes to `~/.julia/environments/v1.7/Project.toml`
+    Updating `~/.julia/environments/v1.7/Manifest.toml`
+  [6e4b80f9] ↓ BenchmarkTools v1.3.1 ⇒ v0.4.3
+  [523fee87] - CodecBzip2 v0.7.2
+  [7d188eb4] - JSONSchema v0.3.4
+  [b8f27783] ↓ MathOptInterface v0.9.22 ⇒ v0.9.8
+  [d8a4904e] ↓ MutableArithmetics v0.2.22 ⇒ v0.1.1
+  [6e34b625] - Bzip2_jll v1.0.8+0
+Precompiling project...
+  Progress [===================================>     ]  6/7
+  ✓ BenchmarkTools
+  ✗ MutableArithmetics
+  ◓ CSV
+  ✗ MathOptInterface
+  ✗ Convex
+```
+
+# Install Mongo Community Edition Local
+
+From https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/:
+
+```
+brew tap mongodb/brew
+brew install mongodb-community@5.0
+
+#to run in background
+mongod --config /opt/homebrew/etc/mongod.conf --fork
+
+```
 # Atom Editor
 
 - https://towardsdatascience.com/juno-makes-writing-julia-awesome-f3e1baf92ea9

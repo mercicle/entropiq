@@ -63,9 +63,20 @@ using StatsBase: mean, sem
 using Distributions
 
 using DataFrames
-#using CSV
-
+using XLSX
 import PastaQ: gate
+
+
+#using Mongoc
+
+#import Mongoc
+#client = Mongoc.Client("mongodb://localhost:27017")
+#Mongoc.ping(client)
+
+
+# tried
+# ] up Parsers
+
 
 # single qubit gates provided in example
 gate(::GateName"Π0") =
@@ -140,7 +151,7 @@ end
 #let
 
 Random.seed!(1234)
-num_qubit_space = 10:10:30
+num_qubit_space = 10:1:12
 n_layers = 100
 n_simulations = 10
 measurement_rate_space = 0.05:0.05:0.15
@@ -284,3 +295,5 @@ for num_qubits in num_qubit_space
 end # for num_qubits in num_qubit_space
 
 #end # let scope
+
+XLSX.writetable("simulation_df.xlsx", simulation_df)
