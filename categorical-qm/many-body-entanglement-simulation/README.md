@@ -3,6 +3,7 @@
 
 - [Main Paper - Quantum Zeno Effect and the Many-body Entanglement Transition](https://arxiv.org/pdf/1808.06134.pdf)
 
+- [Entanglement area law in superfluid 4He](https://www.nature.com/articles/nphys4075)
 
 - [The ‘Quantum Zeno Effect’ Explained](https://sites.imsa.edu/hadron/2019/12/05/the-quantum-zeno-effect-explained/)
 - [Q: Is the quantum zeno effect a real thing?](https://www.askamathematician.com/2012/03/q-is-the-quantum-zeno-effect-a-real-thing/)
