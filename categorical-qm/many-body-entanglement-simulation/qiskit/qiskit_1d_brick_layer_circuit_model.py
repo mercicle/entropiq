@@ -317,7 +317,8 @@ plt.show()
 ################################################################
 ################################################################
 
-julia_results_file_name = "qiskit_comparison_simulation_df.xlsx"
+custom_label = "qiskit_cmpr_400sims_fixed_entropy"
+julia_results_file_name = custom_label+"simulation_df.xlsx"
 julia_results_dir = os.getcwd().replace("/qiskit","") + "/itensor/out_data/"
 julia_path = julia_results_dir+julia_results_file_name
 julia_df_final_summary = pd.read_excel(julia_path)
@@ -334,4 +335,4 @@ sim_plot = sns.lineplot(x='measurement_rate',
 sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
 sim_plot.set_ylabel("Von Neumann Entropy", fontsize = 20)
 sim_plot.set_title('Julia ITensor Simulation Results')
-plt.savefig(julia_results_dir + '_qiskit_comparison_simulation.pdf')
+plt.savefig(julia_results_dir + custom_label+ '_qiskit_comparison_simulation.pdf')

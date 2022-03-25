@@ -13,3 +13,6 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 - [Quantum Zeno Effect](https://addpmp.slamjam.com/index/quantum-zeno-effect)
 
 - [Felix Pollock - The quantum Zeno effect: how curiosity can save Schrodinger's cat](https://www.youtube.com/watch?v=3WHPiH0pNeo)
+
+- [Partial Trace](http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf)
+- [Partial Trace Wiki](https://en.wikipedia.org/wiki/Partial_trace)

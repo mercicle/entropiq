@@ -151,12 +151,12 @@ end
 
 #let
 
-custom_label = "qiskit_comparison_"
+custom_label = "qiskit_cmpr_400sims_fixed_entropy"
 Random.seed!(1234)
 num_qubit_space = 6:1:10
 n_layers = 20
-n_simulations = 10
-measurement_rate_space = 0.10:0.10:0.80
+n_simulations = 200
+measurement_rate_space = 0.10:0.10:0.90
 simulation_space = 1:n_simulations
 layer_space = 1:n_layers
 
@@ -180,6 +180,7 @@ for num_qubits in num_qubit_space
   else
     qubit_index_space = 1:(num_qubits-1)
   end
+
 
   @printf("Preparing circuit_simulations for # Qubits = %.3i \n", num_qubits)
   circuit_simulations = []
@@ -272,7 +273,7 @@ for num_qubits in num_qubit_space
          ψ_tracker = copy(ψ)
          this_von_neummen_entropy = nothing
          try
-            this_von_neummen_entropy = entanglemententropy(ψ)
+            this_von_neummen_entropy = entanglemententropy(ψ, subsystem_range_divider)
             #@printf("Completed Entropy for Circuit: %.3i \n", this_circuit_index)
          catch e
             #println("!!SVD failed, the matrix you were trying to SVD contains NaNs.")
