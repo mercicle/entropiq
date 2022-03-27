@@ -317,7 +317,7 @@ plt.show()
 ################################################################
 ################################################################
 
-custom_label = "qiskit_cmpr_400sims_fixed_entropy"
+custom_label = "qiskit_cmpr_300sims_constant_subsys_n"
 julia_results_file_name = custom_label+"simulation_df.xlsx"
 julia_results_dir = os.getcwd().replace("/qiskit","") + "/itensor/out_data/"
 julia_path = julia_results_dir+julia_results_file_name
@@ -336,3 +336,12 @@ sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
 sim_plot.set_ylabel("Von Neumann Entropy", fontsize = 20)
 sim_plot.set_title('Julia ITensor Simulation Results')
 plt.savefig(julia_results_dir + custom_label+ '_qiskit_comparison_simulation.pdf')
+
+
+custom_label = "qiskit_cmpr_100sims_mr0_v2"
+julia_results_file_name = custom_label+"von_neumann_entropy_df.xlsx"
+julia_results_dir = os.getcwd().replace("/qiskit","") + "/itensor/out_data/"
+julia_path = julia_results_dir+julia_results_file_name
+von_neumann_entropy_df = pd.read_excel(julia_path)
+
+von_neumann_entropy_df_eigen1 = von_neumann_entropy_df[von_neumann_entropy_df.eigenvalue==1]

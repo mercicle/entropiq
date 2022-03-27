@@ -115,7 +115,7 @@ gate(::GateName"Π11") =
  # "von Neumann entropy is a limiting case of the Rényi entropy" lim α→1 Sα(ρ) = S(ρ)
  # Given a family of entropies {Sα(ρ)}α, where α is some index, the entropies are monotonic in α∈ℝ
 
-function entanglemententropy(ψ₀::MPS, subsystem_divider::Int)
+function entanglemententropy(ψ₀::MPS, subsystem_divider::Int, use_constant_size::Bool, constant_size::Int)
 
    # https://qiskit.org/documentation/_modules/qiskit/quantum_info/states/utils.html#partial_trace
    # https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#reduced
@@ -127,40 +127,57 @@ function entanglemententropy(ψ₀::MPS, subsystem_divider::Int)
 
    # http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf
 
-   ψ = normalize!(copy(ψ₀))
-   N = length(ψ)
-   bond = trunc(Int, N/subsystem_divider)
-   orthogonalize!(ψ, bond)
+   # ψ₀ = ψ
+   # subsystem_divider = subsystem_range_divider
+   # use_constant_size
+   # constant_size
+   ψ_local = normalize!(copy(ψ₀))
+   N = length(ψ_local)
 
-   row_inds = (linkind(ψ, bond - 1), siteind(ψ, bond))
+   if use_constant_size
+     bond = constant_size
+   else
+     bond = trunc(Int, N/subsystem_divider)
+   end
+
+   orthogonalize!(ψ_local, bond)
+
+   #row_inds = (linkind(ψ_local, 1), siteind(ψ_local, bond))
+   row_inds = (linkind(ψ_local, bond - 1), siteind(ψ_local, bond))
 
    # isnan
    # SVD failed, the matrix you were trying to SVD contains NaNs.
    #http://itensor.org/docs.cgi?page=book/itensor_factorizing&vers=cppv3
    #http://itensor.org/docs.cgi?vers=cppv3&page=tutorials/SVD
-   u, s, v = svd(ψ[bond], row_inds)
+   u, s, v = svd(ψ_local[bond], row_inds)
 
    S = 0.0
    sigma_rank = itensor_dim(s, 1)
+   entropy_df = DataFrame()
    for n in 1:sigma_rank
      λ = s[n, n]^2
-     S -= λ * log(λ + 1e-20)
+     entropy_contribution = - λ * log(λ + 1e-20)
+     S = S + entropy_contribution
+     this_df = DataFrame(num_qubits = N, bond_index = bond, ij= n, eigenvalue = λ, entropy_contribution = entropy_contribution)
+     entropy_df = [entropy_df; this_df]
    end
-   return S
+   return Dict("S" => S, "entropy_df" => entropy_df)
 end
 
 #let
 
-custom_label = "qiskit_cmpr_400sims_fixed_entropy"
+custom_label = "qiskit_cmpr_100sims_mr0_v2"
 Random.seed!(1234)
-num_qubit_space = 6:1:10
+num_qubit_space = 6:1:10 #6:1:10
 n_layers = 20
-n_simulations = 200
-measurement_rate_space = 0.10:0.10:0.90
+n_simulations = 100
+measurement_rate_space = 0.0:0.10:0.10 #0.10:0.10:0.70
 simulation_space = 1:n_simulations
 layer_space = 1:n_layers
 
 subsystem_range_divider = 2
+use_constant_size = false
+constant_size = 3
 
 do_single_qubit_projections = false
 qubit_index_space = nothing
@@ -168,6 +185,7 @@ qubit_index_space = nothing
 projective_list = [ "00"; "01"; "10"; "11"]
 ψ_tracker = nothing
 simulation_df = DataFrame()
+von_neumann_entropy_df = DataFrame()
 von_neumann_entropies = []
 
 for num_qubits in num_qubit_space
@@ -258,6 +276,7 @@ for num_qubits in num_qubit_space
                  projection_string = "Π"*"$(σ)"
                  ψ = runcircuit(ψ, (projection_string, (qubit_index, next_qubit_index)))
                  normalize!(ψ)
+                 # ψ[:] = ψ
 
                end # if measurement_rate > rand()
 
@@ -271,19 +290,29 @@ for num_qubits in num_qubit_space
          end # for this_layer in this_circuit
 
          ψ_tracker = copy(ψ)
-         this_von_neummen_entropy = nothing
+         this_von_neumann_entropy_dict = Dict()
          try
-            this_von_neummen_entropy = entanglemententropy(ψ, subsystem_range_divider)
+            this_von_neumann_entropy_dict = entanglemententropy(ψ, subsystem_range_divider, use_constant_size, constant_size)
             #@printf("Completed Entropy for Circuit: %.3i \n", this_circuit_index)
          catch e
             #println("!!SVD failed, the matrix you were trying to SVD contains NaNs.")
             @printf("!!SVD failed for Circuit: %.3i \n", this_circuit_index)
-
          end
+
+         this_von_neumann_entropy = this_von_neumann_entropy_dict["S"]
+         this_von_neumann_entropy_df = this_von_neumann_entropy_dict["entropy_df"]
+         this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :measurement_rate => measurement_rate)
+         this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :simulation_number => this_circuit_index)
+
+         #this_von_neumann_entropy_df[!,"num_qubits"] = num_qubits
+         #this_von_neumann_entropy_df[:,"measurement_rate"] .= measurement_rate
+         #this_von_neumann_entropy_df[:,"simulation_number"] .= this_circuit_index
+
+         von_neumann_entropy_df = [von_neumann_entropy_df; this_von_neumann_entropy_df]
 
          this_circuit_index += 1
 
-         push!(von_neumann_entropies, this_von_neummen_entropy)
+         push!(von_neumann_entropies, this_von_neumann_entropy)
 
       end # for this_circuit in circuit_simulations
 
@@ -300,5 +329,7 @@ for num_qubits in num_qubit_space
 end # for num_qubits in num_qubit_space
 
 #end # let scope
+
+XLSX.writetable(string(save_dir,custom_label, "von_neumann_entropy_df.xlsx"), von_neumann_entropy_df)
 
 XLSX.writetable(string(save_dir,custom_label, "simulation_df.xlsx"), simulation_df)
