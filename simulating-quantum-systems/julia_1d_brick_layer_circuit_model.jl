@@ -48,7 +48,10 @@ Pkg.add("Mongoc")
 #                      user='username' password='password'
 #                      sslmode = 'require' dbname = wrds
 #                   """)
+# https://discourse.julialang.org/t/accessing-postgresql-via-julia/7031/5
 
+# s3
+# https://juliapackages.com/p/awss3
 
 using ITensors
 using ITensors: dim as itensor_dim

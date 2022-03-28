@@ -16,6 +16,7 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 - [Partial Trace](http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf)
 - [Partial Trace Wiki](https://en.wikipedia.org/wiki/Partial_trace)
 
+- [Quantum Tensor Networks in a Nutshell](https://arxiv.org/pdf/1708.00006.pdf)
 
 
 # Installation
@@ -26,6 +27,7 @@ To install [Julia](https://julialang.org/) on Mac:
 > brew update && brew upgrade julia
 
 [Julia Docs are here.](https://docs.julialang.org/en/v1/)
+[Julia Intro](https://syl1.gitbook.io/julia-language-a-concise-tutorial/language-core/getting-started)
 
 Install PastaQ:
 
