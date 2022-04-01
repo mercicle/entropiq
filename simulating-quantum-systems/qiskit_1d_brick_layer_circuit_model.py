@@ -22,6 +22,10 @@ import copy
 
 import pickle
 
+import uuid
+from datetime import date
+
+
 simulator = QasmSimulator(method='matrix_product_state')
 backend = Aer.get_backend('statevector_simulator')
 sim = Aer.get_backend('aer_simulator')
@@ -53,6 +57,9 @@ subsystem_range_divider = 2
 projective_list = ['00', '01', '10', '11']
 
 use_unitary_set = 'Random Unitaries' # 'Clifford Group' 'Random Unitaries'
+
+experiment_id = str(uuid.uuid1())
+experiment_run_date = date.today().strftime("%m-%d-%Y")
 
 # after_proj_prob_and_initstate_fix_
 custom_label = 'julia_comparison_'
@@ -202,6 +209,10 @@ for this_simulation in simulation_space:
 
         measurement_rate_value_time = timeit.default_timer() - measurement_rate_start_time
         print("--- Measurement rate " + str(measurement_rate) + " took " + str(np.round(measurement_rate_value_time/60, 2)) + " minutes.")
+
+
+simulation_df['experiment_id'] = experiment_id
+simulation_df['experiment_run_date'] = experiment_run_date
 
 simulation_df.to_csv(os.getcwd() + "/out-data/" + sim_results_label+"_simulation_df.csv", sep=',')
 

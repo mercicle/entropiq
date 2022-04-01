@@ -67,6 +67,10 @@ using Distributions
 
 using DataFrames
 using XLSX
+
+using UUIDs
+using Dates
+
 import PastaQ: gate
 
 save_dir = string(@__DIR__, "/out_data/")
@@ -167,7 +171,9 @@ function entanglemententropy(ψ₀::MPS, subsystem_divider::Int, use_constant_si
    return Dict("S" => S, "entropy_df" => entropy_df)
 end
 
-#let
+rng = MersenneTwister(1234)
+experiment_id = repr(uuid4(rng).value)
+experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
 custom_label = "qiskit_cmpr_100sims_mr0_v2"
 Random.seed!(1234)
