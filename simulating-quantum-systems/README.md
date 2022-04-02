@@ -18,6 +18,7 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 - [Quantum Tensor Networks in a Nutshell](https://arxiv.org/pdf/1708.00006.pdf)
 
+- quantum channel completely positive trace presevring map
 
 # Installation
 
