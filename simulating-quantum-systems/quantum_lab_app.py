@@ -2,6 +2,9 @@
 import os, sys, json
 import pandas as pd
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 import streamlit as st
 from streamlit_option_menu import option_menu
@@ -10,9 +13,21 @@ import hydralit_components as hc
 this_dir = os.getcwd()
 repo_root_dir = this_dir.split("qc-repo")[0] + 'qc-repo/'
 
+# works in python editor
+import julia
+from julia import Main
+Main.include("julia_test.jl")
+
+#from julia.api import Julia
+#jl = Julia(compiled_modules=False)
+
+#julia_test_path = """include(\""""+ this_dir + """/julia_test.jl\"""" +")"""
+#jl.eval(julia_test_path)
+
+
 #from helpers.data_helpers import *
 #from helpers.analysis_helpers import *
-from app_parms import *
+#from app_parms import *
 
 #todo: implement
 #db_conn = get_db_conn()
@@ -72,5 +87,16 @@ elif selected == "Discovery":
     experiment_id = st.selectbox('Select Experiment ID', experiment_metadata_df.experiment_id)
 
     st.subheader('Experiment Results:')
+
+    matrix_element = st.selectbox('Select matrix element', [1,2,3])
+
+    print("computing matrix in julia...")
+    this_matrix  = np.array([[1,0],[0,1]]) #get_matrix(matrix_element)
+    print("after computing matrix in julia...")
+
+    fig, ax = plt.subplots()
+    sns.heatmap(this_matrix, ax=ax)
+    st.write(fig)
+
     #experiment_results_df = get_table(conn = db_conn, table_name = , schema_name = , where_string = " where experiment_id = '"+ experiment_id + "'")
     #st.table(experiment_results_df)

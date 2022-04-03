@@ -27,8 +27,27 @@ To install [Julia](https://julialang.org/) on Mac:
 > brew install --cask julia
 > brew update && brew upgrade julia
 
+## Add Julia to Path
+- '/Applications/Julia-1.7.app/Contents/Resources/julia/bin/julia'
+- ln -fs "/Applications/Julia-1.7.app/Contents/Resources/julia/bin/julia" /usr/local/bin/julia
+- or, export PATH="$PATH:/path/to/<Julia directory>/bin" or ~/.bash_profile
+
 [Julia Docs are here.](https://docs.julialang.org/en/v1/)
 [Julia Intro](https://syl1.gitbook.io/julia-language-a-concise-tutorial/language-core/getting-started)
+
+[Embed Julia in Python](https://towardsdatascience.com/how-to-embed-your-julia-code-into-python-to-speed-up-performance-e3ff0a94b6e)
+
+To embed Julia in Python, need to [install PyJulia in Python](https://pyjulia.readthedocs.io/en/latest/installation.html#step-2-install-pyjulia):
+
+```
+!pip3 install julia
+julia.install() #dependencies
+```
+
+[Pluto for interactive Julia Dashboards](https://github.com/fonsp/Pluto.jl)
+
+[LambdaMaker.jl](https://juliahub.com/ui/Packages/LambdaMaker/oGeH6/0.1.0)
+
 
 Install PastaQ:
 
