@@ -1,16 +1,10 @@
+
 import os
-from io import BytesIO
-
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-import streamlit as st
-
 # options:
 # main_include
 # api_compiled_false
 # dont_import_julia
-julia_import_method = "main_include"
+julia_import_method = "api_compiled_false"
 
 if julia_import_method == "main_include":
 
@@ -36,6 +30,12 @@ elif julia_import_method == "dont_import_julia":
 else:
     ValueError("Not handling this case:" + julia_import_method)
 
+from io import BytesIO
+
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import streamlit as st
 
 st.header('Using Julia in Streamlit App Example')
 
