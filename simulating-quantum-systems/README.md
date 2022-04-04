@@ -1,3 +1,11 @@
+
+# Online help for Streamlit and Julia Integration
+
+[StackOverflow](https://stackoverflow.com/questions/71726946/calling-julia-from-streamlit-app-using-pyjulia)
+[Streamlit Issues](https://github.com/streamlit/streamlit/issues/4585)
+[PyJulia Issues](https://github.com/JuliaPy/pyjulia/issues/492)
+
+
 # Papers
 
 - [Main Paper - Quantum Zeno Effect and the Many-body Entanglement Transition](https://arxiv.org/pdf/1808.06134.pdf)
@@ -22,6 +30,22 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 # Installation
 
+
+## Python
+
+[Right way to setup python on mac](https://faun.pub/the-right-way-to-set-up-python-on-your-mac-e923ffe8cf8e)
+
+[Intro to pyenv](https://realpython.com/intro-to-pyenv/)
+brew install pyenv
+PYTHON_CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.7
+otool -L ~/.pyenv/versions/3.9.7/bin/python3.9 | grep libpython
+pip3 install virtualenv
+brew install pyenv-virtualenv
+pyenv virtualenv 3.9.7 pyforjulia
+
+pyenv local pyforjulia
+pyenv activate pyforjulia
+
 To install [Julia](https://julialang.org/) on Mac:
 
 > brew install --cask julia
@@ -44,9 +68,55 @@ To embed Julia in Python, need to [install PyJulia in Python](https://pyjulia.re
 julia.install() #dependencies
 ```
 
+```
+>>> import julia
+>>> julia.install()
+[ Info: Julia version info
+Julia Version 1.7.2
+Commit bf53498635 (2022-02-06 15:21 UTC)
+Platform Info:
+  OS: macOS (x86_64-apple-darwin19.5.0)
+  uname: Darwin 21.3.0 Darwin Kernel Version 21.3.0: Wed Jan  5 21:37:58 PST 2022; root:xnu-8019.80.24~20/RELEASE_ARM64_T6000 x86_64 i386
+  CPU: Apple M1 Pro:
+                 speed         user         nice          sys         idle          irq
+       #1-10    24 MHz    8778444 s          0 s    2046948 s   11265070 s          0 s
+
+  Memory: 32.0 GB (386.67578125 MB free)
+  Uptime: 1.92383e6 sec
+  Load Avg:  8.1513671875  8.60498046875  9.21142578125
+  WORD_SIZE: 64
+  LIBM: libopenlibm
+  LLVM: libLLVM-12.0.1 (ORCJIT, westmere)
+Environment:
+  JULIA_NUM_THREADS = 4
+  XPC_FLAGS = 0x0
+  TERM = xterm-256color
+  HOME = /Users/mercicle
+  PATH = /opt/homebrew/Cellar/pyenv-virtualenv/1.1.5/shims:/Users/mercicle/opt/anaconda3/bin:/Users/mercicle/opt/anaconda3/condabin:/Library/Frameworks/Python.framework/Versions/3.10/bin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/mercicle/opt/anaconda3/bin/python3:/Users/mercicle/.local/bin
+  HOMEBREW_PREFIX = /opt/homebrew
+  HOMEBREW_CELLAR = /opt/homebrew/Cellar
+  HOMEBREW_REPOSITORY = /opt/homebrew
+  MANPATH = /opt/homebrew/share/man::
+  INFOPATH = /opt/homebrew/share/info:
+  PYTHONPATH = /Users/mercicle/opt/anaconda3/bin/python3
+[ Info: Julia executable: /Applications/Julia-1.7.app/Contents/Resources/julia/bin/julia
+[ Info: Trying to import PyCall...
+┌ Info: PyCall is already installed and compatible with Python executable.
+│
+│ PyCall:
+│     python: /Users/mercicle/opt/anaconda3/bin/python3
+│     libpython: /Users/mercicle/opt/anaconda3/lib/libpython3.9.dylib
+│ Python:
+│     python: /Users/mercicle/opt/anaconda3/bin/python3
+└     libpython:
+>>> exit()
+
+```
 [Pluto for interactive Julia Dashboards](https://github.com/fonsp/Pluto.jl)
 
 [LambdaMaker.jl](https://juliahub.com/ui/Packages/LambdaMaker/oGeH6/0.1.0)
+
+[Genie is a full-stack web framework that provides a streamlined and efficient workflow for developing modern web applications. It builds on Julia's strengths (high-level, high-performance, dynamic, JIT compiled), exposing a rich API and a powerful toolset for productive web development.](https://github.com/GenieFramework/Genie.jl)
 
 
 Install PastaQ:
