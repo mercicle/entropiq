@@ -328,12 +328,13 @@ plt.show()
 ################################################################
 ################################################################
 
-custom_label = "qiskit_cmpr_300sims_constant_subsys_n"
+custom_label = "qiskit_cmpr_bigger_systems"
 julia_results_file_name = custom_label+"simulation_df.xlsx"
-julia_results_dir = os.getcwd().replace("/qiskit","") + "/itensor/out_data/"
+julia_results_dir = os.getcwd() + "/out_data/"
 julia_path = julia_results_dir+julia_results_file_name
 julia_df_final_summary = pd.read_excel(julia_path)
 
+julia_df_final_summary['num_qubits'] = julia_df_final_summary.num_qubits.astype(str)
 sns.set(rc = {'figure.figsize':(12,12)})
 sns.set_style(style='whitegrid')
 sim_plot = sns.lineplot(x='measurement_rate',

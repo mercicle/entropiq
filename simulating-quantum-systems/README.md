@@ -46,6 +46,9 @@ pyenv virtualenv 3.9.7 pyforjulia
 pyenv local pyforjulia
 pyenv activate pyforjulia
 
+- to exit venv
+  - `pyenv local system`
+
 To install [Julia](https://julialang.org/) on Mac:
 
 > brew install --cask julia

@@ -35,6 +35,7 @@ Pkg.add("Distributions")
 Pkg.add("DataFrames")
 Pkg.add("CSV")
 
+Pkg.add("TimerOutputs")
 # https://github.com/felipenoris/Mongoc.jl
 # https://felipenoris.github.io/Mongoc.jl/stable/
 Pkg.add("Mongoc")
@@ -73,6 +74,8 @@ using Dates
 
 import PastaQ: gate
 
+using TimerOutputs
+
 save_dir = string(@__DIR__, "/out_data/")
 
 #using Mongoc
@@ -81,10 +84,8 @@ save_dir = string(@__DIR__, "/out_data/")
 #client = Mongoc.Client("mongodb://localhost:27017")
 #Mongoc.ping(client)
 
-
 # tried
 # ] up Parsers
-
 
 # single qubit gates provided in example
 gate(::GateName"Π0") =
@@ -93,7 +94,6 @@ gate(::GateName"Π0") =
 gate(::GateName"Π1") =
   [0 0
    0 1]
-
 # new 2 qubit projectors
 gate(::GateName"Π00") =
 [0 0 0 0
@@ -147,6 +147,8 @@ function entanglemententropy(ψ₀::MPS, subsystem_divider::Int, use_constant_si
      bond = trunc(Int, N/subsystem_divider)
    end
 
+   singular_values_to_keep = 2^bond
+
    orthogonalize!(ψ_local, bond)
 
    #row_inds = (linkind(ψ_local, 1), siteind(ψ_local, bond))
@@ -156,7 +158,7 @@ function entanglemententropy(ψ₀::MPS, subsystem_divider::Int, use_constant_si
    # SVD failed, the matrix you were trying to SVD contains NaNs.
    #http://itensor.org/docs.cgi?page=book/itensor_factorizing&vers=cppv3
    #http://itensor.org/docs.cgi?vers=cppv3&page=tutorials/SVD
-   u, s, v = svd(ψ_local[bond], row_inds)
+   u, s, v = svd(ψ_local[bond], row_inds, mindim = singular_values_to_keep)
 
    S = 0.0
    sigma_rank = itensor_dim(s, 1)
@@ -175,18 +177,30 @@ rng = MersenneTwister(1234)
 experiment_id = repr(uuid4(rng).value)
 experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
-custom_label = "qiskit_cmpr_100sims_mr0_v2"
+custom_label = "exp_"*experiment_id
 Random.seed!(1234)
-num_qubit_space = 6:1:10 #6:1:10
-n_layers = 20
-n_simulations = 100
-measurement_rate_space = 0.0:0.10:0.10 #0.10:0.10:0.70
+num_qubit_space = 6:1:13 #6:1:10
+n_layers = 100
+n_simulations = 200
+measurement_rate_space = 0.0:0.10:0.90 #0.10:0.10:0.70
 simulation_space = 1:n_simulations
 layer_space = 1:n_layers
 
 subsystem_range_divider = 2
 use_constant_size = false
 constant_size = 3
+
+experiment_metadata_df = DataFrame(
+experiment_id = experiment_id,
+experiment_run_date = experiment_run_date,
+experiment_label = custom_label,
+num_qubit_space = join(["$x" for x in num_qubit_space], ","),
+n_layers = n_layers,
+n_simulations = n_simulations,
+measurement_rate_space = join(["$x" for x in measurement_rate_space], ","),
+subsystem_range_divider = subsystem_range_divider,
+do_single_qubit_projections = do_single_qubit_projections
+)
 
 do_single_qubit_projections = false
 qubit_index_space = nothing
@@ -208,7 +222,6 @@ for num_qubits in num_qubit_space
     qubit_index_space = 1:(num_qubits-1)
   end
 
-
   @printf("Preparing circuit_simulations for # Qubits = %.3i \n", num_qubits)
   circuit_simulations = []
   for this_sim in simulation_space
@@ -227,6 +240,7 @@ for num_qubits in num_qubit_space
     push!(circuit_simulations, layers)
   end
 
+  to = TimerOutput()
   # loop over projective measurement probability (per site)
   for measurement_rate in measurement_rate_space
 
@@ -335,10 +349,12 @@ for num_qubits in num_qubit_space
       simulation_df = [simulation_df; this_simulation_df]
 
   end # for measurement_rate in measurement_rate_space
+
+  @timeit to "num_qubits: "*"$num_qubits" 1+1
 end # for num_qubits in num_qubit_space
 
 #end # let scope
 
-XLSX.writetable(string(save_dir,custom_label, "von_neumann_entropy_df.xlsx"), von_neumann_entropy_df)
-
-XLSX.writetable(string(save_dir,custom_label, "simulation_df.xlsx"), simulation_df)
+XLSX.writetable(string(save_dir,custom_label, "_metadata_df.xlsx"), experiment_metadata_df)
+XLSX.writetable(string(save_dir,custom_label, "_simulation_stats_df.xlsx"), simulation_df)
+XLSX.writetable(string(save_dir,custom_label, "_entropy_tracking_df.xlsx"), von_neumann_entropy_df)
