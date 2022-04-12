@@ -64,6 +64,11 @@ To install [Julia](https://julialang.org/) on Mac:
 
 [Embed Julia in Python](https://towardsdatascience.com/how-to-embed-your-julia-code-into-python-to-speed-up-performance-e3ff0a94b6e)
 
+[How to call Julia code from Python
+](https://blog.esciencecenter.nl/how-to-call-julia-code-from-python-8589a56a98f2)
+
+[AWS Lambda Maker for Julia](https://juliahub.com/ui/Packages/LambdaMaker/oGeH6/0.1.0)
+
 To embed Julia in Python, need to [install PyJulia in Python](https://pyjulia.readthedocs.io/en/latest/installation.html#step-2-install-pyjulia):
 
 ```
@@ -122,6 +127,8 @@ Environment:
 [Genie is a full-stack web framework that provides a streamlined and efficient workflow for developing modern web applications. It builds on Julia's strengths (high-level, high-performance, dynamic, JIT compiled), exposing a rich API and a powerful toolset for productive web development.](https://github.com/GenieFramework/Genie.jl)
 
 [Deploying a Julia API with Genie](https://genieframework.github.io/Genie.jl/dev/guides/Simple_API_backend.html)
+
+[Genie Documentation](https://geniejl.readthedocs.io/en/latest/)
 
 
 Install PastaQ:

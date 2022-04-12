@@ -14,9 +14,9 @@ this_dir = os.getcwd()
 repo_root_dir = this_dir.split("qc-repo")[0] + 'qc-repo/'
 
 # works in python editor
-import julia
-from julia import Main
-Main.include("julia_test.jl")
+#import julia
+#from julia import Main
+#Main.include("julia_test.jl")
 
 #from julia.api import Julia
 #jl = Julia(compiled_modules=False)

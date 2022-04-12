@@ -1,5 +1,7 @@
 
 # https://github.com/GTorlai/PastaQ.jl
+# https://github.com/GTorlai/PastaQ.jl/blob/000b2524b92b5cb09295cfd09dcbb1914ddc0991/src/circuits/circuits.jl
+
 
 # this starter code was graciously added by ITensor and PastaQ maintainers
 # https://raw.githubusercontent.com/GTorlai/PastaQ.jl/master/examples/11_monitored_circuit.jl
@@ -36,23 +38,6 @@ Pkg.add("DataFrames")
 Pkg.add("CSV")
 
 Pkg.add("TimerOutputs")
-# https://github.com/felipenoris/Mongoc.jl
-# https://felipenoris.github.io/Mongoc.jl/stable/
-Pkg.add("Mongoc")
-
-# https://juliapackages.com/p/awss3
-
-# https://github.com/invenia/LibPQ.jl
-# https://juliapackages.com/p/libpq
-# using LibPQ: Connection
-# conn = Connection("""host = wrds-pgdata.wharton.upenn.edu port = port
-#                      user='username' password='password'
-#                      sslmode = 'require' dbname = wrds
-#                   """)
-# https://discourse.julialang.org/t/accessing-postgresql-via-julia/7031/5
-
-# s3
-# https://juliapackages.com/p/awss3
 
 using ITensors
 using ITensors: dim as itensor_dim
@@ -179,10 +164,10 @@ experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
 custom_label = "exp_"*experiment_id
 Random.seed!(1234)
-num_qubit_space = 6:1:13 #6:1:10
-n_layers = 100
-n_simulations = 200
-measurement_rate_space = 0.0:0.10:0.90 #0.10:0.10:0.70
+num_qubit_space = 100:100:200 #6:1:10
+n_layers = 50
+n_simulations = 1
+measurement_rate_space = 0.9:0.1:1.0 #0.10:0.10:0.70
 simulation_space = 1:n_simulations
 layer_space = 1:n_layers
 
@@ -226,6 +211,7 @@ for num_qubits in num_qubit_space
   circuit_simulations = []
   for this_sim in simulation_space
     layers = []
+    @printf("Preparing # Sim = %.3i \n", this_sim)
     for this_layer in layer_space
 
       this_unitary_layer = nothing
@@ -252,7 +238,7 @@ for num_qubits in num_qubit_space
 
          # this_circuit = circuit_simulations[1]
          N = nqubits(this_circuit)
-         #@printf("# Qubits = %.3i , # Qubits = %.3i  \n", num_qubits, N)
+         @printf("# Qubits = %.3i , # Qubits = %.3i  \n", num_qubits, N)
          # initialize state ψ = |000…⟩
          ψ = productstate(num_qubits)
 
@@ -352,8 +338,6 @@ for num_qubits in num_qubit_space
 
   @timeit to "num_qubits: "*"$num_qubits" 1+1
 end # for num_qubits in num_qubit_space
-
-#end # let scope
 
 XLSX.writetable(string(save_dir,custom_label, "_metadata_df.xlsx"), experiment_metadata_df)
 XLSX.writetable(string(save_dir,custom_label, "_simulation_stats_df.xlsx"), simulation_df)

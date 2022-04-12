@@ -43,6 +43,20 @@ n_layers = 20
 up_state = np.array([0,1])
 random_probs_2q_test_vector = [0.25, 0.25, 0.25, 0.25]
 
+import pickle 
+
+ 
+clifford_samples = int(1e5)
+clifford_dict = dict()
+for c in range(clifford_samples):
+    clifford_dict[c] = np.array(qi.random_clifford(num_qubits=2).to_operator())
+
+pickle.dump( clifford_dict, open( "clifford_operators.p", "wb" ) )
+
+example_clifford_index = np.random.choice(list(clifford_dict.keys()))
+
+clifford_dict[example_clifford_index]
+
 min_qubits = 6
 max_qubits = 10
 n_qubit_space = list(range(min_qubits,max_qubits+1)) # 16,32
@@ -328,8 +342,8 @@ plt.show()
 ################################################################
 ################################################################
 
-custom_label = "qiskit_cmpr_bigger_systems"
-julia_results_file_name = custom_label+"simulation_df.xlsx"
+custom_label = "exp_0x7a052949c1014ca39a7e43a2532b2fa8"
+julia_results_file_name = custom_label+"_simulation_stats_df.xlsx"
 julia_results_dir = os.getcwd() + "/out_data/"
 julia_path = julia_results_dir+julia_results_file_name
 julia_df_final_summary = pd.read_excel(julia_path)
