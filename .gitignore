@@ -11,3 +11,4 @@ __pycache__
 *.xlsx
 *.pdf
 *.p
+*.h5

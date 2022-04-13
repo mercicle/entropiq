@@ -1,44 +1,4 @@
 
-# https://github.com/GTorlai/PastaQ.jl
-# https://github.com/GTorlai/PastaQ.jl/blob/000b2524b92b5cb09295cfd09dcbb1914ddc0991/src/circuits/circuits.jl
-
-
-# this starter code was graciously added by ITensor and PastaQ maintainers
-# https://raw.githubusercontent.com/GTorlai/PastaQ.jl/master/examples/11_monitored_circuit.jl
-
-# Julia help docs
-# https://docs.julialang.org/en/v1/manual/style-guide/#bang-convention
-# https://docs.julialang.org/en/v1/manual/control-flow/
-# https://docs.julialang.org/en/v1/manual/variables-and-scoping/
-# https://sodocumentation.net/julia-lang
-
-# ρ = prime(ϕ, tags = "Site")
-# https://www.itensor.org/docs.cgi?vers=cppv2&page=tutorials/primes
-
-# DataFrames
-# https://github.com/bkamins/Julia-DataFrames-Tutorial/
-# https://www.ahsmart.com/pub/data-wrangling-with-data-frames-jl-cheat-sheet/
-#DataFrame(A=1:3, B=rand(3), C=randstring.([3,3,3]), fixed=1)
-
-#https://www.reddit.com/r/Julia/comments/9p3ttr/clearing_workspace_atom/
-# ctrl-j + ctrl-k will kill the current Julia process and start a new session.
-
-# Embed Julia into Python
-# https://towardsdatascience.com/how-to-embed-your-julia-code-into-python-to-speed-up-performance-e3ff0a94b6e
-# https://syl1.gitbook.io/julia-language-a-concise-tutorial/language-core/interfacing-julia-with-other-languages
-
-import Pkg
-
-Pkg.add("ITensors") # https://arxiv.org/pdf/2007.14822.pdf
-Pkg.add("PastaQ") # https://github.com/GTorlai/PastaQ.jl
-
-Pkg.add("StatsBase")
-Pkg.add("Distributions")
-Pkg.add("DataFrames")
-Pkg.add("CSV")
-
-Pkg.add("TimerOutputs")
-
 using ITensors
 using ITensors: dim as itensor_dim
 
@@ -60,17 +20,11 @@ using Dates
 import PastaQ: gate
 
 using TimerOutputs
+using Pickle
+
+using HDF5
 
 save_dir = string(@__DIR__, "/out_data/")
-
-#using Mongoc
-
-#import Mongoc
-#client = Mongoc.Client("mongodb://localhost:27017")
-#Mongoc.ping(client)
-
-# tried
-# ] up Parsers
 
 # single qubit gates provided in example
 gate(::GateName"Π0") =
@@ -100,6 +54,39 @@ gate(::GateName"Π11") =
  0 0 0 0
  0 0 0 0
  0 0 0 0]
+
+clifford_dict = Pickle.load(open(string(@__DIR__, "/clifford_operators.p")))
+clifford_dict[1]
+Pickle.npyload(clifford_dict[1])
+
+fid = h5open(string(@__DIR__, "/clifford_dict_v2.h5"), "r")
+obj = fid["clifford_0"]
+read_obj = read(obj)
+
+# obj "row and then col "
+# real: 0.5  0.5  0.5  0.5   0.0  0.0  0.0   0.0  0.0   0.0  0.0   0.0  -0.5  -0.5  0.5  0.5
+# imag: 0.0  0.0  0.0  0.0  -0.5  0.5  0.5  -0.5  0.5  -0.5  0.5  -0.5   0.0   0.0  0.0  0.0
+
+clifford_samples = Int(1e5)
+clifford_dict = Dict()
+for c in 1:1:clifford_samples
+    @printf("c = %.2i", c)
+    dataset_name = "clifford_$c"
+    obj = fid[dataset_name]
+    read_obj = read(obj)
+    this_clifford = [
+    read_obj[(1,1)...]+read_obj[(2,1)...]im read_obj[(1,2)...]+read_obj[(2,2)...]im read_obj[(1,3)...]+read_obj[(2,3)...]im read_obj[(1,4)...]+read_obj[(2,4)...]im
+    read_obj[(1,5)...]+read_obj[(2,5)...]im read_obj[(1,6)...]+read_obj[(2,6)...]im read_obj[(1,7)...]+read_obj[(2,7)...]im read_obj[(1,8)...]+read_obj[(2,8)...]im
+    read_obj[(1,9)...]+read_obj[(2,9)...]im read_obj[(1,10)...]+read_obj[(2,10)...]im read_obj[(1,11)...]+read_obj[(2,11)...]im read_obj[(1,12)...]+read_obj[(2,12)...]im
+    read_obj[(1,13)...]+read_obj[(2,13)...]im read_obj[(1,14)...]+read_obj[(2,14)...]im read_obj[(1,15)...]+read_obj[(2,15)...]im read_obj[(1,16)...]+read_obj[(2,16)...]im
+    ]
+    clifford_dict["$c"] = this_clifford
+
+end
+
+clifford_dict["1"]
+
+
 
  # Von Neumann entropy at center bond von_neumann_entropy
  # https://en.wikipedia.org/wiki/Von_Neumann_entropy
@@ -216,6 +203,8 @@ for num_qubits in num_qubit_space
 
       this_unitary_layer = nothing
       if isodd(this_layer)
+        #randomlayer:
+        #https://github.com/GTorlai/PastaQ.jl/blob/000b2524b92b5cb09295cfd09dcbb1914ddc0991/src/circuits/circuits.jl
         this_unitary_layer  = randomlayer("RandomUnitary",[(j,j+1) for j in 1:2:(num_qubits-1)])
       else
         this_unitary_layer = randomlayer("RandomUnitary",[(j,j+1) for j in 2:2:(num_qubits-1)])

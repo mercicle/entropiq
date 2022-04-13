@@ -55,7 +55,24 @@ pickle.dump( clifford_dict, open( "clifford_operators.p", "wb" ) )
 
 example_clifford_index = np.random.choice(list(clifford_dict.keys()))
 
-clifford_dict[example_clifford_index]
+example_clifford = clifford_dict[example_clifford_index]
+
+this_range = range(example_clifford.shape[0])
+#!pip3 install h5py
+
+import h5py
+hf = h5py.File("clifford_dict_v2.h5", "w")
+#dict_group = hf.create_group("dict_data")
+for k, v in clifford_dict.items():
+    example_clifford = clifford_dict[k]
+    this_list = []
+    for i in this_range:
+        for j in this_range:
+            this_list.append((np.real(example_clifford[i,j]), np.imag(example_clifford[i,j])))
+
+    hf.create_dataset("clifford_" + str(k), data = this_list)
+    #dict_group[str(k)] = v
+hf.close()
 
 min_qubits = 6
 max_qubits = 10
