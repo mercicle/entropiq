@@ -67,10 +67,10 @@ read_obj = read(obj)
 # real: 0.5  0.5  0.5  0.5   0.0  0.0  0.0   0.0  0.0   0.0  0.0   0.0  -0.5  -0.5  0.5  0.5
 # imag: 0.0  0.0  0.0  0.0  -0.5  0.5  0.5  -0.5  0.5  -0.5  0.5  -0.5   0.0   0.0  0.0  0.0
 
-clifford_samples = Int(1e5)
+clifford_samples = 99999
 clifford_dict = Dict()
 for c in 1:1:clifford_samples
-    @printf("c = %.2i", c)
+    #@printf("c = %.2i", c)
     dataset_name = "clifford_$c"
     obj = fid[dataset_name]
     read_obj = read(obj)
@@ -81,10 +81,23 @@ for c in 1:1:clifford_samples
     read_obj[(1,13)...]+read_obj[(2,13)...]im read_obj[(1,14)...]+read_obj[(2,14)...]im read_obj[(1,15)...]+read_obj[(2,15)...]im read_obj[(1,16)...]+read_obj[(2,16)...]im
     ]
     clifford_dict["$c"] = this_clifford
+    gate(::GateName"C$c") = this_clifford
+
+
+
+
 
 end
 
 clifford_dict["1"]
+
+clifford_index_string = wsample(1:clifford_samples)
+clifford_dict["$clifford_index_string"]
+
+num_qubits=4
+[(clifford_dict[(j + 1) / 2], [(j, j+1) for j in 1:2:(num_qubits-1)]
+[wsample(1:clifford_samples) for j in 1:1:(num_qubits-1)]
+clifford_dict["$clifford_index_string"]
 
 
 
@@ -151,16 +164,22 @@ experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
 custom_label = "exp_"*experiment_id
 Random.seed!(1234)
-num_qubit_space = 100:100:200 #6:1:10
+num_qubit_space = 6:1:10 #6:1:10
 n_layers = 50
-n_simulations = 1
-measurement_rate_space = 0.9:0.1:1.0 #0.10:0.10:0.70
+n_simulations = 50
+measurement_rate_space = 0.1:0.1:0.9 #0.10:0.10:0.70
 simulation_space = 1:n_simulations
 layer_space = 1:n_layers
 
 subsystem_range_divider = 2
 use_constant_size = false
 constant_size = 3
+
+do_single_qubit_projections = false
+qubit_index_space = nothing
+
+# Options: RandomUnitaries RandomCliffords
+gate_types_to_apply = "RandomCliffords"
 
 experiment_metadata_df = DataFrame(
 experiment_id = experiment_id,
@@ -171,11 +190,9 @@ n_layers = n_layers,
 n_simulations = n_simulations,
 measurement_rate_space = join(["$x" for x in measurement_rate_space], ","),
 subsystem_range_divider = subsystem_range_divider,
-do_single_qubit_projections = do_single_qubit_projections
+do_single_qubit_projections = do_single_qubit_projections,
+gate_types_to_apply = gate_types_to_apply
 )
-
-do_single_qubit_projections = false
-qubit_index_space = nothing
 
 projective_list = [ "00"; "01"; "10"; "11"]
 ψ_tracker = nothing
@@ -199,18 +216,42 @@ for num_qubits in num_qubit_space
   for this_sim in simulation_space
     layers = []
     @printf("Preparing # Sim = %.3i \n", this_sim)
-    for this_layer in layer_space
+    for this_layer_index in layer_space
 
-      this_unitary_layer = nothing
-      if isodd(this_layer)
-        #randomlayer:
-        #https://github.com/GTorlai/PastaQ.jl/blob/000b2524b92b5cb09295cfd09dcbb1914ddc0991/src/circuits/circuits.jl
-        this_unitary_layer  = randomlayer("RandomUnitary",[(j,j+1) for j in 1:2:(num_qubits-1)])
+      this_layer = nothing
+      if isodd(this_layer_index)
+
+        if gate_types_to_apply == "RandomUnitaries"
+
+          #randomlayer:
+          #https://github.com/GTorlai/PastaQ.jl/blob/000b2524b92b5cb09295cfd09dcbb1914ddc0991/src/circuits/circuits.jl
+          this_layer  = randomlayer("RandomUnitary",[(j,j+1) for j in 1:2:(num_qubits-1)])
+
+        elseif gate_types_to_apply == "RandomCliffords"
+
+          clifford_indices_list = [wsample(1:clifford_samples) for j in 1:1:(num_qubits-1)]
+          clifford_list = [clifford_dict["$j"] for j in clifford_indices_list]
+          this_layer  = [(clifford_list[j], (j,j+1)) for j in 1:2:(num_qubits-1)]
+
+        end
+
       else
-        this_unitary_layer = randomlayer("RandomUnitary",[(j,j+1) for j in 2:2:(num_qubits-1)])
+
+        if gate_types_to_apply == "RandomUnitaries"
+
+          this_layer = randomlayer("RandomUnitary",[(j,j+1) for j in 2:2:(num_qubits-1)])
+
+        elseif gate_types_to_apply == "RandomCliffords"
+
+          clifford_indices_list = [wsample(1:clifford_samples) for j in 1:1:(num_qubits-1)]
+          clifford_list = [clifford_dict["$j"] for j in clifford_indices_list]
+          this_layer  = [(clifford_list[j], (j,j+1)) for j in 2:2:(num_qubits-1)]
+
+        end
+
       end
 
-      push!(layers, this_unitary_layer)
+      push!(layers, this_layer)
     end
     push!(circuit_simulations, layers)
   end
@@ -235,7 +276,7 @@ for num_qubits in num_qubit_space
          for this_layer in this_circuit
 
            # this_layer = this_circuit[1]
-           ψ = runcircuit(ψ, this_layer; cutoff = 1e-8) # apply entangling unitary
+           ψ = runcircuit(ψ, this_layer; cutoff = 1e-8)
 
            # perform measurements
            for qubit_index in qubit_index_space
