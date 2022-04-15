@@ -57,7 +57,7 @@ if selected == "Quantum Lab Stats":
 
 elif selected == "Launch Simulation":
 
-    st.header('Create New Experimental Parameters')
+    st.header('Experiment Configuration')
 
     col1, col2 = st.columns([4,4])
 
@@ -65,12 +65,15 @@ elif selected == "Launch Simulation":
     experiment_run_date = date.today().strftime("%m-%d-%Y")
 
     with col1:
+
+        st.subheader('General Info')
         experiment_name = st.text_input('Experiment Name:')
         experiment_description = st.text_area('Experiment Description:')
 
+        st.subheader('Qubits, Layers, and Simulatons')
+
         num_qubit_space = st.slider('Number of Qubit Range',6, 50, (6, 10))
         #st.write('Qubit Range Selected:', num_qubit_space)
-
         qubit_step = st.number_input('Step By:',  1)
 
         #st.write('Final Simulation: ', str(num_qubit_space[0]) + " to " + str(num_qubit_space[1]) + " by " + str(int(qubit_step)))
@@ -78,11 +81,11 @@ elif selected == "Launch Simulation":
         num_qubit_space = list(range(num_qubit_space[0], num_qubit_space[1], int(qubit_step)))
 
         n_layers = st.number_input('Number of Layers:', 10)
-
         n_simulations = st.number_input('Number of Simulations:',100)
 
     with col2:
 
+        st.subheader('Gates and Measurements')
         operation_set_type = st.radio("Unary or Binary Gates and Projective Measurements:", ('Unary', 'Binary'))
 
         gate_type = st.radio("Gate Group to Apply:", ('Random Unitaries', 'Random Cliffords'))
@@ -92,14 +95,16 @@ elif selected == "Launch Simulation":
 
         mr_step = st.number_input('Step By Rate:',0.1)
 
-        measurement_rate_space = [x/10 for x in mr_values]
+        #st.write('Measurement Rate Range Selected:', list(mr_values))
+
+        measurement_rate_space = [x/10 for x in range(list(mr_values)[0], list(mr_values)[1] + int(10*mr_step), int(100*mr_step))]
         #st.write('Final Measurement Rate: ', str(measurement_rate_space[0]) + " to " + str(measurement_rate_space[1]) + " by " + str(mr_step))
 
         subsystem_range_divider = st.selectbox('Relative Sub-system Size for Reduced Density Matrix:',[0.50, 0.25, 0.20])
 
         st.write('Reduced Density Matrix Based on Tracing Over:', str(np.round(100*(1-subsystem_range_divider),0)) + '% of the system.')
 
-    st.subheader('Experiment Configuration Summary:')
+    st.subheader('Experiment Configuration Summary')
 
     action_col1, action_col2 = st.columns([0.05,1])
     with action_col1:
