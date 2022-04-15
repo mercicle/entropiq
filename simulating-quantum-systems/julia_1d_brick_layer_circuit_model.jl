@@ -1,30 +1,24 @@
 
 using ITensors
 using ITensors: dim as itensor_dim
-
 using PastaQ
+import PastaQ: gate
 
 using Random
 using Printf
 using LinearAlgebra
-using StatsBase: mean, sem
-
+using StatsBase: mean, sem, sample as random_sample
 using Distributions
-
 using DataFrames
 using XLSX
-
 using UUIDs
 using Dates
-
-import PastaQ: gate
-
 using TimerOutputs
 using Pickle
-
 using HDF5
 
 save_dir = string(@__DIR__, "/out_data/")
+include("entropy_function.jl")
 
 # single qubit gates provided in example
 gate(::GateName"Π0") =
@@ -55,22 +49,10 @@ gate(::GateName"Π11") =
  0 0 0 0
  0 0 0 0]
 
-clifford_dict = Pickle.load(open(string(@__DIR__, "/clifford_operators.p")))
-clifford_dict[1]
-Pickle.npyload(clifford_dict[1])
-
 fid = h5open(string(@__DIR__, "/clifford_dict_v2.h5"), "r")
-obj = fid["clifford_0"]
-read_obj = read(obj)
-
-# obj "row and then col "
-# real: 0.5  0.5  0.5  0.5   0.0  0.0  0.0   0.0  0.0   0.0  0.0   0.0  -0.5  -0.5  0.5  0.5
-# imag: 0.0  0.0  0.0  0.0  -0.5  0.5  0.5  -0.5  0.5  -0.5  0.5  -0.5   0.0   0.0  0.0  0.0
-
 clifford_samples = 99999
 clifford_dict = Dict()
 for c in 1:1:clifford_samples
-    #@printf("c = %.2i", c)
     dataset_name = "clifford_$c"
     obj = fid[dataset_name]
     read_obj = read(obj)
@@ -81,91 +63,23 @@ for c in 1:1:clifford_samples
     read_obj[(1,13)...]+read_obj[(2,13)...]im read_obj[(1,14)...]+read_obj[(2,14)...]im read_obj[(1,15)...]+read_obj[(2,15)...]im read_obj[(1,16)...]+read_obj[(2,16)...]im
     ]
     clifford_dict["$c"] = this_clifford
-    gate(::GateName"C$c") = this_clifford
-
-
-
-
-
+    #gate(::GateName"C$c") = this_clifford
 end
 
-clifford_dict["1"]
-
-clifford_index_string = wsample(1:clifford_samples)
-clifford_dict["$clifford_index_string"]
-
-num_qubits=4
-[(clifford_dict[(j + 1) / 2], [(j, j+1) for j in 1:2:(num_qubits-1)]
-[wsample(1:clifford_samples) for j in 1:1:(num_qubits-1)]
-clifford_dict["$clifford_index_string"]
-
-
-
- # Von Neumann entropy at center bond von_neumann_entropy
- # https://en.wikipedia.org/wiki/Von_Neumann_entropy
- # http://www.scholarpedia.org/article/Quantum_entropies
- # "von Neumann entropy is a limiting case of the Rényi entropy" lim α→1 Sα(ρ) = S(ρ)
- # Given a family of entropies {Sα(ρ)}α, where α is some index, the entropies are monotonic in α∈ℝ
-
-function entanglemententropy(ψ₀::MPS, subsystem_divider::Int, use_constant_size::Bool, constant_size::Int)
-
-   # https://qiskit.org/documentation/_modules/qiskit/quantum_info/states/utils.html#partial_trace
-   # https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#reduced
-
-   # http://itensor.org/docs.cgi?vers=cppv3&page=formulas/mps_two_rdm
-
-   # "Among physicists, this is often called "tracing out" or "tracing over" W to leave only an operator on V in the context where W and V are Hilbert spaces associated with quantum systems (see below)."
-   # https://en.wikipedia.org/wiki/Partial_trace#:~:text=In%20linear%20algebra%20and%20functional,is%20an%20operator%2Dvalued%20function.
-
-   # http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf
-
-   # ψ₀ = ψ
-   # subsystem_divider = subsystem_range_divider
-   # use_constant_size
-   # constant_size
-   ψ_local = normalize!(copy(ψ₀))
-   N = length(ψ_local)
-
-   if use_constant_size
-     bond = constant_size
-   else
-     bond = trunc(Int, N/subsystem_divider)
-   end
-
-   singular_values_to_keep = 2^bond
-
-   orthogonalize!(ψ_local, bond)
-
-   #row_inds = (linkind(ψ_local, 1), siteind(ψ_local, bond))
-   row_inds = (linkind(ψ_local, bond - 1), siteind(ψ_local, bond))
-
-   # isnan
-   # SVD failed, the matrix you were trying to SVD contains NaNs.
-   #http://itensor.org/docs.cgi?page=book/itensor_factorizing&vers=cppv3
-   #http://itensor.org/docs.cgi?vers=cppv3&page=tutorials/SVD
-   u, s, v = svd(ψ_local[bond], row_inds, mindim = singular_values_to_keep)
-
-   S = 0.0
-   sigma_rank = itensor_dim(s, 1)
-   entropy_df = DataFrame()
-   for n in 1:sigma_rank
-     λ = s[n, n]^2
-     entropy_contribution = - λ * log(λ + 1e-20)
-     S = S + entropy_contribution
-     this_df = DataFrame(num_qubits = N, bond_index = bond, ij= n, eigenvalue = λ, entropy_contribution = entropy_contribution)
-     entropy_df = [entropy_df; this_df]
-   end
-   return Dict("S" => S, "entropy_df" => entropy_df)
+do_test = false
+if do_test
+  clifford_dict["1"]
+  clifford_index_string = random_sample(1:clifford_samples)
+  clifford_dict["$clifford_index_string"]
 end
 
 rng = MersenneTwister(1234)
 experiment_id = repr(uuid4(rng).value)
 experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
-
-custom_label = "exp_"*experiment_id
+experiment_label = "exp_"*experiment_id
 Random.seed!(1234)
 num_qubit_space = 6:1:10 #6:1:10
-n_layers = 50
+n_layers = 20
 n_simulations = 50
 measurement_rate_space = 0.1:0.1:0.9 #0.10:0.10:0.70
 simulation_space = 1:n_simulations
@@ -184,7 +98,7 @@ gate_types_to_apply = "RandomCliffords"
 experiment_metadata_df = DataFrame(
 experiment_id = experiment_id,
 experiment_run_date = experiment_run_date,
-experiment_label = custom_label,
+experiment_label = experiment_label,
 num_qubit_space = join(["$x" for x in num_qubit_space], ","),
 n_layers = n_layers,
 n_simulations = n_simulations,
@@ -196,13 +110,15 @@ gate_types_to_apply = gate_types_to_apply
 
 projective_list = [ "00"; "01"; "10"; "11"]
 ψ_tracker = nothing
+this_layer = nothing
+this_circuit = nothing
 simulation_df = DataFrame()
 von_neumann_entropy_df = DataFrame()
 von_neumann_entropies = []
 
 for num_qubits in num_qubit_space
 
-  # num_qubits=10
+  # num_qubits=6
   @printf("# Qubits = %.3i \n", num_qubits)
 
   if do_single_qubit_projections
@@ -215,7 +131,7 @@ for num_qubits in num_qubit_space
   circuit_simulations = []
   for this_sim in simulation_space
     layers = []
-    @printf("Preparing # Sim = %.3i \n", this_sim)
+    #@printf("Preparing # Sim = %.3i \n", this_sim)
     for this_layer_index in layer_space
 
       this_layer = nothing
@@ -229,9 +145,9 @@ for num_qubits in num_qubit_space
 
         elseif gate_types_to_apply == "RandomCliffords"
 
-          clifford_indices_list = [wsample(1:clifford_samples) for j in 1:1:(num_qubits-1)]
+          clifford_indices_list = [random_sample(1:clifford_samples) for j in 1:1:(num_qubits-1)]
           clifford_list = [clifford_dict["$j"] for j in clifford_indices_list]
-          this_layer  = [(clifford_list[j], (j,j+1)) for j in 1:2:(num_qubits-1)]
+          this_layer  = [(clifford_list[j], j,j+1) for j in 1:2:(num_qubits-1)]
 
         end
 
@@ -243,9 +159,9 @@ for num_qubits in num_qubit_space
 
         elseif gate_types_to_apply == "RandomCliffords"
 
-          clifford_indices_list = [wsample(1:clifford_samples) for j in 1:1:(num_qubits-1)]
+          clifford_indices_list = [random_sample(1:clifford_samples) for j in 1:1:(num_qubits-1)]
           clifford_list = [clifford_dict["$j"] for j in clifford_indices_list]
-          this_layer  = [(clifford_list[j], (j,j+1)) for j in 2:2:(num_qubits-1)]
+          this_layer  = [(clifford_list[j], j,j+1) for j in 2:2:(num_qubits-1)]
 
         end
 
@@ -266,16 +182,18 @@ for num_qubits in num_qubit_space
 
       for this_circuit in circuit_simulations
 
-         # this_circuit = circuit_simulations[1]
+         # this_circuit = circuit_simulations[8]
          N = nqubits(this_circuit)
-         @printf("# Qubits = %.3i , # Qubits = %.3i  \n", num_qubits, N)
+         #@printf("# Qubits = %.3i , # Qubits = %.3i  \n", num_qubits, N)
          # initialize state ψ = |000…⟩
          ψ = productstate(num_qubits)
 
          this_layer_index = 1
          for this_layer in this_circuit
 
-           # this_layer = this_circuit[1]
+           @printf("# Qubits: %.3i , Measurement Rate: %.2f, Circuit Sim Index: %.3i, Layer Index: %.3i \n", num_qubits, measurement_rate, this_circuit_index, this_layer_index)
+
+           # this_layer = this_circuit[41]
            ψ = runcircuit(ψ, this_layer; cutoff = 1e-8)
 
            # perform measurements
@@ -320,7 +238,6 @@ for num_qubits in num_qubit_space
                end # if measurement_rate > rand()
 
              end
-             #@printf("# Qubits: %.3i , Measurement Rate: %.2f, Circuit Sim Index: %.3i, Layer Index: %.3i, Qubit Index: %.3i   \n", num_qubits, measurement_rate, this_circuit_index, this_layer_index, qubit_index)
 
            end # for qubit_index in qubit_index_space
 
@@ -342,10 +259,6 @@ for num_qubits in num_qubit_space
          this_von_neumann_entropy_df = this_von_neumann_entropy_dict["entropy_df"]
          this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :measurement_rate => measurement_rate)
          this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :simulation_number => this_circuit_index)
-
-         #this_von_neumann_entropy_df[!,"num_qubits"] = num_qubits
-         #this_von_neumann_entropy_df[:,"measurement_rate"] .= measurement_rate
-         #this_von_neumann_entropy_df[:,"simulation_number"] .= this_circuit_index
 
          von_neumann_entropy_df = [von_neumann_entropy_df; this_von_neumann_entropy_df]
 
@@ -369,6 +282,6 @@ for num_qubits in num_qubit_space
   @timeit to "num_qubits: "*"$num_qubits" 1+1
 end # for num_qubits in num_qubit_space
 
-XLSX.writetable(string(save_dir,custom_label, "_metadata_df.xlsx"), experiment_metadata_df)
-XLSX.writetable(string(save_dir,custom_label, "_simulation_stats_df.xlsx"), simulation_df)
-XLSX.writetable(string(save_dir,custom_label, "_entropy_tracking_df.xlsx"), von_neumann_entropy_df)
+XLSX.writetable(string(save_dir,experiment_label, "_metadata_df.xlsx"), experiment_metadata_df)
+XLSX.writetable(string(save_dir,experiment_label, "_simulation_stats_df.xlsx"), simulation_df)
+XLSX.writetable(string(save_dir,experiment_label, "_entropy_tracking_df.xlsx"), von_neumann_entropy_df)

@@ -62,7 +62,6 @@ this_range = range(example_clifford.shape[0])
 
 import h5py
 hf = h5py.File("clifford_dict_v2.h5", "w")
-#dict_group = hf.create_group("dict_data")
 for k, v in clifford_dict.items():
     example_clifford = clifford_dict[k]
     this_list = []
@@ -71,7 +70,6 @@ for k, v in clifford_dict.items():
             this_list.append((np.real(example_clifford[i,j]), np.imag(example_clifford[i,j])))
 
     hf.create_dataset("clifford_" + str(k), data = this_list)
-    #dict_group[str(k)] = v
 hf.close()
 
 min_qubits = 6
