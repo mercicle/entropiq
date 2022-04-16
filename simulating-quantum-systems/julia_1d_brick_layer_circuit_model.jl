@@ -20,6 +20,25 @@ using HDF5
 save_dir = string(@__DIR__, "/out_data/")
 include("entropy_function.jl")
 
+using DotEnv
+cnfg = DotEnv.config(path=string(@__DIR__, "/db_creds.env"))
+
+db_connection_string = string(" host = ", cnfg["POSTGRES_DB_URL"],
+                              " port = ", cnfg["POSTGRES_DB_PORT"],
+                              " user = ", cnfg["POSTGRES_DB_USERNAME"],
+                              " password = ",cnfg["POSTGRES_DB_PASSWORD"],
+                              " sslmode = 'require'",
+                              " dbname = ", cnfg["POSTGRES_DB_NAME"]
+                              )
+
+using LibPQ;
+#julia libpq could not translate host name "url" to address: nodename nor servname provided
+
+conn = LibPQ.Connection(db_connection_string)
+
+result = LibPQ.execute(conn,"create schema quantumlab_experiments";throw_error=false)
+
+
 # single qubit gates provided in example
 gate(::GateName"Π0") =
   [1 0
@@ -281,6 +300,8 @@ for num_qubits in num_qubit_space
 
   @timeit to "num_qubits: "*"$num_qubits" 1+1
 end # for num_qubits in num_qubit_space
+
+result = LibPQ.execute(conn,"create schema quantumlab_experiments;")
 
 XLSX.writetable(string(save_dir,experiment_label, "_metadata_df.xlsx"), experiment_metadata_df)
 XLSX.writetable(string(save_dir,experiment_label, "_simulation_stats_df.xlsx"), simulation_df)

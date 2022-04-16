@@ -90,7 +90,7 @@ elif selected == "Launch Simulation":
 
         gate_type = st.radio("Gate Group to Apply:", ('Random Unitaries', 'Random Cliffords'))
 
-        mr_values = st.slider('Measurement Rate Range',0, 100, (0, 80))
+        mr_values = st.slider('Measurement Rate Range (%)',0, 100, (0, 80))
         #st.write('Measurement Rate Range Selected:', mr_values)
 
         mr_step = st.number_input('Step By Rate:',0.1)

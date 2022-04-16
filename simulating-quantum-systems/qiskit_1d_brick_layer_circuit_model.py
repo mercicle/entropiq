@@ -2,7 +2,7 @@
 #############################################################################################
 ## Using Qiskit to model 1d Brick Layer Many-body Entanglement Transition Simulation       ##
 #############################################################################################
-import os, timeit
+import os, sys, timeit
 import numpy as np
 
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, Aer
@@ -386,3 +386,4 @@ julia_path = julia_results_dir+julia_results_file_name
 von_neumann_entropy_df = pd.read_excel(julia_path)
 
 von_neumann_entropy_df_eigen1 = von_neumann_entropy_df[von_neumann_entropy_df.eigenvalue==1]
+

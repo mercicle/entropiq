@@ -327,3 +327,30 @@ https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
 [Qiskit Density Matrix](https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html)
 
 [Qiskit Dynamics](https://medium.com/qiskit/introducing-qiskit-dynamics-a-new-qiskit-module-for-simulating-quantum-systems-afe004f5b92b)
+
+# Julia Packages
+
+- [ITensor](https://arxiv.org/pdf/2007.14822.pdf)
+- [PastaQ](https://github.com/GTorlai/PastaQ.jl)
+  
+## Starter code was graciously added by ITensor and PastaQ maintainers
+- https://raw.githubusercontent.com/GTorlai/PastaQ.jl/master/examples/11_monitored_circuit.jl
+
+## Julia help docs
+- https://docs.julialang.org/en/v1/manual/style-guide/#bang-convention
+- https://docs.julialang.org/en/v1/manual/control-flow/
+- https://docs.julialang.org/en/v1/manual/variables-and-scoping/
+- https://sodocumentation.net/julia-lang
+
+- `ρ = prime(ϕ, tags = "Site")`
+  - https://www.itensor.org/docs.cgi?vers=cppv2&page=tutorials/primes
+
+# DataFrames
+- https://github.com/bkamins/Julia-DataFrames-Tutorial/
+- https://www.ahsmart.com/pub/data-wrangling-with-data-frames-jl-cheat-sheet/
+
+- https://www.reddit.com/r/Julia/comments/9p3ttr/clearing_workspace_atom/
+
+## Embed Julia into Python
+- https://towardsdatascience.com/how-to-embed-your-julia-code-into-python-to-speed-up-performance-e3ff0a94b6e
+- https://syl1.gitbook.io/julia-language-a-concise-tutorial/language-core/interfacing-julia-with-other-languages
