@@ -12,3 +12,5 @@ Pkg.add("TimerOutputs")
 Pkg.add("HDF5")
 Pkg.add("LibPQ")
 Pkg.add("XLSX")
+
+Pkg.add("Genie")
