@@ -16,10 +16,13 @@ this_dir = os.getcwd()
 repo_root_dir = this_dir.split("qc-repo")[0] + 'qc-repo/'
 
 from helpers.data_helpers import *
-from app_parms import *
+from _app_parms import *
 
-load_environ(os.getcwd()+"/db_creds.env")
+creds_path = os.getcwd() + "/db_creds.env"
+load_environ(creds_path)
+
 postgres_conn = get_postgres_conn()
+
 experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiments_metadata_table_name, schema_name = core_schema)
 
 st.set_page_config(layout = "wide")
@@ -33,12 +36,18 @@ if selected == "Quantum Lab Stats":
     col1, col2 = st.columns([4,4])
 
     n_experiments = experiment_metadata_df.shape[0]
-    ave_runtime  = experiment_metadata_df['runtime'].mean()
+    ave_layers  = experiment_metadata_df['n_layers'].mean()
+    ave_simulations  = experiment_metadata_df['n_simulations'].mean()
+
+    last_run_date  = experiment_metadata_df['experiment_run_date'].max()
 
     with col1:
-        hc.info_card(title='# of Experiments', content = str(n_experiments), sentiment='good')
+        hc.info_card(title='# of Experiments', content = str(int(n_experiments)), sentiment='good')
+        hc.info_card(title='Last Run Date', content = str(last_run_date), sentiment='good')
+
     with col2:
-        hc.info_card(title='Average Runtime', content = str(ave_runtime), sentiment='good')
+        hc.info_card(title='Average Layers', content = str(int(ave_layers)), sentiment='good')
+        hc.info_card(title='Average Simulations', content = str(ave_simulations), sentiment='good')
 
 elif selected == "Launch Simulation":
 
@@ -101,6 +110,10 @@ elif selected == "Launch Simulation":
 
     experiment_metadata_df_preview = this_experiment_metadata_df.T
     experiment_metadata_df_preview[0] = experiment_metadata_df_preview[0].astype(str)
+    experiment_metadata_df_preview['Parameter'] = experiment_metadata_df_preview.index
+    experiment_metadata_df_preview.reset_index(inplace=True, drop=True)
+    experiment_metadata_df_preview.rename(columns={0:'Value'}, inplace=True)
+    experiment_metadata_df_preview = experiment_metadata_df_preview[['Parameter', 'Value']]
     st.table(experiment_metadata_df_preview)
 
     #experiment_metadata_df_preview['Column'] = experiment_metadata_df_preview.index

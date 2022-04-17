@@ -3,6 +3,8 @@ import pandas as pd
 import requests
 import psycopg2
 from sqlalchemy import create_engine
+import requests
+import re
 
 def load_environ(environ_path):
     with open(environ_path) as f:
@@ -16,23 +18,26 @@ def load_environ(environ_path):
 
 def get_postgres_conn():
     conn_string = "postgresql://" + \
-                os.getenv("POSTGRES_DB_USERNAME") + \
-                ":" + \
-                os.getenv("POSTGRES_DB_PASSWORD") + \
-                "@" + \
-                os.getenv("POSTGRES_DB_URL") + \
-                ":" + \
-                os.getenv("POSTGRES_DB_PORT") + \
-                "/" + \
-                os.getenv("POSTGRES_DB_NAME")
+    os.getenv("POSTGRES_DB_USERNAME") + \
+    ":" + \
+    os.getenv("POSTGRES_DB_PASSWORD") + \
+    "@" + \
+    os.getenv("POSTGRES_DB_URL") + \
+    ":" + \
+    os.getenv("POSTGRES_DB_PORT") + \
+    "/" + \
+    os.getenv("POSTGRES_DB_NAME")
+
     engine = create_engine(conn_string)
+
     try:
-       conn = engine.connect()
-       results = connection.execute(sql_string_get_version).fetchone()
-       print("Connected to version: {}".format(results[0]))
+        conn = engine.connect()
+        results = conn.execute("select version();").fetchone()
+        print("Connected to version: {}".format(results[0]))
     except:
         conn = None
         print("Unable to establish a connection ¯\\_(ツ)_//¯")
+
     return conn
 
 def write_table(conn, df, table_name, schema_name, chunk_size=int(1e3), append=False):
