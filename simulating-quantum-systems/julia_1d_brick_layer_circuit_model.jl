@@ -36,7 +36,7 @@ using LibPQ;
 
 conn = LibPQ.Connection(db_connection_string)
 
-result = LibPQ.execute(conn,"create schema quantumlab_experiments";throw_error=false)
+#result = LibPQ.execute(conn,"create schema quantumlab_experiments";throw_error=false)
 
 
 # single qubit gates provided in example
@@ -97,10 +97,10 @@ experiment_id = repr(uuid4(rng).value)
 experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 experiment_label = "exp_"*experiment_id
 Random.seed!(1234)
-num_qubit_space = 6:1:10 #6:1:10
-n_layers = 20
-n_simulations = 50
-measurement_rate_space = 0.1:0.1:0.9 #0.10:0.10:0.70
+num_qubit_space = 6:1:9 #6:1:10
+n_layers = 10
+n_simulations = 20
+measurement_rate_space = 0.0:0.1:0.9 #0.10:0.10:0.70
 simulation_space = 1:n_simulations
 layer_space = 1:n_layers
 
@@ -112,7 +112,7 @@ do_single_qubit_projections = false
 qubit_index_space = nothing
 
 # Options: RandomUnitaries RandomCliffords
-gate_types_to_apply = "RandomCliffords"
+gate_types_to_apply = "RandomUnitaries"
 
 experiment_metadata_df = DataFrame(
 experiment_id = experiment_id,
@@ -301,8 +301,34 @@ for num_qubits in num_qubit_space
   @timeit to "num_qubits: "*"$num_qubits" 1+1
 end # for num_qubits in num_qubit_space
 
-result = LibPQ.execute(conn,"create schema quantumlab_experiments;")
+create_experimenta_metadata_string = "DROP TABLE IF EXISTS quantumlab_experiments._experiments_metadata; CREATE TABLE IF NOT EXISTS quantumlab_experiments._experiments_metadata (experiment_id TEXT, experiment_run_date TEXT, experiment_label TEXT, num_qubit_space TEXT, n_layers INT, n_simulations INT, measurement_rate_space TEXT, subsystem_range_divider TEXT, do_single_qubit_projections Bool, gate_types_to_apply TEXT)";
+result = execute(conn, create_experimenta_metadata_string);
 
+LibPQ.load!(
+    (experiment_id = experiment_metadata_df.experiment_id,
+    experiment_run_date = experiment_metadata_df.experiment_run_date,
+    experiment_label = experiment_metadata_df.experiment_label,
+    num_qubit_space = experiment_metadata_df.num_qubit_space,
+    n_layers = experiment_metadata_df.n_layers,
+    n_simulations = experiment_metadata_df.n_simulations,
+    measurement_rate_space = experiment_metadata_df.measurement_rate_space,
+    subsystem_range_divider = experiment_metadata_df.subsystem_range_divider,
+    do_single_qubit_projections = experiment_metadata_df.do_single_qubit_projections,
+    gate_types_to_apply = experiment_metadata_df.gate_types_to_apply
+    ),
+    conn,
+    "INSERT INTO quantumlab_experiments._experiments_metadata (experiment_id, experiment_run_date, experiment_label, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, do_single_qubit_projections, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10);"
+)
+execute(conn, "COMMIT;")
+
+
+LibPQ.load!(
+    (
+    ),
+    conn,
+    "INSERT INTO quantumlab_experiments._experiments_metadata () VALUES(\$1, ));"
+)
+execute(conn, "COMMIT;")
 XLSX.writetable(string(save_dir,experiment_label, "_metadata_df.xlsx"), experiment_metadata_df)
 XLSX.writetable(string(save_dir,experiment_label, "_simulation_stats_df.xlsx"), simulation_df)
 XLSX.writetable(string(save_dir,experiment_label, "_entropy_tracking_df.xlsx"), von_neumann_entropy_df)
