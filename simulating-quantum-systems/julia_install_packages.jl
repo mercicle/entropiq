@@ -14,3 +14,5 @@ Pkg.add("LibPQ")
 Pkg.add("XLSX")
 
 Pkg.add("Genie")
+
+Pkg.add("TableView")

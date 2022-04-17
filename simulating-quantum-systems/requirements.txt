@@ -7,3 +7,4 @@ streamlit==1.7.0
 streamlit-option-menu==0.3.2
 hydralit-components==1.0.9
 psycopg2-binary==2.9.3
+h5py==3.2.1

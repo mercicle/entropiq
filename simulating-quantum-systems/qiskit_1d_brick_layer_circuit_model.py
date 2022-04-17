@@ -43,35 +43,6 @@ n_layers = 20
 up_state = np.array([0,1])
 random_probs_2q_test_vector = [0.25, 0.25, 0.25, 0.25]
 
-import pickle 
-
- 
-clifford_samples = int(1e5)
-clifford_dict = dict()
-for c in range(clifford_samples):
-    clifford_dict[c] = np.array(qi.random_clifford(num_qubits=2).to_operator())
-
-pickle.dump( clifford_dict, open( "clifford_operators.p", "wb" ) )
-
-example_clifford_index = np.random.choice(list(clifford_dict.keys()))
-
-example_clifford = clifford_dict[example_clifford_index]
-
-this_range = range(example_clifford.shape[0])
-#!pip3 install h5py
-
-import h5py
-hf = h5py.File("clifford_dict_v2.h5", "w")
-for k, v in clifford_dict.items():
-    example_clifford = clifford_dict[k]
-    this_list = []
-    for i in this_range:
-        for j in this_range:
-            this_list.append((np.real(example_clifford[i,j]), np.imag(example_clifford[i,j])))
-
-    hf.create_dataset("clifford_" + str(k), data = this_list)
-hf.close()
-
 min_qubits = 6
 max_qubits = 10
 n_qubit_space = list(range(min_qubits,max_qubits+1)) # 16,32
