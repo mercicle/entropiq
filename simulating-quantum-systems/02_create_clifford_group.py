@@ -5,7 +5,6 @@ import numpy as np
 import h5py
 import qiskit.quantum_info as qi
 
-
 clifford_samples = int(1e5)
 clifford_dict = dict()
 for c in range(clifford_samples):

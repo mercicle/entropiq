@@ -339,7 +339,3 @@ LibPQ.load!(
 execute(conn, "COMMIT;")
 
 TableView.showtable(von_neumann_entropy_df)
-
-#XLSX.writetable(string(save_dir,experiment_label, "_metadata_df.xlsx"), experiment_metadata_df)
-#XLSX.writetable(string(save_dir,experiment_label, "_simulation_stats_df.xlsx"), simulation_df)
-#XLSX.writetable(string(save_dir,experiment_label, "_entropy_tracking_df.xlsx"), von_neumann_entropy_df)

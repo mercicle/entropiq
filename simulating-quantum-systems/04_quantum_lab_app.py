@@ -15,27 +15,12 @@ import hydralit_components as hc
 this_dir = os.getcwd()
 repo_root_dir = this_dir.split("qc-repo")[0] + 'qc-repo/'
 
-# works in python editor
-#import julia
-#from julia import Main
-#Main.include("julia_test.jl")
+from helpers.data_helpers import *
+from app_parms import *
 
-#from julia.api import Julia
-#jl = Julia(compiled_modules=False)
-
-#julia_test_path = """include(\""""+ this_dir + """/julia_test.jl\"""" +")"""
-#jl.eval(julia_test_path)
-
-
-#from helpers.data_helpers import *
-#from helpers.analysis_helpers import *
-#from app_parms import *
-
-#todo: implement
-#db_conn = get_db_conn()
-#experiment_metadata_df = get_table(conn = db_conn, table_name = experiments_metadata_table_name, schema_name = core_schema)
-
-experiment_metadata_df = pd.DataFrame.from_dict({'experiment_id':[123], 'runtime':[1.0]})
+load_environ(os.getcwd()+"/db_creds.env")
+postgres_conn = get_postgres_conn()
+experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiments_metadata_table_name, schema_name = core_schema)
 
 st.set_page_config(layout = "wide")
 
@@ -73,10 +58,7 @@ elif selected == "Launch Simulation":
         st.subheader('Qubits, Layers, and Simulatons')
 
         num_qubit_space = st.slider('Number of Qubit Range',6, 50, (6, 10))
-        #st.write('Qubit Range Selected:', num_qubit_space)
         qubit_step = st.number_input('Step By:',  1)
-
-        #st.write('Final Simulation: ', str(num_qubit_space[0]) + " to " + str(num_qubit_space[1]) + " by " + str(int(qubit_step)))
 
         num_qubit_space = list(range(num_qubit_space[0], num_qubit_space[1], int(qubit_step)))
 
@@ -87,25 +69,16 @@ elif selected == "Launch Simulation":
 
         st.subheader('Gates and Measurements')
         operation_set_type = st.radio("Unary or Binary Gates and Projective Measurements:", ('Unary', 'Binary'))
-
         gate_type = st.radio("Gate Group to Apply:", ('Random Unitaries', 'Random Cliffords'))
-
         mr_values = st.slider('Measurement Rate Range (%)',0, 100, (0, 80))
-        #st.write('Measurement Rate Range Selected:', mr_values)
-
         mr_step = st.number_input('Step By Rate:',0.1)
 
-        #st.write('Measurement Rate Range Selected:', list(mr_values))
-
         measurement_rate_space = [x/10 for x in range(list(mr_values)[0], list(mr_values)[1] + int(10*mr_step), int(100*mr_step))]
-        #st.write('Final Measurement Rate: ', str(measurement_rate_space[0]) + " to " + str(measurement_rate_space[1]) + " by " + str(mr_step))
 
         subsystem_range_divider = st.selectbox('Relative Sub-system Size for Reduced Density Matrix:',[0.50, 0.25, 0.20])
-
         st.write('Reduced Density Matrix Based on Tracing Over:', str(np.round(100*(1-subsystem_range_divider),0)) + '% of the system.')
 
     st.subheader('Experiment Configuration Summary')
-
     action_col1, action_col2 = st.columns([0.05,1])
     with action_col1:
         if st.button('Save'):
