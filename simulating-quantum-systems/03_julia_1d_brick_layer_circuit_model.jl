@@ -23,7 +23,7 @@ using TableView
 using Tables
 
 save_dir = string(@__DIR__, "/out_data/")
-include("entropy_function.jl")
+include("helpers/entropy_function.jl")
 include("03_load_gates.jl")
 
 cnfg = DotEnv.config(path=string(@__DIR__, "/db_creds.env"))
@@ -37,8 +37,8 @@ db_connection_string = string(" host = ", cnfg["POSTGRES_DB_URL"],
 conn = LibPQ.Connection(db_connection_string)
 
 run_from_script = true
-experiment_id, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply = [nothing for _ = 1:11]
-experiment_id = "5a46774a-bf1d-11ec-a8c3-328140767e06"
+experiment_id, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, layer_space, simulation_space, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply = [nothing for _ = 1:13]
+experiment_id = "0ed86a8c-bf24-11ec-80b0-328140767e06"
 
 if run_from_script
 
@@ -56,7 +56,7 @@ if run_from_script
   layer_space = 1:n_layers
 
   operation_type_to_apply = "Binary" # 'Unary', 'Binary'
-  gate_types_to_apply = "RandomUnitaries" # Options: RandomUnitaries RandomCliffords
+  gate_types_to_apply = "Random Unitaries" # Options: Random Unitaries Random Cliffords
 
   subsystem_range_divider = 2
   use_constant_size = false
@@ -72,7 +72,7 @@ if run_from_script
                                      measurement_rate_space = join(["$x" for x in measurement_rate_space], ","),
                                      use_constant_size = use_constant_size,
                                      constant_size = constant_size,
-                                     subsystem_range_divider = subsystem_range_divider,
+                                     subsystem_range_divider = 1/subsystem_range_divider,
                                      operation_type_to_apply = operation_type_to_apply,
                                      gate_types_to_apply = gate_types_to_apply
                                      )
@@ -87,12 +87,14 @@ if run_from_script
       n_layers = experiment_metadata_df.n_layers,
       n_simulations = experiment_metadata_df.n_simulations,
       measurement_rate_space = experiment_metadata_df.measurement_rate_space,
+      use_constant_size = experiment_metadata_df.use_constant_size,
+      constant_size = experiment_metadata_df.constant_size,
       subsystem_range_divider = experiment_metadata_df.subsystem_range_divider,
       operation_type_to_apply = experiment_metadata_df.operation_type_to_apply,
       gate_types_to_apply = experiment_metadata_df.gate_types_to_apply
      ),
      conn,
-     "INSERT INTO quantumlab_experiments.experiments_metadata (experiment_id, experiment_name, experiment_description, experiment_run_date, experiment_label, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10);"
+     "INSERT INTO quantumlab_experiments.experiments_metadata (experiment_id, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, use_constant_size, constant_size, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13);"
   )
   execute(conn, "COMMIT;")
 
@@ -108,13 +110,24 @@ else
   experiment_description  = data.experiment_description[1]
   experiment_id  = data.experiment_id[1]
   experiment_run_date  = data.experiment_run_date[1]
+
   num_qubit_space  = split(data.num_qubit_space[1],",")
+  num_qubit_space = [parse(Int64,x) for x in num_qubit_space]
+
   n_layers = data.n_layers[1]
+  layer_space = 1:n_layers
+
   n_simulations  = data.n_simulations[1]
+  simulation_space = 1:n_simulations
+
   measurement_rate_space  = split(data.measurement_rate_space[1],",")
+  measurement_rate_space = [parse(Float16,x)/10 for x in measurement_rate_space]
+
+  use_constant_size = data.use_constant_size[1]
+  constant_size = data.constant_size[1]
 
   # in app this is defined as the percentage of system
-  subsystem_range_divider  = (1 / data.subsystem_range_divider[1])
+  subsystem_range_divider  = trunc(Int, (1 / data.subsystem_range_divider[1]))
   operation_type_to_apply  = data.operation_type_to_apply[1]
   gate_types_to_apply  = data.gate_types_to_apply[1]
 
@@ -150,13 +163,13 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
       this_layer = nothing
       if isodd(this_layer_index)
 
-        if gate_types_to_apply == "RandomUnitaries"
+        if gate_types_to_apply == "Random Unitaries"
 
           #randomlayer:
           #https://github.com/GTorlai/PastaQ.jl/blob/000b2524b92b5cb09295cfd09dcbb1914ddc0991/src/circuits/circuits.jl
           this_layer  = randomlayer("RandomUnitary",[(j,j+1) for j in 1:2:(num_qubits-1)])
 
-        elseif gate_types_to_apply == "RandomCliffords"
+        elseif gate_types_to_apply == "Random Cliffords"
 
           clifford_indices_list = [random_sample(1:clifford_samples) for j in 1:1:(num_qubits-1)]
           clifford_list = [clifford_dict["$j"] for j in clifford_indices_list]
@@ -166,11 +179,11 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
 
       else
 
-        if gate_types_to_apply == "RandomUnitaries"
+        if gate_types_to_apply == "Random Unitaries"
 
           this_layer = randomlayer("RandomUnitary",[(j,j+1) for j in 2:2:(num_qubits-1)])
 
-        elseif gate_types_to_apply == "RandomCliffords"
+        elseif gate_types_to_apply == "Random Cliffords"
 
           clifford_indices_list = [random_sample(1:clifford_samples) for j in 1:1:(num_qubits-1)]
           clifford_list = [clifford_dict["$j"] for j in clifford_indices_list]
@@ -204,7 +217,7 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
          this_layer_index = 1
          for this_layer in this_circuit
 
-           @printf("# Qubits: %.3i , Measurement Rate: %.2f, Circuit Sim Index: %.3i, Layer Index: %.3i \n", num_qubits, measurement_rate, this_circuit_index, this_layer_index)
+           #@printf("# Qubits: %.3i , Measurement Rate: %.2f, Circuit Sim Index: %.3i, Layer Index: %.3i \n", num_qubits, measurement_rate, this_circuit_index, this_layer_index)
 
            # this_layer = this_circuit[41]
            ψ = runcircuit(ψ, this_layer; cutoff = 1e-8)
@@ -296,6 +309,8 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
 end # for num_qubits in num_qubit_space
 
 simulation_df = insertcols!(simulation_df, :experiment_id => experiment_id)
+
+#TableView.showtable(simulation_df)
 
 LibPQ.load!(
     (num_qubits = simulation_df.num_qubits,

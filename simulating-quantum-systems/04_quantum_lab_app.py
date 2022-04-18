@@ -81,16 +81,18 @@ elif selected == "Launch Simulation":
     with col2:
 
         st.subheader('Gates and Measurements')
-        operation_type_to_apply = st.radio("Unary or Binary Gates and Projective Measurements:", ('Unary', 'Binary'))
+        operation_type_to_apply = st.radio("Unary or Binary Gates and Projective Measurements:", ('Binary', 'Unary'))
         gate_types_to_apply = st.radio("Gate Group to Apply:", ('Random Unitaries', 'Random Cliffords'))
         mr_values = st.slider('Measurement Rate Range (%)',0, 100, (0, 80))
         mr_step = st.number_input('Step By Rate:',0.1)
 
         measurement_rate_space = [x/10 for x in range(list(mr_values)[0], list(mr_values)[1] + int(10*mr_step), int(100*mr_step))]
 
-        use_constant_size = st.checkbox('I agree')
+        st.subheader('Reduced Density Matrix')
+        use_constant_size = st.checkbox('Use Constant Sub-system Size for Reduced Density Matrix')
 
         constant_size = 0
+        subsystem_range_divider = 0.50
         if use_constant_size:
              constant_size = st.number_input('Constant Sub-system Size for Reduced Density Matrix (# of Qubits):', 3)
         else:
