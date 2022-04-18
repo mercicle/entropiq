@@ -88,8 +88,14 @@ elif selected == "Launch Simulation":
 
         measurement_rate_space = [x/10 for x in range(list(mr_values)[0], list(mr_values)[1] + int(10*mr_step), int(100*mr_step))]
 
-        subsystem_range_divider = st.selectbox('Relative Sub-system Size for Reduced Density Matrix:',[0.50, 0.25, 0.20])
-        st.write('Reduced Density Matrix Based on Tracing Over:', str(np.round(100*(1-subsystem_range_divider),0)) + '% of the system.')
+        use_constant_size = st.checkbox('I agree')
+
+        constant_size = 0
+        if use_constant_size:
+             constant_size = st.number_input('Constant Sub-system Size for Reduced Density Matrix (# of Qubits):', 3)
+        else:
+            subsystem_range_divider = st.selectbox('Relative Sub-system Size for Reduced Density Matrix:',[0.50, 0.25, 0.20])
+            st.write('Reduced Density Matrix Based on Tracing Over:', str(np.round(100*(1-subsystem_range_divider),0)) + '% of the system.')
 
     st.subheader('Experiment Configuration Summary')
     this_experiment_metadata_df = pd.DataFrame.from_dict({'experiment_name': [experiment_name],
@@ -100,6 +106,8 @@ elif selected == "Launch Simulation":
                                                           'n_layers' : [n_layers],
                                                           'n_simulations' : [n_simulations],
                                                           'measurement_rate_space' : [','.join([str(x) for x in measurement_rate_space])],
+                                                          'use_constant_size': [use_constant_size],
+                                                          'constant_size': [constant_size],
                                                           'subsystem_range_divider' : [subsystem_range_divider],
                                                           'operation_type_to_apply' : [operation_type_to_apply],
                                                           'gate_types_to_apply' : [gate_types_to_apply]
@@ -122,20 +130,17 @@ elif selected == "Launch Simulation":
                         table_name = experiments_metadata_table_name,
                         schema_name = core_schema,
                         append = True)
+            st.write('Saved.')
     with action_col2:
         if st.button('Launch Simulation'):
             st.write('Launching Simulation...')
-
-    #experiment_metadata_df_preview['Column'] = experiment_metadata_df_preview.index
-    #experiment_metadata_df_preview.reset_index(inplace=True)
-    #st.table(experiment_metadata_df_preview)
-
 
 elif selected == "Discovery":
 
     st.header('Discovery')
 
     st.subheader('Experiments')
+    #experiment_results_df = get_table(conn = db_conn, table_name = , schema_name = , where_string = " where experiment_id = '"+ experiment_id + "'")
     st.table(experiment_metadata_df)
 
     experiment_id = st.selectbox('Select Experiment ID', experiment_metadata_df.experiment_id)
@@ -151,6 +156,3 @@ elif selected == "Discovery":
     fig, ax = plt.subplots()
     sns.heatmap(this_matrix, ax=ax)
     st.write(fig)
-
-    #experiment_results_df = get_table(conn = db_conn, table_name = , schema_name = , where_string = " where experiment_id = '"+ experiment_id + "'")
-    #st.table(experiment_results_df)

@@ -38,7 +38,7 @@ conn = LibPQ.Connection(db_connection_string)
 
 run_from_script = true
 experiment_id, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply = [nothing for _ = 1:11]
-experiment_id = "7bc95dbc-beb7-11ec-b931-328140767e06"
+experiment_id = "5a46774a-bf1d-11ec-a8c3-328140767e06"
 
 if run_from_script
 
@@ -70,6 +70,8 @@ if run_from_script
                                      n_layers = n_layers,
                                      n_simulations = n_simulations,
                                      measurement_rate_space = join(["$x" for x in measurement_rate_space], ","),
+                                     use_constant_size = use_constant_size,
+                                     constant_size = constant_size,
                                      subsystem_range_divider = subsystem_range_divider,
                                      operation_type_to_apply = operation_type_to_apply,
                                      gate_types_to_apply = gate_types_to_apply
@@ -90,14 +92,14 @@ if run_from_script
       gate_types_to_apply = experiment_metadata_df.gate_types_to_apply
      ),
      conn,
-     "INSERT INTO quantumlab_experiments._experiments_metadata (experiment_id, experiment_name, experiment_description, experiment_run_date, experiment_label, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10);"
+     "INSERT INTO quantumlab_experiments.experiments_metadata (experiment_id, experiment_name, experiment_description, experiment_run_date, experiment_label, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10);"
   )
   execute(conn, "COMMIT;")
 
 else
 
   result = execute(conn,
-                   string("select * FROM quantumlab_experiments._experiments_metadata where experiment_id = '", experiment_id,"'");
+                   string("select * FROM quantumlab_experiments.experiments_metadata where experiment_id = '", experiment_id,"'");
                    throw_error=false
                    )
 
@@ -110,7 +112,9 @@ else
   n_layers = data.n_layers[1]
   n_simulations  = data.n_simulations[1]
   measurement_rate_space  = split(data.measurement_rate_space[1],",")
-  subsystem_range_divider  = data.subsystem_range_divider[1]
+
+  # in app this is defined as the percentage of system
+  subsystem_range_divider  = (1 / data.subsystem_range_divider[1])
   operation_type_to_apply  = data.operation_type_to_apply[1]
   gate_types_to_apply  = data.gate_types_to_apply[1]
 
@@ -301,7 +305,7 @@ LibPQ.load!(
      experiment_id = simulation_df.experiment_id
     ),
     conn,
-    "INSERT INTO quantumlab_experiments._simulation_results (num_qubits, measurement_rate, mean_entropy, se_mean_entropy, experiment_id) VALUES(\$1, \$2, \$3, \$4, \$5);"
+    "INSERT INTO quantumlab_experiments.simulation_results (num_qubits, measurement_rate, mean_entropy, se_mean_entropy, experiment_id) VALUES(\$1, \$2, \$3, \$4, \$5);"
 )
 execute(conn, "COMMIT;")
 
@@ -319,7 +323,7 @@ LibPQ.load!(
     entropy_contribution = von_neumann_entropy_df.entropy_contribution
     ),
     conn,
-    "INSERT INTO quantumlab_experiments._entropy_tracking (experiment_id, measurement_rate, simulation_number, num_qubits, bond_index, ij, eigenvalue, entropy_contribution) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8);"
+    "INSERT INTO quantumlab_experiments.entropy_tracking (experiment_id, measurement_rate, simulation_number, num_qubits, bond_index, ij, eigenvalue, entropy_contribution) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8);"
 )
 execute(conn, "COMMIT;")
 
