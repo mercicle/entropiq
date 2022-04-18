@@ -16,3 +16,6 @@ route("/customers/:customer_id/orders/:order_id") do
 end
 
 Genie.startup(async = false)
+
+## use for the comp
+Genie.startup(async = true)

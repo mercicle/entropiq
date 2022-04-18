@@ -1,4 +1,3 @@
-
 using ITensors
 using ITensors: dim as itensor_dim
 using PastaQ
@@ -21,12 +20,13 @@ using LibPQ
 using DotEnv
 
 using TableView
+using Tables
 
 save_dir = string(@__DIR__, "/out_data/")
 include("entropy_function.jl")
+include("03_load_gates.jl")
 
 cnfg = DotEnv.config(path=string(@__DIR__, "/db_creds.env"))
-
 db_connection_string = string(" host = ", cnfg["POSTGRES_DB_URL"],
                               " port = ", cnfg["POSTGRES_DB_PORT"],
                               " user = ", cnfg["POSTGRES_DB_USERNAME"],
@@ -36,49 +36,30 @@ db_connection_string = string(" host = ", cnfg["POSTGRES_DB_URL"],
                               )
 conn = LibPQ.Connection(db_connection_string)
 
-# single qubit gates provided in example
-gate(::GateName"Π0") =
-  [1 0
-   0 0]
-gate(::GateName"Π1") =
-  [0 0
-   0 1]
-# new 2 qubit projectors
-gate(::GateName"Π00") =
-[0 0 0 0
- 0 0 0 0
- 0 0 0 0
- 0 0 0 1]
-gate(::GateName"Π10") =
-[0 0 0 0
- 0 1 0 0
- 0 0 0 0
- 0 0 0 0]
-gate(::GateName"Π01") =
-[0 0 0 0
- 0 0 0 0
- 0 0 1 0
- 0 0 0 0]
-gate(::GateName"Π11") =
-[1 0 0 0
- 0 0 0 0
- 0 0 0 0
- 0 0 0 0]
+experiment_id = "7bc95dbc-beb7-11ec-b931-328140767e06"
+result = execute(
+            conn,
+            string("select * FROM quantumlab_experiments._experiments_metadata where experiment_id = '", experiment_id,"'");
+            throw_error=false,
+        )
+data = columntable(result)
 
-fid = h5open(string(@__DIR__, "/clifford_dict_v2.h5"), "r")
-clifford_samples = 99999
-clifford_dict = Dict()
-for c in 1:1:clifford_samples
-    dataset_name = "clifford_$c"
-    obj = fid[dataset_name]
-    read_obj = read(obj)
-    this_clifford = [
-    read_obj[(1,1)...]+read_obj[(2,1)...]im read_obj[(1,2)...]+read_obj[(2,2)...]im read_obj[(1,3)...]+read_obj[(2,3)...]im read_obj[(1,4)...]+read_obj[(2,4)...]im
-    read_obj[(1,5)...]+read_obj[(2,5)...]im read_obj[(1,6)...]+read_obj[(2,6)...]im read_obj[(1,7)...]+read_obj[(2,7)...]im read_obj[(1,8)...]+read_obj[(2,8)...]im
-    read_obj[(1,9)...]+read_obj[(2,9)...]im read_obj[(1,10)...]+read_obj[(2,10)...]im read_obj[(1,11)...]+read_obj[(2,11)...]im read_obj[(1,12)...]+read_obj[(2,12)...]im
-    read_obj[(1,13)...]+read_obj[(2,13)...]im read_obj[(1,14)...]+read_obj[(2,14)...]im read_obj[(1,15)...]+read_obj[(2,15)...]im read_obj[(1,16)...]+read_obj[(2,16)...]im
-    ]
-    clifford_dict["$c"] = this_clifford
+experiment_name  = data.experiment_name[1]
+experiment_description  = data.experiment_description[1]
+experiment_id  = data.experiment_id[1]
+experiment_run_date  = data.experiment_run_date[1]
+num_qubit_space  = data.num_qubit_space[1]
+n_layers = data.n_layers[1]
+n_simulations  = data.n_simulations[1]
+measurement_rate_space  = data.measurement_rate_space[1]
+subsystem_range_divider  = data.subsystem_range_divider[1]
+operation_type_to_apply  = data.operation_type_to_apply[1]
+gate_types_to_apply  = data.gate_types_to_apply[1]
+
+this_list = split(num_qubit_space,",")
+println("---------")
+for (index_n, num_qubits) in enumerate(this_list)
+  println(num_qubits)
 end
 
 rng = MersenneTwister(1234)
@@ -92,15 +73,12 @@ measurement_rate_space = 0.0:0.1:0.9 #0.10:0.10:0.70
 simulation_space = 1:n_simulations
 layer_space = 1:n_layers
 
+operation_type_to_apply = "Binary" # 'Unary', 'Binary'
+gate_types_to_apply = "RandomUnitaries" # Options: RandomUnitaries RandomCliffords
+
 subsystem_range_divider = 2
 use_constant_size = false
 constant_size = 3
-
-operation_type_to_apply = "Binary" # 'Unary', 'Binary'
-qubit_index_space = nothing
-
-# Options: RandomUnitaries RandomCliffords
-gate_types_to_apply = "RandomUnitaries"
 
 experiment_metadata_df = DataFrame(experiment_id = experiment_id,
                                    experiment_run_date = experiment_run_date,
@@ -133,6 +111,8 @@ LibPQ.load!(
 execute(conn, "COMMIT;")
 
 projective_list = [ "00"; "01"; "10"; "11"]
+qubit_index_space = nothing
+
 ψ_tracker = nothing
 this_layer = nothing
 this_circuit = nothing
@@ -140,7 +120,7 @@ simulation_df = DataFrame()
 von_neumann_entropy_df = DataFrame()
 von_neumann_entropies = []
 
-for num_qubits in num_qubit_space
+for (index_n, num_qubits) in enumerate(num_qubit_space)
 
   # num_qubits=6
   @printf("# Qubits = %.3i \n", num_qubits)
@@ -153,7 +133,7 @@ for num_qubits in num_qubit_space
 
   @printf("Preparing circuit_simulations for # Qubits = %.3i \n", num_qubits)
   circuit_simulations = []
-  for this_sim in simulation_space
+  for (index_s, this_sim) in enumerate(simulation_space)
     layers = []
     #@printf("Preparing # Sim = %.3i \n", this_sim)
     for this_layer_index in layer_space
@@ -198,7 +178,7 @@ for num_qubits in num_qubit_space
 
   to = TimerOutput()
   # loop over projective measurement probability (per site)
-  for measurement_rate in measurement_rate_space
+  for (index_m, measurement_rate) in enumerate(measurement_rate_space)
 
       # measurement_rate = 0.10
       this_circuit_index = 1
