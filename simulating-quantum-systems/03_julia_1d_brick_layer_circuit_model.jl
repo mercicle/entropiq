@@ -36,83 +36,88 @@ db_connection_string = string(" host = ", cnfg["POSTGRES_DB_URL"],
                               )
 conn = LibPQ.Connection(db_connection_string)
 
+run_from_script = true
+experiment_id, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply = [nothing for _ = 1:11]
 experiment_id = "7bc95dbc-beb7-11ec-b931-328140767e06"
-result = execute(
-            conn,
-            string("select * FROM quantumlab_experiments._experiments_metadata where experiment_id = '", experiment_id,"'");
-            throw_error=false,
-        )
-data = columntable(result)
 
-experiment_name  = data.experiment_name[1]
-experiment_description  = data.experiment_description[1]
-experiment_id  = data.experiment_id[1]
-experiment_run_date  = data.experiment_run_date[1]
-num_qubit_space  = data.num_qubit_space[1]
-n_layers = data.n_layers[1]
-n_simulations  = data.n_simulations[1]
-measurement_rate_space  = data.measurement_rate_space[1]
-subsystem_range_divider  = data.subsystem_range_divider[1]
-operation_type_to_apply  = data.operation_type_to_apply[1]
-gate_types_to_apply  = data.gate_types_to_apply[1]
+if run_from_script
 
-this_list = split(num_qubit_space,",")
-println("---------")
-for (index_n, num_qubits) in enumerate(this_list)
-  println(num_qubits)
+  rng = MersenneTwister(1234)
+  experiment_id = repr(uuid4(rng).value)
+  experiment_name = "Experiment from script"
+  experiment_description = "Experiment from script"
+  experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
+  Random.seed!(1234)
+  num_qubit_space = 6:1:9 #6:1:10
+  n_layers = 10
+  n_simulations = 20
+  measurement_rate_space = 0.0:0.1:0.9 #0.10:0.10:0.70
+  simulation_space = 1:n_simulations
+  layer_space = 1:n_layers
+
+  operation_type_to_apply = "Binary" # 'Unary', 'Binary'
+  gate_types_to_apply = "RandomUnitaries" # Options: RandomUnitaries RandomCliffords
+
+  subsystem_range_divider = 2
+  use_constant_size = false
+  constant_size = 3
+
+  experiment_metadata_df = DataFrame(experiment_id = experiment_id,
+                                     experiment_name = experiment_name,
+                                     experiment_description = experiment_description,
+                                     experiment_run_date = experiment_run_date,
+                                     num_qubit_space = join(["$x" for x in num_qubit_space], ","),
+                                     n_layers = n_layers,
+                                     n_simulations = n_simulations,
+                                     measurement_rate_space = join(["$x" for x in measurement_rate_space], ","),
+                                     subsystem_range_divider = subsystem_range_divider,
+                                     operation_type_to_apply = operation_type_to_apply,
+                                     gate_types_to_apply = gate_types_to_apply
+                                     )
+
+
+  LibPQ.load!(
+     (experiment_id = experiment_metadata_df.experiment_id,
+      experiment_name = experiment_metadata_df.experiment_name,
+      experiment_description = experiment_metadata_df.experiment_description,
+      experiment_run_date = experiment_metadata_df.experiment_run_date,
+      num_qubit_space = experiment_metadata_df.num_qubit_space,
+      n_layers = experiment_metadata_df.n_layers,
+      n_simulations = experiment_metadata_df.n_simulations,
+      measurement_rate_space = experiment_metadata_df.measurement_rate_space,
+      subsystem_range_divider = experiment_metadata_df.subsystem_range_divider,
+      operation_type_to_apply = experiment_metadata_df.operation_type_to_apply,
+      gate_types_to_apply = experiment_metadata_df.gate_types_to_apply
+     ),
+     conn,
+     "INSERT INTO quantumlab_experiments._experiments_metadata (experiment_id, experiment_name, experiment_description, experiment_run_date, experiment_label, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10);"
+  )
+  execute(conn, "COMMIT;")
+
+else
+
+  result = execute(conn,
+                   string("select * FROM quantumlab_experiments._experiments_metadata where experiment_id = '", experiment_id,"'");
+                   throw_error=false
+                   )
+
+  data = columntable(result)
+  experiment_name  = data.experiment_name[1]
+  experiment_description  = data.experiment_description[1]
+  experiment_id  = data.experiment_id[1]
+  experiment_run_date  = data.experiment_run_date[1]
+  num_qubit_space  = split(data.num_qubit_space[1],",")
+  n_layers = data.n_layers[1]
+  n_simulations  = data.n_simulations[1]
+  measurement_rate_space  = split(data.measurement_rate_space[1],",")
+  subsystem_range_divider  = data.subsystem_range_divider[1]
+  operation_type_to_apply  = data.operation_type_to_apply[1]
+  gate_types_to_apply  = data.gate_types_to_apply[1]
+
 end
-
-rng = MersenneTwister(1234)
-experiment_id = repr(uuid4(rng).value)
-experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
-Random.seed!(1234)
-num_qubit_space = 6:1:9 #6:1:10
-n_layers = 10
-n_simulations = 20
-measurement_rate_space = 0.0:0.1:0.9 #0.10:0.10:0.70
-simulation_space = 1:n_simulations
-layer_space = 1:n_layers
-
-operation_type_to_apply = "Binary" # 'Unary', 'Binary'
-gate_types_to_apply = "RandomUnitaries" # Options: RandomUnitaries RandomCliffords
-
-subsystem_range_divider = 2
-use_constant_size = false
-constant_size = 3
-
-experiment_metadata_df = DataFrame(experiment_id = experiment_id,
-                                   experiment_run_date = experiment_run_date,
-                                   num_qubit_space = join(["$x" for x in num_qubit_space], ","),
-                                   n_layers = n_layers,
-                                   n_simulations = n_simulations,
-                                   measurement_rate_space = join(["$x" for x in measurement_rate_space], ","),
-                                   subsystem_range_divider = subsystem_range_divider,
-                                   operation_type_to_apply = operation_type_to_apply,
-                                   gate_types_to_apply = gate_types_to_apply
-                                   )
-
-
-LibPQ.load!(
-   (experiment_id = experiment_metadata_df.experiment_id,
-   experiment_name = experiment_metadata_df.experiment_name,
-   experiment_description = experiment_metadata_df.experiment_description,
-   experiment_run_date = experiment_metadata_df.experiment_run_date,
-   num_qubit_space = experiment_metadata_df.num_qubit_space,
-   n_layers = experiment_metadata_df.n_layers,
-   n_simulations = experiment_metadata_df.n_simulations,
-   measurement_rate_space = experiment_metadata_df.measurement_rate_space,
-   subsystem_range_divider = experiment_metadata_df.subsystem_range_divider,
-   operation_type_to_apply = experiment_metadata_df.operation_type_to_apply,
-   gate_types_to_apply = experiment_metadata_df.gate_types_to_apply
-   ),
-   conn,
-   "INSERT INTO quantumlab_experiments._experiments_metadata (experiment_id, experiment_name, experiment_description, experiment_run_date, experiment_label, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10);"
-)
-execute(conn, "COMMIT;")
 
 projective_list = [ "00"; "01"; "10"; "11"]
 qubit_index_space = nothing
-
 ψ_tracker = nothing
 this_layer = nothing
 this_circuit = nothing
@@ -318,4 +323,4 @@ LibPQ.load!(
 )
 execute(conn, "COMMIT;")
 
-TableView.showtable(von_neumann_entropy_df)
+#TableView.showtable(von_neumann_entropy_df)
