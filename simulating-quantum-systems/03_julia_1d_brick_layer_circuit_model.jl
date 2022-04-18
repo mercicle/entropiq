@@ -259,7 +259,7 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
                  projection_string = "Π"*"$(σ)"
                  ψ = runcircuit(ψ, (projection_string, (qubit_index, next_qubit_index)))
                  normalize!(ψ)
-                 # ψ[:] = ψ
+                 ψ[:] = ψ
 
                end # if measurement_rate > rand()
 

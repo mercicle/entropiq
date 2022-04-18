@@ -12,6 +12,15 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import hydralit_components as hc
 
+#https://streamlit-aggrid.readthedocs.io/en/docs/Usage.html#simple-use
+#https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
+from st_aggrid import AgGrid
+from st_aggrid.grid_options_builder import GridOptionsBuilder
+
+# https://pypi.org/project/streamlit-observable/
+
+import plotly.express as px
+
 this_dir = os.getcwd()
 repo_root_dir = this_dir.split("qc-repo")[0] + 'qc-repo/'
 
@@ -143,7 +152,13 @@ elif selected == "Discovery":
 
     st.subheader('Experiments')
     experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiments_metadata_table_name, schema_name = core_schema)
-    st.table(experiment_metadata_df)
+    #st.table(experiment_metadata_df)
+
+    gb = GridOptionsBuilder.from_dataframe(experiment_metadata_df)
+    gb.configure_pagination()
+    grid_options = gb.build()
+
+    AgGrid(experiment_metadata_df, grid_options)
 
     experiment_id = st.selectbox('Select Experiment ID', experiment_metadata_df.experiment_id)
 
@@ -167,6 +182,59 @@ elif selected == "Discovery":
 
     st.pyplot(fig)
 
+    entropy_tracking_df = get_table(conn = postgres_conn, table_name = entropy_tracking_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
+    entropy_tracking_df['num_qubits'] = entropy_tracking_df.num_qubits.astype(str)
+    entropy_tracking_df['simulation_number'] = entropy_tracking_df.simulation_number.astype(str)
+    entropy_tracking_df['entropy_contribution'] = entropy_tracking_df.entropy_contribution.astype(float)
+
+    # g = sns.FacetGrid(entropy_tracking_df, col="measurement_rate", row="num_qubits", hue = "simulation_number", margin_titles=True, despine=False)
+    # g.map_dataframe(sns.lineplot, x="ij", y="entropy_contribution")
+    # g.add_legend()
+    # g.tight_layout()
+    # st.pyplot(g)
+
+    st.subheader('Entropy Contribution by Measurement Rate and System Size')
+    fig = px.line(entropy_tracking_df,
+                     x='ij', y='entropy_contribution', color='simulation_number', #size='entropy_contribution',
+                    facet_col = 'measurement_rate', facet_row = 'num_qubits',
+                    height=800, width=800,
+                    labels={
+                         "entropy_contribution": "ΔS",
+                         "ij": "State Index"
+                     })
+
+    fig.update_layout(legend=dict(orientation="h"))
+    fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader('Inspection')
+
+    select_nq = st.selectbox('# Qubits:',entropy_tracking_df.num_qubits.unique())
+    select_mr = st.selectbox('Measurement rate:',entropy_tracking_df.measurement_rate.unique())
+
+    inspect_entropy_tracking_df = entropy_tracking_df[ (entropy_tracking_df.num_qubits == select_nq) & (entropy_tracking_df.measurement_rate == select_mr)]
+    fig = px.line(inspect_entropy_tracking_df,
+                  x='ij', y='entropy_contribution', color='simulation_number', #size='entropy_contribution',
+                  facet_col = 'measurement_rate', facet_row = 'num_qubits',
+                  height=800, width=800,
+                  labels={
+                       "entropy_contribution": "ΔS",
+                       "ij": "State Index"
+                   })
+    fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    fig.update_layout(legend=dict(orientation="h"))
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+
+    #st.subheader('Plotly Express:')
+    # df = px.data.gapminder()
+    # fig = px.scatter(df, x='gdpPercap', y='lifeExp', color='continent', size='pop',
+    #                 facet_col='year', facet_col_wrap=4)
+    # st.plotly_chart(fig, use_container_width=True)
+    #
     #matrix_element = st.selectbox('Select matrix element', [1,2,3])
     #print("computing matrix in julia...")
     #this_matrix  = np.array([[1,0],[0,1]])
