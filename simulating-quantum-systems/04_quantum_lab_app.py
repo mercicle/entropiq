@@ -142,19 +142,35 @@ elif selected == "Discovery":
     st.header('Discovery')
 
     st.subheader('Experiments')
-    #experiment_results_df = get_table(conn = db_conn, table_name = , schema_name = , where_string = " where experiment_id = '"+ experiment_id + "'")
+    experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiments_metadata_table_name, schema_name = core_schema)
     st.table(experiment_metadata_df)
 
     experiment_id = st.selectbox('Select Experiment ID', experiment_metadata_df.experiment_id)
 
     st.subheader('Experiment Results:')
+    experiment_results_df = get_table(conn = postgres_conn, table_name = simulation_results_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
+    experiment_results_df['num_qubits'] = experiment_results_df.num_qubits.astype(str)
 
-    matrix_element = st.selectbox('Select matrix element', [1,2,3])
+    fig = plt.figure(figsize=(10, 4))
+    sns.set(rc = {'figure.figsize':(12,12)})
+    sns.set_style(style='whitegrid')
+    sim_plot = sns.lineplot(x='measurement_rate',
+                            y='mean_entropy',
+                            data = experiment_results_df,
+                            hue='num_qubits',
+                            marker='o',
+                            linewidth = 2,
+                            markersize = 6)
+    sim_plot.set_xlabel("Measurement Rate", fontsize = 12)
+    sim_plot.set_ylabel("Von Neumann Entropy", fontsize = 12)
+    sim_plot.set_title('Julia ITensors Simulation Results')
 
-    print("computing matrix in julia...")
-    this_matrix  = np.array([[1,0],[0,1]]) #get_matrix(matrix_element)
-    print("after computing matrix in julia...")
+    st.pyplot(fig)
 
-    fig, ax = plt.subplots()
-    sns.heatmap(this_matrix, ax=ax)
-    st.write(fig)
+    #matrix_element = st.selectbox('Select matrix element', [1,2,3])
+    #print("computing matrix in julia...")
+    #this_matrix  = np.array([[1,0],[0,1]])
+    #print("after computing matrix in julia...")
+    #fig, ax = plt.subplots()
+    #sns.heatmap(this_matrix, ax=ax)
+    #st.write(fig)

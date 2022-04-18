@@ -346,7 +346,7 @@ sim_plot = sns.lineplot(x='measurement_rate',
                         markersize = 10)
 sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
 sim_plot.set_ylabel("Von Neumann Entropy", fontsize = 20)
-sim_plot.set_title('Julia ITensor Simulation Results')
+sim_plot.set_title('Julia ITensors Simulation Results')
 plt.savefig(julia_results_dir + custom_label+ '_qiskit_comparison_simulation.pdf')
 
 
