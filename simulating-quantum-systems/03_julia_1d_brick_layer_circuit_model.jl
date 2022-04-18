@@ -84,7 +84,6 @@ end
 rng = MersenneTwister(1234)
 experiment_id = repr(uuid4(rng).value)
 experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
-experiment_label = "exp_"*experiment_id
 Random.seed!(1234)
 num_qubit_space = 6:1:9 #6:1:10
 n_layers = 10
@@ -97,7 +96,7 @@ subsystem_range_divider = 2
 use_constant_size = false
 constant_size = 3
 
-do_single_qubit_projections = false
+operation_type_to_apply = "Binary" # 'Unary', 'Binary'
 qubit_index_space = nothing
 
 # Options: RandomUnitaries RandomCliffords
@@ -105,15 +104,33 @@ gate_types_to_apply = "RandomUnitaries"
 
 experiment_metadata_df = DataFrame(experiment_id = experiment_id,
                                    experiment_run_date = experiment_run_date,
-                                   experiment_label = experiment_label,
                                    num_qubit_space = join(["$x" for x in num_qubit_space], ","),
                                    n_layers = n_layers,
                                    n_simulations = n_simulations,
                                    measurement_rate_space = join(["$x" for x in measurement_rate_space], ","),
                                    subsystem_range_divider = subsystem_range_divider,
-                                   do_single_qubit_projections = do_single_qubit_projections,
+                                   operation_type_to_apply = operation_type_to_apply,
                                    gate_types_to_apply = gate_types_to_apply
                                    )
+
+
+LibPQ.load!(
+   (experiment_id = experiment_metadata_df.experiment_id,
+   experiment_name = experiment_metadata_df.experiment_name,
+   experiment_description = experiment_metadata_df.experiment_description,
+   experiment_run_date = experiment_metadata_df.experiment_run_date,
+   num_qubit_space = experiment_metadata_df.num_qubit_space,
+   n_layers = experiment_metadata_df.n_layers,
+   n_simulations = experiment_metadata_df.n_simulations,
+   measurement_rate_space = experiment_metadata_df.measurement_rate_space,
+   subsystem_range_divider = experiment_metadata_df.subsystem_range_divider,
+   operation_type_to_apply = experiment_metadata_df.operation_type_to_apply,
+   gate_types_to_apply = experiment_metadata_df.gate_types_to_apply
+   ),
+   conn,
+   "INSERT INTO quantumlab_experiments._experiments_metadata (experiment_id, experiment_name, experiment_description, experiment_run_date, experiment_label, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10);"
+)
+execute(conn, "COMMIT;")
 
 projective_list = [ "00"; "01"; "10"; "11"]
 ψ_tracker = nothing
@@ -128,9 +145,9 @@ for num_qubits in num_qubit_space
   # num_qubits=6
   @printf("# Qubits = %.3i \n", num_qubits)
 
-  if do_single_qubit_projections
+  if operation_type_to_apply == "Unary"
     qubit_index_space = 1:num_qubits
-  else
+  elseif operation_type_to_apply == "Binary"
     qubit_index_space = 1:(num_qubits-1)
   end
 
@@ -213,7 +230,7 @@ for num_qubits in num_qubit_space
                if measurement_rate > rand()
 
                  #projective_measurement!(ψ, qubit_index)
-                 if do_single_qubit_projections
+                 if operation_type_to_apply == "Unary"
 
                      ψ = orthogonalize!(ψ, qubit_index)
                      ϕ = ψ[qubit_index]
@@ -222,7 +239,7 @@ for num_qubits in num_qubit_space
                      prob = real.(diag(array(ρ))) # Outcome probabilities
                      σ = (rand() < prob[1] ? 0 : 1) # random sample
 
-                 else
+                 elseif operation_type_to_apply == "Binary"
 
                      next_qubit_index = qubit_index + 1
                      orthogonalize!(ψ, qubit_index)
@@ -290,23 +307,6 @@ for num_qubits in num_qubit_space
 end # for num_qubits in num_qubit_space
 
 simulation_df = insertcols!(simulation_df, :experiment_id => experiment_id)
-
-LibPQ.load!(
-    (experiment_id = experiment_metadata_df.experiment_id,
-    experiment_run_date = experiment_metadata_df.experiment_run_date,
-    experiment_label = experiment_metadata_df.experiment_label,
-    num_qubit_space = experiment_metadata_df.num_qubit_space,
-    n_layers = experiment_metadata_df.n_layers,
-    n_simulations = experiment_metadata_df.n_simulations,
-    measurement_rate_space = experiment_metadata_df.measurement_rate_space,
-    subsystem_range_divider = experiment_metadata_df.subsystem_range_divider,
-    do_single_qubit_projections = experiment_metadata_df.do_single_qubit_projections,
-    gate_types_to_apply = experiment_metadata_df.gate_types_to_apply
-    ),
-    conn,
-    "INSERT INTO quantumlab_experiments._experiments_metadata (experiment_id, experiment_run_date, experiment_label, num_qubit_space, n_layers, n_simulations, measurement_rate_space, subsystem_range_divider, do_single_qubit_projections, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10);"
-)
-execute(conn, "COMMIT;")
 
 LibPQ.load!(
     (num_qubits = simulation_df.num_qubits,

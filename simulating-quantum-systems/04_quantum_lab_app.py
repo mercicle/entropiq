@@ -25,6 +25,10 @@ postgres_conn = get_postgres_conn()
 
 experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiments_metadata_table_name, schema_name = core_schema)
 
+#postgres_conn.execute("drop table quantumlab_experiments._experiments_metadata;")
+#postgres_conn.execute("drop table quantumlab_experiments._simulation_results;")
+#postgres_conn.execute("drop table quantumlab_experiments._entropy_tracking;")
+
 st.set_page_config(layout = "wide")
 
 with st.sidebar:
@@ -77,8 +81,8 @@ elif selected == "Launch Simulation":
     with col2:
 
         st.subheader('Gates and Measurements')
-        operation_set_type = st.radio("Unary or Binary Gates and Projective Measurements:", ('Unary', 'Binary'))
-        gate_type = st.radio("Gate Group to Apply:", ('Random Unitaries', 'Random Cliffords'))
+        operation_type_to_apply = st.radio("Unary or Binary Gates and Projective Measurements:", ('Unary', 'Binary'))
+        gate_types_to_apply = st.radio("Gate Group to Apply:", ('Random Unitaries', 'Random Cliffords'))
         mr_values = st.slider('Measurement Rate Range (%)',0, 100, (0, 80))
         mr_step = st.number_input('Step By Rate:',0.1)
 
@@ -88,13 +92,6 @@ elif selected == "Launch Simulation":
         st.write('Reduced Density Matrix Based on Tracing Over:', str(np.round(100*(1-subsystem_range_divider),0)) + '% of the system.')
 
     st.subheader('Experiment Configuration Summary')
-    action_col1, action_col2 = st.columns([0.05,1])
-    with action_col1:
-        if st.button('Save'):
-            st.write('Saving...')
-    with action_col2:
-        if st.button('Launch Simulation'):
-            st.write('Launching Simulation...')
     this_experiment_metadata_df = pd.DataFrame.from_dict({'experiment_name': [experiment_name],
                                                           'experiment_description': [experiment_description],
                                                           'experiment_id' : [experiment_id],
@@ -104,8 +101,8 @@ elif selected == "Launch Simulation":
                                                           'n_simulations' : [n_simulations],
                                                           'measurement_rate_space' : [','.join([str(x) for x in measurement_rate_space])],
                                                           'subsystem_range_divider' : [subsystem_range_divider],
-                                                          'operation_set_type' : [operation_set_type],
-                                                          'gate_type' : [gate_type]
+                                                          'operation_type_to_apply' : [operation_type_to_apply],
+                                                          'gate_types_to_apply' : [gate_types_to_apply]
                                                         })
 
     experiment_metadata_df_preview = this_experiment_metadata_df.T
@@ -115,6 +112,19 @@ elif selected == "Launch Simulation":
     experiment_metadata_df_preview.rename(columns={0:'Value'}, inplace=True)
     experiment_metadata_df_preview = experiment_metadata_df_preview[['Parameter', 'Value']]
     st.table(experiment_metadata_df_preview)
+
+    action_col1, action_col2 = st.columns([0.05,1])
+    with action_col1:
+        if st.button('Save'):
+            st.write('Saving...')
+            write_table(conn = postgres_conn,
+                        df = this_experiment_metadata_df,
+                        table_name = experiments_metadata_table_name,
+                        schema_name = core_schema,
+                        append = True)
+    with action_col2:
+        if st.button('Launch Simulation'):
+            st.write('Launching Simulation...')
 
     #experiment_metadata_df_preview['Column'] = experiment_metadata_df_preview.index
     #experiment_metadata_df_preview.reset_index(inplace=True)

@@ -15,7 +15,7 @@ conn = LibPQ.Connection(db_connection_string)
 
 result = LibPQ.execute(conn,"create schema quantumlab_experiments";throw_error=false)
 
-create_experimental_metadata_string = "DROP TABLE IF EXISTS quantumlab_experiments._experiments_metadata; CREATE TABLE IF NOT EXISTS quantumlab_experiments._experiments_metadata (experiment_id TEXT, experiment_run_date TEXT, experiment_label TEXT, num_qubit_space TEXT, n_layers INT, n_simulations INT, measurement_rate_space TEXT, subsystem_range_divider TEXT, do_single_qubit_projections Bool, gate_types_to_apply TEXT)";
+create_experimental_metadata_string = "DROP TABLE IF EXISTS quantumlab_experiments._experiments_metadata; CREATE TABLE IF NOT EXISTS quantumlab_experiments._experiments_metadata (experiment_id TEXT, experiment_run_date TEXT, experiment_name TEXT, experiment_description TEXT, num_qubit_space TEXT, n_layers INT, n_simulations INT, measurement_rate_space TEXT, subsystem_range_divider FLOAT, operation_type_to_apply TEXT, gate_types_to_apply TEXT)";
 result = execute(conn, create_experimental_metadata_string);
 
 create_simulation_results_string = "DROP TABLE IF EXISTS quantumlab_experiments._simulation_results; CREATE TABLE IF NOT EXISTS quantumlab_experiments._simulation_results (num_qubits INT, measurement_rate FLOAT, mean_entropy FLOAT, se_mean_entropy FLOAT, experiment_id TEXT)";
