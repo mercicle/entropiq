@@ -56,7 +56,7 @@ if run_from_script
   layer_space = 1:n_layers
 
   operation_type_to_apply = "Binary" # 'Unary', 'Binary'
-  gate_types_to_apply = "Random Unitaries" # Options: Random Unitaries Random Cliffords
+  gate_types_to_apply = "Random Cliffords" # Options: Random Unitaries Random Cliffords
 
   subsystem_range_divider = 2
   use_constant_size = false

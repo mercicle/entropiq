@@ -15,6 +15,8 @@
 - [The ‘Quantum Zeno Effect’ Explained](https://sites.imsa.edu/hadron/2019/12/05/the-quantum-zeno-effect-explained/)
 - [Q: Is the quantum zeno effect a real thing?](https://www.askamathematician.com/2012/03/q-is-the-quantum-zeno-effect-a-real-thing/)
 
+[Simulating Clifford's - Hadamard-free circuits expose the structure of the Clifford group](https://arxiv.org/abs/2003.09412)
+
 The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quantum-mechanical systems allowing a particle’s time evolution to be arrested by measuring it frequently enough with respect to some chosen measurement setting. Simply put, it is a phenomenon in quantum physics where observing a particle prevents it from decaying as it would in the absence of observation.
 
 - [Quantum Zeno Effect](https://addpmp.slamjam.com/index/quantum-zeno-effect)
@@ -26,7 +28,7 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 - [Quantum Tensor Networks in a Nutshell](https://arxiv.org/pdf/1708.00006.pdf)
 
-- quantum channel completely positive trace presevring map
+- quantum channel completely positive trace preserving map
 
 # Installation
 
@@ -332,7 +334,7 @@ https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
 
 - [ITensor](https://arxiv.org/pdf/2007.14822.pdf)
 - [PastaQ](https://github.com/GTorlai/PastaQ.jl)
-  
+
 ## Starter code was graciously added by ITensor and PastaQ maintainers
 - https://raw.githubusercontent.com/GTorlai/PastaQ.jl/master/examples/11_monitored_circuit.jl
 
@@ -354,3 +356,7 @@ https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
 ## Embed Julia into Python
 - https://towardsdatascience.com/how-to-embed-your-julia-code-into-python-to-speed-up-performance-e3ff0a94b6e
 - https://syl1.gitbook.io/julia-language-a-concise-tutorial/language-core/interfacing-julia-with-other-languages
+
+## Julia Saving Data
+
+- [Julia Data Format like HDF5](https://github.com/JuliaIO/JLD.jl)
