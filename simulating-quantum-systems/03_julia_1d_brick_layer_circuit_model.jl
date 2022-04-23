@@ -133,7 +133,7 @@ else
 
 end
 
-projective_list = [ "00"; "01"; "10"; "11"]
+projective_list = [ "00"; "01"; "10"; "11"] #[ "00"; "01"; "10"; "11"]
 qubit_index_space = nothing
 ψ_tracker = nothing
 this_layer = nothing
@@ -141,6 +141,7 @@ this_circuit = nothing
 simulation_df = DataFrame()
 von_neumann_entropy_df = DataFrame()
 von_neumann_entropies = []
+start_time = time()
 
 for (index_n, num_qubits) in enumerate(num_qubit_space)
 
@@ -307,6 +308,13 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
 
   @timeit to "num_qubits: "*"$num_qubits" 1+1
 end # for num_qubits in num_qubit_space
+
+runtime_in_seconds = time() - start_time
+runtime_in_seconds = round(runtime_in_seconds, digits=0)
+result = execute(conn,
+                 string("update quantumlab_experiments.experiments_metadata set runtime_in_seconds = ", runtime_in_seconds, " where experiment_id = '", experiment_id,"'");
+                 throw_error=false
+                 )
 
 simulation_df = insertcols!(simulation_df, :experiment_id => experiment_id)
 

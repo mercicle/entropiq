@@ -155,7 +155,7 @@ elif selected == "Discovery":
     #st.table(experiment_metadata_df)
 
     gb = GridOptionsBuilder.from_dataframe(experiment_metadata_df)
-    gb.configure_pagination()
+    gb.configure_pagination(paginationPageSize=10)
     grid_options = gb.build()
 
     AgGrid(experiment_metadata_df, grid_options)

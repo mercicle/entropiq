@@ -4,31 +4,19 @@
 #############################################################################################
 import os, sys, timeit
 import numpy as np
-
-from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, execute, Aer
-from qiskit.providers.aer import QasmSimulator, extensions
-
-import qiskit.quantum_info as qi
-
 import pandas as pd
+
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-
 import seaborn as sns
-from numpy.linalg import inv
 
-from qiskit.quantum_info import Statevector
 import copy
-
 import pickle
-
 import uuid
 from datetime import date
 
-
-simulator = QasmSimulator(method='matrix_product_state')
-backend = Aer.get_backend('statevector_simulator')
-sim = Aer.get_backend('aer_simulator')
+from qiskit import QuantumCircuit
+import qiskit.quantum_info as qi
 
 def isodd(num):
     return num % 2 == 1
@@ -88,7 +76,7 @@ for this_simulation in simulation_space:
 
             subsystem_range = list(range(0,int(np.round(num_qubits/subsystem_range_divider))))
             trace_over_system = [x for x in qubit_indices if x not in subsystem_range]
-            
+
             quantum_circuit = QuantumCircuit(num_qubits, num_qubits)
 
             for qubit_index in range(0, num_qubits):
@@ -357,4 +345,3 @@ julia_path = julia_results_dir+julia_results_file_name
 von_neumann_entropy_df = pd.read_excel(julia_path)
 
 von_neumann_entropy_df_eigen1 = von_neumann_entropy_df[von_neumann_entropy_df.eigenvalue==1]
-

@@ -1,11 +1,3 @@
-
-# Online help for Streamlit and Julia Integration
-
-[StackOverflow](https://stackoverflow.com/questions/71726946/calling-julia-from-streamlit-app-using-pyjulia)
-[Streamlit Issues](https://github.com/streamlit/streamlit/issues/4585)
-[PyJulia Issues](https://github.com/JuliaPy/pyjulia/issues/492)
-
-
 # Papers
 
 - [Main Paper - Quantum Zeno Effect and the Many-body Entanglement Transition](https://arxiv.org/pdf/1808.06134.pdf)
@@ -25,10 +17,29 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 - [Partial Trace](http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf)
 - [Partial Trace Wiki](https://en.wikipedia.org/wiki/Partial_trace)
-
 - [Quantum Tensor Networks in a Nutshell](https://arxiv.org/pdf/1708.00006.pdf)
+- [Measurement Protected Quantum Phases](https://arxiv.org/pdf/2004.09509.pdf)
 
-- quantum channel completely positive trace preserving map
+
+# Topics
+
+[This site is a resource for tensor network algorithms, theory, and software.](https://tensornetwork.org/)
+- [MPO Matrix Product Operator](https://tensornetwork.org/mpo/#:~:text=A%20matrix%20product%20operator%20(MPO,in%20a%20chain%2Dlike%20fashion.)
+[DMRG - Density matrix renormalization group](https://en.wikipedia.org/wiki/Density_matrix_renormalization_group) which is a [variational method](https://en.wikipedia.org/wiki/Variational_method_(quantum_mechanics)).
+
+[Garnet Chan "Matrix product states, DMRG, and tensor networks" (Part 1 of 2)](https://www.youtube.com/watch?v=Q8bFmV6tHBs)
+
+[Garnet Chan "Matrix product states, DMRG, and tensor networks" (Part 2 of 2)](https://www.youtube.com/watch?v=s37tvvrjlto)
+
+[Area Law](https://www.nist.gov/system/files/documents/itl/math/slides_fernando_brandao.pdf)
+
+[What is the difference between general measurement and projective measurement?](https://physics.stackexchange.com/questions/184524/what-is-the-difference-between-general-measurement-and-projective-measurement)
+
+[SPIN ONE-HALF, BRAS, KETS, AND OPERATORS](https://ocw.mit.edu/courses/physics/8-05-quantum-physics-ii-fall-2013/lecture-notes/MIT8_05F13_Chap_02.pdf)
+
+
+[A Practical Introduction to Tensor Networks: Matrix Product States and Projected Entangled Pair States](https://arxiv.org/pdf/1306.2164.pdf)
+
 
 # Installation
 
@@ -285,32 +296,6 @@ https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
 
 # https://qiskit.org/documentation/stubs/qiskit.quantum_info.Statevector.probabilities.html
 
-
-# Research Paper to Recapitulate
-
-[Quantum Zeno Effect and the Many-body Entanglement Transition](https://arxiv.org/pdf/1808.06134.pdf)
-
-# Topics
-
-[This site is a resource for tensor network algorithms, theory, and software.](https://tensornetwork.org/)
-
-- [MPO Matrix Product Operator](https://tensornetwork.org/mpo/#:~:text=A%20matrix%20product%20operator%20(MPO,in%20a%20chain%2Dlike%20fashion.)
-
-[DMRG - Density matrix renormalization group
-](https://en.wikipedia.org/wiki/Density_matrix_renormalization_group) which is a [variational method](https://en.wikipedia.org/wiki/Variational_method_(quantum_mechanics)).
-
-[Garnet Chan "Matrix product states, DMRG, and tensor networks" (Part 1 of 2)
-](https://www.youtube.com/watch?v=Q8bFmV6tHBs)
-
-[Garnet Chan "Matrix product states, DMRG, and tensor networks" (Part 2 of 2)
-](https://www.youtube.com/watch?v=s37tvvrjlto)
-
-[Area Law](https://www.nist.gov/system/files/documents/itl/math/slides_fernando_brandao.pdf)
-
-[What is the difference between general measurement and projective measurement?](https://physics.stackexchange.com/questions/184524/what-is-the-difference-between-general-measurement-and-projective-measurement)
-
-[SPIN ONE-HALF, BRAS, KETS, AND OPERATORS](https://ocw.mit.edu/courses/physics/8-05-quantum-physics-ii-fall-2013/lecture-notes/MIT8_05F13_Chap_02.pdf)
-
 # TeNPy
 
 [TeNPy Toric Code](https://tenpy.readthedocs.io/en/latest/notebooks/11_toric_code.html)
@@ -360,3 +345,9 @@ https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
 ## Julia Saving Data
 
 - [Julia Data Format like HDF5](https://github.com/JuliaIO/JLD.jl)
+
+# Online help for Streamlit and Julia Integration
+
+[StackOverflow](https://stackoverflow.com/questions/71726946/calling-julia-from-streamlit-app-using-pyjulia)
+[Streamlit Issues](https://github.com/streamlit/streamlit/issues/4585)
+[PyJulia Issues](https://github.com/JuliaPy/pyjulia/issues/492)
