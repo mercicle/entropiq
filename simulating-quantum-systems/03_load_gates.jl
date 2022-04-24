@@ -11,10 +11,10 @@ gate(::GateName"Π1") =
    0 1]
 # new 2 qubit projectors
 gate(::GateName"Π00") =
-[0 0 0 0
+[1 0 0 0
  0 0 0 0
  0 0 0 0
- 0 0 0 1]
+ 0 0 0 0]
 gate(::GateName"Π10") =
 [0 0 0 0
  0 1 0 0
@@ -26,10 +26,10 @@ gate(::GateName"Π01") =
  0 0 1 0
  0 0 0 0]
 gate(::GateName"Π11") =
-[1 0 0 0
+[0 0 0 0
  0 0 0 0
  0 0 0 0
- 0 0 0 0]
+ 0 0 0 1]
 
 fid = h5open(string(@__DIR__, "/in_data/clifford_dict.h5"), "r")
 clifford_samples = 99999

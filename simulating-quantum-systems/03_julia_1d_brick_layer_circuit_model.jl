@@ -37,15 +37,16 @@ db_connection_string = string(" host = ", cnfg["POSTGRES_DB_URL"],
 conn = LibPQ.Connection(db_connection_string)
 
 run_from_script = true
-experiment_id, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, layer_space, simulation_space, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply = [nothing for _ = 1:13]
+experiment_id, sim_status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, layer_space, simulation_space, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply = [nothing for _ = 1:14]
 experiment_id = "0ed86a8c-bf24-11ec-80b0-328140767e06"
 
 if run_from_script
 
   rng = MersenneTwister(1234)
   experiment_id = repr(uuid4(rng).value)
-  experiment_name = "Experiment from script"
-  experiment_description = "Experiment from script"
+  sim_status = "Running"
+  experiment_name = "Switch projective measurements"
+  experiment_description = "Experiment from script  - testing change in projective measurements"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
   Random.seed!(1234)
   num_qubit_space = 6:1:9 #6:1:10
@@ -74,12 +75,14 @@ if run_from_script
                                      constant_size = constant_size,
                                      subsystem_range_divider = 1/subsystem_range_divider,
                                      operation_type_to_apply = operation_type_to_apply,
-                                     gate_types_to_apply = gate_types_to_apply
+                                     gate_types_to_apply = gate_types_to_apply,
+                                     status = sim_status
                                      )
 
 
   LibPQ.load!(
      (experiment_id = experiment_metadata_df.experiment_id,
+      status = experiment_metadata_df.status,
       experiment_name = experiment_metadata_df.experiment_name,
       experiment_description = experiment_metadata_df.experiment_description,
       experiment_run_date = experiment_metadata_df.experiment_run_date,
@@ -94,7 +97,7 @@ if run_from_script
       gate_types_to_apply = experiment_metadata_df.gate_types_to_apply
      ),
      conn,
-     "INSERT INTO quantumlab_experiments.experiments_metadata (experiment_id, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, use_constant_size, constant_size, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13);"
+     "INSERT INTO quantumlab_experiments.experiments_metadata (experiment_id, status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, use_constant_size, constant_size, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14);"
   )
   execute(conn, "COMMIT;")
 
@@ -109,6 +112,7 @@ else
   experiment_name  = data.experiment_name[1]
   experiment_description  = data.experiment_description[1]
   experiment_id  = data.experiment_id[1]
+  sim_status  = data.status[1]
   experiment_run_date  = data.experiment_run_date[1]
 
   num_qubit_space  = split(data.num_qubit_space[1],",")
@@ -311,8 +315,9 @@ end # for num_qubits in num_qubit_space
 
 runtime_in_seconds = time() - start_time
 runtime_in_seconds = round(runtime_in_seconds, digits=0)
+sim_status = "Completed"
 result = execute(conn,
-                 string("update quantumlab_experiments.experiments_metadata set runtime_in_seconds = ", runtime_in_seconds, " where experiment_id = '", experiment_id,"'");
+                 string("update quantumlab_experiments.experiments_metadata set runtime_in_seconds = ", runtime_in_seconds, ", status = '", sim_status ,"' where experiment_id = '", experiment_id,"'");
                  throw_error=false
                  )
 
@@ -351,3 +356,11 @@ LibPQ.load!(
 execute(conn, "COMMIT;")
 
 #TableView.showtable(von_neumann_entropy_df)
+
+alter_meta = false
+if alter_meta
+  result = execute(conn,
+                   "alter table quantumlab_experiments.experiments_metadata add column status TEXT ;",
+                   throw_error=false
+                   )
+end
