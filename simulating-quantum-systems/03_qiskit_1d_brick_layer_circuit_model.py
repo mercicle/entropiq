@@ -18,11 +18,9 @@ from datetime import date
 from qiskit import QuantumCircuit
 import qiskit.quantum_info as qi
 
-def isodd(num):
-    return num % 2 == 1
+from helpers.analysis_helpers import *
 
-def iseven(num):
-    return num % 2 != 1
+outdata_dir = os.getcwd() + "/out_data/qiskit/"
 
 line_divider_size = 50
 
@@ -32,10 +30,10 @@ up_state = np.array([0,1])
 random_probs_2q_test_vector = [0.25, 0.25, 0.25, 0.25]
 
 min_qubits = 6
-max_qubits = 10
+max_qubits = 9
 n_qubit_space = list(range(min_qubits,max_qubits+1)) # 16,32
-min_measurement_rate = 20
-max_measurement_rate = 80
+min_measurement_rate = 0
+max_measurement_rate = 60
 measurement_rate_step = 10
 measurement_rate_space = [x/100 for x in range(min_measurement_rate, max_measurement_rate, measurement_rate_step)]
 
@@ -49,10 +47,8 @@ use_unitary_set = 'Random Unitaries' # 'Clifford Group' 'Random Unitaries'
 experiment_id = str(uuid.uuid1())
 experiment_run_date = date.today().strftime("%m-%d-%Y")
 
-# after_proj_prob_and_initstate_fix_
-custom_label = 'julia_comparison_'
-sim_results_label = custom_label+ str(n_simulations) + "sims_" + str(max_qubits)+'qubits_'+'_mspace'+str(min_measurement_rate)+"to"+str(max_measurement_rate)
 simulation_df = pd.DataFrame()
+run_times_df = pd.DataFrame()
 layer_dict = dict()
 
 for this_simulation in simulation_space:
@@ -169,6 +165,8 @@ for this_simulation in simulation_space:
                 layer_time = timeit.default_timer() - layer_start_time
                 #print("--- layer took " + str(np.round(layer_time, 2)) + " seconds.")
 
+                run_times_df = run_times_df.append(pd.DataFrame.from_dict({'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate], 'simulation': [this_simulation], 'run_time': [layer_time]}))
+
                 if this_layer_index == n_layers:
                     keep_layer = True
 
@@ -202,16 +200,15 @@ for this_simulation in simulation_space:
 simulation_df['experiment_id'] = experiment_id
 simulation_df['experiment_run_date'] = experiment_run_date
 
-simulation_df.to_csv(os.getcwd() + "/out-data/" + sim_results_label+"_simulation_df.csv", sep=',')
+simulation_df.to_csv(outdata_dir + experiment_id + "_simulation_df.csv", sep=',')
 
 simulation_df_final = simulation_df[simulation_df.keep_layer == True].sort_values(by=['num_qubits', 'measurement_rate','layer'])
 
 simulation_df_summary = simulation_df.groupby(['num_qubits','measurement_rate'])[['renyi_entropy_2nd']].mean().reset_index()
 simulation_df_summary.head()
-simulation_df_summary.to_csv(os.getcwd() + "/out-data/"+sim_results_label+"_simulation_df_summary.csv", sep=',')
+simulation_df_summary.to_csv(outdata_dir + experiment_id + "_simulation_df_summary.csv", sep=',')
 
-
-decoherence_network_path = os.getcwd() + '/out-data/' + sim_results_label + '_decoherence_network.p'
+decoherence_network_path = outdata_dir + experiment_id + '_decoherence_network.p'
 pickle.dump( layer_dict, open( decoherence_network_path, "wb" ) )
 
 ################################
@@ -230,12 +227,12 @@ sim_plot = sns.lineplot(x='measurement_rate',
                         markersize = 10)
 sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
 sim_plot.set_ylabel("2nd Renyi Entropy", fontsize = 20)
-plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results-only-converged.pdf')
+plt.savefig(outdata_dir + experiment_id + '_simulation-results-only-converged.pdf')
 
 
-############################
-############################
-############################
+################################
+## Results - Using All Layers ##
+################################
 sns.set(rc = {'figure.figsize':(12,12)})
 sns.set_style(style='whitegrid')
 sim_plot = sns.lineplot(x='measurement_rate',
@@ -247,7 +244,7 @@ sim_plot = sns.lineplot(x='measurement_rate',
                         markersize = 10)
 sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
 sim_plot.set_ylabel("2nd Renyi Entropy", fontsize = 20)
-plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results.pdf')
+plt.savefig(outdata_dir + experiment_id+ '_simulation-results.pdf')
 
 
 #################################
@@ -263,8 +260,7 @@ sns.set_style(style='whitegrid')
 fig, ax = plt.subplots()
 
 simulation_df.renyi_entropy_2nd.hist()
-plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results-renyi-hist.pdf')
-
+plt.savefig(outdata_dir + experiment_id+ '_simulation-results-renyi-hist.pdf')
 
 size_order = list(np.unique(simulation_df.measurement_rate))
 n_colors = len(size_order)
@@ -280,7 +276,7 @@ sns.relplot(
     kind="line", palette=palette,
     facet_kws=dict(sharex=False)
 )
-plt.savefig(os.getcwd() + '/out-data/' + sim_results_label+ '_simulation-results-layer-evolution.pdf')
+plt.savefig(outdata_dir + experiment_id+ '_simulation-results-layer-evolution.pdf')
 
 
 
@@ -311,37 +307,3 @@ ax.text(75, 65, 'Larger \nDecoherence\nProbability', bbox={'facecolor': 'white',
         fontsize=15,
         fontweight='bold')
 plt.show()
-
-################################################################
-################################################################
-################################################################
-
-custom_label = "exp_0x7a052949c1014ca39a7e43a2532b2fa8"
-julia_results_file_name = custom_label+"_simulation_stats_df.xlsx"
-julia_results_dir = os.getcwd() + "/out_data/"
-julia_path = julia_results_dir+julia_results_file_name
-julia_df_final_summary = pd.read_excel(julia_path)
-
-julia_df_final_summary['num_qubits'] = julia_df_final_summary.num_qubits.astype(str)
-sns.set(rc = {'figure.figsize':(12,12)})
-sns.set_style(style='whitegrid')
-sim_plot = sns.lineplot(x='measurement_rate',
-                        y='mean_entropy',
-                        data = julia_df_final_summary,
-                        hue='num_qubits',
-                        marker='o',
-                        linewidth = 3,
-                        markersize = 10)
-sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
-sim_plot.set_ylabel("Von Neumann Entropy", fontsize = 20)
-sim_plot.set_title('Julia ITensors Simulation Results')
-plt.savefig(julia_results_dir + custom_label+ '_qiskit_comparison_simulation.pdf')
-
-
-custom_label = "qiskit_cmpr_100sims_mr0_v2"
-julia_results_file_name = custom_label+"von_neumann_entropy_df.xlsx"
-julia_results_dir = os.getcwd().replace("/qiskit","") + "/itensor/out_data/"
-julia_path = julia_results_dir+julia_results_file_name
-von_neumann_entropy_df = pd.read_excel(julia_path)
-
-von_neumann_entropy_df_eigen1 = von_neumann_entropy_df[von_neumann_entropy_df.eigenvalue==1]
