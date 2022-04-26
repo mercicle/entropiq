@@ -20,6 +20,8 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 - [Quantum Tensor Networks in a Nutshell](https://arxiv.org/pdf/1708.00006.pdf)
 - [Measurement Protected Quantum Phases](https://arxiv.org/pdf/2004.09509.pdf)
 
+[Effect of barren plateaus on gradient-free optimization](https://arxiv.org/abs/2011.12245)
+
 
 # Topics
 

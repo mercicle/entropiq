@@ -211,6 +211,25 @@ simulation_df_summary.to_csv(outdata_dir + experiment_id + "_simulation_df_summa
 decoherence_network_path = outdata_dir + experiment_id + '_decoherence_network.p'
 pickle.dump( layer_dict, open( decoherence_network_path, "wb" ) )
 
+
+run_times_df['run_time_min'] = run_times_df['run_time'].apply(lambda x: x/60)
+
+run_times_df_summary = run_times_df.groupby(['num_qubits','measurement_rate'])[['run_time_min']].mean().reset_index()
+run_times_df_summary.to_csv(outdata_dir + experiment_id + "_runtimes.csv", sep=',')
+
+sns.set(rc = {'figure.figsize':(12,12)})
+sns.set_style(style='whitegrid')
+sim_plot = sns.lineplot(x='measurement_rate',
+                        y='run_time',
+                        data = run_times_df_summary,
+                        hue='num_qubits',
+                        marker='o',
+                        linewidth = 3,
+                        markersize = 10)
+sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
+sim_plot.set_ylabel("Average Runtime (Min)", fontsize = 20)
+plt.savefig(outdata_dir + experiment_id + '_simulation-results-only-converged.pdf')
+
 ################################
 ## Results - Only Final Layer ##
 ################################
@@ -228,7 +247,6 @@ sim_plot = sns.lineplot(x='measurement_rate',
 sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
 sim_plot.set_ylabel("2nd Renyi Entropy", fontsize = 20)
 plt.savefig(outdata_dir + experiment_id + '_simulation-results-only-converged.pdf')
-
 
 ################################
 ## Results - Using All Layers ##
