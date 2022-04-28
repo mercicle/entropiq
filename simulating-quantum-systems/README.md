@@ -22,6 +22,12 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 [Effect of barren plateaus on gradient-free optimization](https://arxiv.org/abs/2011.12245)
 
+[Quantum Algorithm Design - Classiq](https://global-uploads.webflow.com/60000db7a5f449af5e4590ac/6114676a4005b87b75c9653c_What%20is%20quantum%20algorithm%20design%20note.pdf)
+
+[MPS Examples](https://physics.stackexchange.com/questions/266587/examples-of-matrix-product-states)
+
+[The density-matrix renormalization group in the age of matrix product states
+](https://arxiv.org/abs/1008.3477)
 
 # Topics
 

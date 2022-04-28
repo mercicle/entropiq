@@ -24,7 +24,7 @@ function entanglemententropy(ψ₀::MPS, subsystem_divider::Int, use_constant_si
   # http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf
 
   # https://itensor.github.io/ITensors.jl/stable/examples/MPSandMPO.html
-  
+
   # ψ₀ = ψ
   # subsystem_divider = subsystem_range_divider
   # use_constant_size

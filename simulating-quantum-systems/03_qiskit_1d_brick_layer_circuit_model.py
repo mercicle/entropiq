@@ -220,7 +220,7 @@ run_times_df_summary.to_csv(outdata_dir + experiment_id + "_runtimes.csv", sep='
 sns.set(rc = {'figure.figsize':(12,12)})
 sns.set_style(style='whitegrid')
 sim_plot = sns.lineplot(x='measurement_rate',
-                        y='run_time',
+                        y='run_time_min',
                         data = run_times_df_summary,
                         hue='num_qubits',
                         marker='o',
