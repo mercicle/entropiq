@@ -26,8 +26,12 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 [MPS Examples](https://physics.stackexchange.com/questions/266587/examples-of-matrix-product-states)
 
-[The density-matrix renormalization group in the age of matrix product states
-](https://arxiv.org/abs/1008.3477)
+[The density-matrix renormalization group in the age of matrix product states](https://arxiv.org/abs/1008.3477)
+
+[Hand-waving and Interpretive Dance: An Introductory Course on Tensor Networks](https://arxiv.org/pdf/1603.03039.pdf)
+
+[Matrix Product State Based Algorithms for Ground States and Dynamics](https://qdev.nbi.ku.dk/student_theses/RGawatz_Msc.pdf)
+
 
 # Topics
 
@@ -150,6 +154,8 @@ Environment:
 [Deploying a Julia API with Genie](https://genieframework.github.io/Genie.jl/dev/guides/Simple_API_backend.html)
 
 [Genie Documentation](https://geniejl.readthedocs.io/en/latest/)
+
+[Graphs.jl](https://juliagraphs.org/Graphs.jl/stable/generators/)
 
 
 Install PastaQ:
