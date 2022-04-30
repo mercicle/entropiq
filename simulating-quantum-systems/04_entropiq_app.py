@@ -41,10 +41,10 @@ experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiment
 st.set_page_config(layout = "wide")
 
 with st.sidebar:
-    selected = option_menu("Quantum Lab", ["Quantum Lab Stats", 'Launch Simulation', 'Discovery'],
+    selected = option_menu("Entropiq", ["Entropiq Stats", 'Launch Simulation', 'Discovery'],
                            icons=['stack', 'bricks','search'], menu_icon = "boxes", default_index=1)
 
-if selected == "Quantum Lab Stats":
+if selected == "Entropiq Stats":
 
     col1, col2 = st.columns([4,4])
 
