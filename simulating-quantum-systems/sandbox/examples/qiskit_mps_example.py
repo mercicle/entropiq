@@ -9,14 +9,17 @@ import numpy as np
 from qiskit import QuantumCircuit, transpile
 from qiskit.providers.aer import AerSimulator
 
+import qiskit.quantum_info as qi
+
+# Select the AerSimulator from the Aer provider
+simulator = AerSimulator(method='matrix_product_state')
+
+
 # Construct quantum circuit
 circ = QuantumCircuit(2, 2)
 circ.h(0)
 circ.cx(0, 1)
 circ.measure([0,1], [0,1])
-
-# Select the AerSimulator from the Aer provider
-simulator = AerSimulator(method='matrix_product_state')
 
 # Run and get counts, using the matrix_product_state method
 tcirc = transpile(circ, simulator)
@@ -35,6 +38,16 @@ circ = QuantumCircuit(2, 2)
 circ.h(0)
 circ.cx(0, 1)
 
+
+rho = qi.DensityMatrix.from_instruction(circ)
+
+u, s, vh = np.linalg.svd(np.real(np.matrix(rho)), full_matrices=False)
+
+s = np.round(s,2)
+
+reduced_rho = qi.partial_trace(rho, [1])
+
+
 # Define a snapshot that shows the current state vector
 circ.save_statevector(label='state_vector')
 circ.save_matrix_product_state(label='MPS_representation')
@@ -48,6 +61,18 @@ data = result.data(0)
 #print the result data
 data
 
+{'counts': {'0x3': 503, '0x0': 521},
+ 'state_vector': Statevector([0.70710678+0.j, 0.        +0.j, 0.        +0.j,
+              0.70710678+0.j],
+             dims=(2, 2)),
+ 'MPS_representation': (
+[(array([[1, 0]]),
+    array([[0, 1]])),
+   (array([[1],
+           [0]]),
+    array([[0],
+           [1]]))],
+  [array([0.70710678, 0.70710678])])}
 
 target_qreg = []
 target_qreg.append((np.array([[1, 0]], dtype=complex), np.array([[0, 1]], dtype=complex)))
@@ -72,5 +97,17 @@ circ_ne.measure([0,1], [0,1])
 tcirc_ne = transpile(circ_ne, simulator)
 result_ne = simulator.run(tcirc_ne).result()
 data_ne = result_ne.data(0)
+
+
+rho = qi.DensityMatrix.from_instruction(circ_ne)
+
+u, s, vh = np.linalg.svd(np.real(np.matrix(rho)), full_matrices=False)
+
+s = np.round(s,2)
+reduced_rho = qi.partial_trace(rho, [1])
+
+unitary_pmf = rho.probabilities([0,1]).tolist()
+unitary_pmf = [np.round(prob,2) for prob in unitary_pmf]
+
 
 

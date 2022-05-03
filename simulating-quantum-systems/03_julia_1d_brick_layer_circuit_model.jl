@@ -45,19 +45,19 @@ if run_from_script
   rng = MersenneTwister(1234)
   experiment_id = repr(uuid4(rng).value)
   sim_status = "Running"
-  experiment_name = "Switch projective measurements"
-  experiment_description = "Experiment from script  - testing change in projective measurements"
+  experiment_name = "Comare with qiskit for paper"
+  experiment_description = "Comare with qiskit for paper"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
   Random.seed!(1234)
   num_qubit_space = 6:1:9 #6:1:10
-  n_layers = 10
-  n_simulations = 20
-  measurement_rate_space = 0.0:0.1:0.9 #0.10:0.10:0.70
+  n_layers = 20
+  n_simulations = 10
+  measurement_rate_space = 0.0:0.1:0.5 #0.10:0.10:0.70
   simulation_space = 1:n_simulations
   layer_space = 1:n_layers
 
   operation_type_to_apply = "Binary" # 'Unary', 'Binary'
-  gate_types_to_apply = "Random Cliffords" # Options: Random Unitaries Random Cliffords
+  gate_types_to_apply = "Random Unitaries" # Options: Random Unitaries Random Cliffords
 
   subsystem_range_divider = 2
   use_constant_size = false
@@ -356,11 +356,3 @@ LibPQ.load!(
 execute(conn, "COMMIT;")
 
 #TableView.showtable(von_neumann_entropy_df)
-
-alter_meta = false
-if alter_meta
-  result = execute(conn,
-                   "alter table quantumlab_experiments.experiments_metadata add column status TEXT ;",
-                   throw_error=false
-                   )
-end
