@@ -49,9 +49,15 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 [SPIN ONE-HALF, BRAS, KETS, AND OPERATORS](https://ocw.mit.edu/courses/physics/8-05-quantum-physics-ii-fall-2013/lecture-notes/MIT8_05F13_Chap_02.pdf)
 
-
 [A Practical Introduction to Tensor Networks: Matrix Product States and Projected Entangled Pair States](https://arxiv.org/pdf/1306.2164.pdf)
 
+[Blueprint for a microwave trapped-ion quantum computer](https://arxiv.org/abs/1508.00420)
+
+[Blueprint for a microwave trapped ion quantum computer](https://www.sussex.ac.uk/research/explore-our-research/physics-and-astronomy/prototype-first-large-scale-quantum-computer) and [paper](https://www.science.org/doi/10.1126/sciadv.1601540)
+
+[Quantum optimization of maximum independent set using Rydberg atom arrays](https://www.science.org/doi/10.1126/science.abo6587)
+
+[Exploring Quantum Computation Through the Lens of Classical Simulation](https://discovery.ucl.ac.uk/id/eprint/10091573/1/Thesis_Corrected_PCalpin.pdf)
 
 # Installation
 

@@ -145,6 +145,7 @@ this_circuit = nothing
 simulation_df = DataFrame()
 von_neumann_entropy_df = DataFrame()
 von_neumann_entropies = []
+run_times = []
 start_time = time()
 
 for (index_n, num_qubits) in enumerate(num_qubit_space)
@@ -210,9 +211,10 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
       # measurement_rate = 0.10
       this_circuit_index = 1
       von_neumann_entropies = []
-
+      run_times = []
       for this_circuit in circuit_simulations
 
+         sim_start_time = time()
          # this_circuit = circuit_simulations[8]
          N = nqubits(this_circuit)
          #@printf("# Qubits = %.3i , # Qubits = %.3i  \n", num_qubits, N)
@@ -295,17 +297,22 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
 
          this_circuit_index += 1
 
+         this_runtime = time() - sim_start_time
+         this_runtime = round(this_runtime, digits=0)
+
          push!(von_neumann_entropies, this_von_neumann_entropy)
+         push!(run_times, this_runtime)
 
       end # for this_circuit in circuit_simulations
 
+      mean_runtime = mean(run_times)
       mean_entropy = mean(von_neumann_entropies)
       se_mean_entropy = sem(von_neumann_entropies)
       @printf("# Qubits = %.3i Measurement Rate = %.2f  S(ρ) = %.5f ± %.1E \n", num_qubits, measurement_rate, mean_entropy, se_mean_entropy)
 
       #append(pd.DataFrame.from_dict({'simulation': [this_simulation], 'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate],
       #'layer': [this_layer],'keep_layer': [keep_layer], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
-      this_simulation_df = DataFrame(num_qubits = num_qubits, measurement_rate = measurement_rate, mean_entropy = mean_entropy, se_mean_entropy=se_mean_entropy)
+      this_simulation_df = DataFrame(num_qubits = num_qubits, measurement_rate = measurement_rate, mean_entropy = mean_entropy, se_mean_entropy=se_mean_entropy, mean_runtime = mean_runtime)
       simulation_df = [simulation_df; this_simulation_df]
 
   end # for measurement_rate in measurement_rate_space
@@ -331,9 +338,10 @@ LibPQ.load!(
      mean_entropy = simulation_df.mean_entropy,
      se_mean_entropy=simulation_df.se_mean_entropy,
      experiment_id = simulation_df.experiment_id
+     mean_runtime = simulation_df.mean_runtime
     ),
     conn,
-    "INSERT INTO quantumlab_experiments.simulation_results (num_qubits, measurement_rate, mean_entropy, se_mean_entropy, experiment_id) VALUES(\$1, \$2, \$3, \$4, \$5);"
+    "INSERT INTO quantumlab_experiments.simulation_results (num_qubits, measurement_rate, mean_entropy, se_mean_entropy, experiment_id, mean_runtime) VALUES(\$1, \$2, \$3, \$4, \$5, \$6);"
 )
 execute(conn, "COMMIT;")
 

@@ -41,10 +41,10 @@ experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiment
 st.set_page_config(layout = "wide")
 
 with st.sidebar:
-    selected = option_menu("Entropiq", ["Entropiq Stats", 'Launch Simulation', 'Discovery'],
+    selected = option_menu("EntropiQ", ["EntropiQ Stats", 'Launch Simulation', 'Discovery'],
                            icons=['stack', 'bricks','search'], menu_icon = "boxes", default_index=1)
 
-if selected == "Entropiq Stats":
+if selected == "EntropiQ Stats":
 
     col1, col2 = st.columns([4,4])
 
@@ -54,13 +54,16 @@ if selected == "Entropiq Stats":
 
     last_run_date  = experiment_metadata_df['experiment_run_date'].max()
 
+    ave_runtime = experiment_metadata_df['runtime_in_seconds'].mean()
+
     with col1:
         hc.info_card(title='# of Experiments', content = str(int(n_experiments)), sentiment='good')
         hc.info_card(title='Last Run Date', content = str(last_run_date), sentiment='good')
 
     with col2:
         hc.info_card(title='Average Layers', content = str(int(ave_layers)), sentiment='good')
-        hc.info_card(title='Average Simulations', content = str(ave_simulations), sentiment='good')
+        hc.info_card(title='Average Simulations', content = str(int(ave_simulations)), sentiment='good')
+        hc.info_card(title='Average Runtime (Min)', content = str(np.round(ave_runtime/60,2)), sentiment='good')
 
 elif selected == "Launch Simulation":
 
