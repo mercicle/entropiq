@@ -23,12 +23,39 @@ postgres_conn = get_postgres_conn()
 outdata_dir = os.getcwd() + "/out_data/qiskit/"
 
 
-experiment_id = "73fff0d4-c414-11ec-9419-328140767e06"
+experiment_id = "0x7a052949c1014ca39a7e43a2532b2fa8"
 
-runtime_julia_df = get_table(conn = postgres_conn, table_name = experiments_metadata_table_name, schema_name = core_schema)
+################################
+##      Compare Runtimes      ##
+################################
+experiment_id = "0x7a052949c1014ca39a7e43a2532b2fa8"
 
 runtime_julia_df = get_table(conn = postgres_conn, table_name = simulation_results_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
 
+qiskit_experiment_id = "73fff0d4-c414-11ec-9419-328140767e06"
+run_times_df_summary = pd.read_csv(outdata_dir + qiskit_experiment_id + "_runtimes.csv")
+run_times_df_summary = run_times_df_summary[['num_qubits', 'measurement_rate']]
+
+run_times_df_summary = pd.merge(run_times_df_summary, )
+
+
+sns.set(rc = {'figure.figsize':(12,12)})
+sns.set_style(style='whitegrid')
+sim_plot = sns.lineplot(x='measurement_rate',
+                        y='run_time_min',
+                        data = run_times_df_summary,
+                        hue='num_qubits',
+                        marker='o',
+                        linewidth = 3,
+                        markersize = 10)
+sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
+sim_plot.set_ylabel("Average Runtime (Min)", fontsize = 20)
+plt.savefig(outdata_dir + experiment_id + '_simulation-results-only-converged.pdf')
+
+################################
+##                            ##
+################################
+experiment_id = "0x7a052949c1014ca39a7e43a2532b2fa8"
 
 simulation_df = pd.read_csv(outdata_dir + experiment_id + "_simulation_df.csv")
 simulation_df_final = simulation_df[simulation_df.keep_layer == True].sort_values(by=['num_qubits', 'measurement_rate','layer'])

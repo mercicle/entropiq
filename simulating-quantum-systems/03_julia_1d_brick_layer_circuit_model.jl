@@ -45,8 +45,8 @@ if run_from_script
   rng = MersenneTwister(1234)
   experiment_id = repr(uuid4(rng).value)
   sim_status = "Running"
-  experiment_name = "Comare with qiskit for paper"
-  experiment_description = "Comare with qiskit for paper"
+  experiment_name = "Comare with qiskit for paper 2nd try - rounding runtime"
+  experiment_description = "Comare with qiskit for paper 2nd try - rounding runtime"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
   Random.seed!(1234)
   num_qubit_space = 6:1:9 #6:1:10
@@ -300,7 +300,7 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
          this_circuit_index += 1
 
          this_runtime = time() - sim_start_time
-         this_runtime = round(this_runtime, digits=0)
+         this_runtime = round(this_runtime, digits=3)
 
          push!(von_neumann_entropies, this_von_neumann_entropy)
          push!(run_times, this_runtime)
