@@ -76,7 +76,8 @@ if run_from_script
                                      subsystem_range_divider = 1/subsystem_range_divider,
                                      operation_type_to_apply = operation_type_to_apply,
                                      gate_types_to_apply = gate_types_to_apply,
-                                     status = sim_status
+                                     status = sim_status,
+                                     runtime_in_seconds = 0
                                      )
 
 
@@ -94,10 +95,11 @@ if run_from_script
       constant_size = experiment_metadata_df.constant_size,
       subsystem_range_divider = experiment_metadata_df.subsystem_range_divider,
       operation_type_to_apply = experiment_metadata_df.operation_type_to_apply,
-      gate_types_to_apply = experiment_metadata_df.gate_types_to_apply
+      gate_types_to_apply = experiment_metadata_df.gate_types_to_apply,
+      runtime_in_seconds = experiment_metadata_df.runtime_in_seconds
      ),
      conn,
-     "INSERT INTO quantumlab_experiments.experiments_metadata (experiment_id, status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, use_constant_size, constant_size, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14);"
+     "INSERT INTO quantumlab_experiments.experiments_metadata (experiment_id, status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, use_constant_size, constant_size, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply, runtime_in_seconds) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14, \$15);"
   )
   execute(conn, "COMMIT;")
 
@@ -337,7 +339,7 @@ LibPQ.load!(
      measurement_rate = simulation_df.measurement_rate,
      mean_entropy = simulation_df.mean_entropy,
      se_mean_entropy=simulation_df.se_mean_entropy,
-     experiment_id = simulation_df.experiment_id
+     experiment_id = simulation_df.experiment_id,
      mean_runtime = simulation_df.mean_runtime
     ),
     conn,
