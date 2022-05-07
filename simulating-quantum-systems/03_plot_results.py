@@ -28,29 +28,42 @@ experiment_id = "0x7a052949c1014ca39a7e43a2532b2fa8"
 ################################
 ##      Compare Runtimes      ##
 ################################
-experiment_id = "0x7a052949c1014ca39a7e43a2532b2fa8"
+experiment_id = "0x1429bbf4c76d4b1b9b5f4cec3b770495"
 
 runtime_julia_df = get_table(conn = postgres_conn, table_name = simulation_results_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
+runtime_julia_df['mean_runtime'] = runtime_julia_df['mean_runtime']/60
+runtime_julia_df.rename(columns = {'mean_runtime':'mean_runtime_julia'}, inplace=True)
 
 qiskit_experiment_id = "73fff0d4-c414-11ec-9419-328140767e06"
 run_times_df_summary = pd.read_csv(outdata_dir + qiskit_experiment_id + "_runtimes.csv")
-run_times_df_summary = run_times_df_summary[['num_qubits', 'measurement_rate']]
+run_times_df_summary = run_times_df_summary[['num_qubits', 'measurement_rate','run_time_min']]
+run_times_df_summary.rename(columns = {'run_time_min':'mean_runtime_qiskit'}, inplace=True)
+merged_runtimes_df = pd.merge(run_times_df_summary, runtime_julia_df, on = ['num_qubits','measurement_rate'])
 
-run_times_df_summary = pd.merge(run_times_df_summary, )
+merged_runtimes_df = merged_runtimes_df[merged_runtimes_df.num_qubits == 9]
+stacked_for_plot_df_julia = merged_runtimes_df[['num_qubits', 'measurement_rate', 'mean_runtime_julia']]
+stacked_for_plot_df_julia.rename(columns = {'mean_runtime_julia':'mean_runtime'}, inplace=True)
+stacked_for_plot_df_julia['software'] = 'ITensors'
 
+stacked_for_plot_df_py = merged_runtimes_df[['num_qubits', 'measurement_rate', 'mean_runtime_qiskit']]
+stacked_for_plot_df_py.rename(columns = {'mean_runtime_qiskit':'mean_runtime'}, inplace=True)
+stacked_for_plot_df_py['software'] = 'Qiskit'
+
+stacked_for_plot = stacked_for_plot_df_julia
+stacked_for_plot = stacked_for_plot.append(stacked_for_plot_df_py).reset_index()
 
 sns.set(rc = {'figure.figsize':(12,12)})
 sns.set_style(style='whitegrid')
 sim_plot = sns.lineplot(x='measurement_rate',
-                        y='run_time_min',
-                        data = run_times_df_summary,
-                        hue='num_qubits',
+                        y='mean_runtime',
+                        data = stacked_for_plot,
+                        hue='software',
                         marker='o',
                         linewidth = 3,
                         markersize = 10)
 sim_plot.set_xlabel("Measurement Rate", fontsize = 20)
 sim_plot.set_ylabel("Average Runtime (Min)", fontsize = 20)
-plt.savefig(outdata_dir + experiment_id + '_simulation-results-only-converged.pdf')
+plt.savefig(outdata_dir +'___compare-qiskit-itensors-mean-runtimes.pdf')
 
 ################################
 ##                            ##

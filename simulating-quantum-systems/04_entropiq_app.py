@@ -170,24 +170,10 @@ elif selected == "Discovery":
     st.subheader('Experiment Results:')
     experiment_results_df = get_table(conn = postgres_conn, table_name = simulation_results_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
     experiment_results_df['num_qubits'] = experiment_results_df.num_qubits.astype(str)
-
+    experiment_results_df['mean_runtime_min'] = experiment_results_df['mean_runtime'].apply(lambda x: np.round(x/60,3))
     AgGrid(experiment_results_df)
 
-    # main_fig = plt.figure(figsize=(10, 4))
-    # sns.set(rc = {'figure.figsize':(12,12)})
-    # sns.set_style(style='whitegrid')
-    # sim_plot = sns.lineplot(x='measurement_rate',
-    #                         y='mean_entropy',
-    #                         data = experiment_results_df,
-    #                         hue='num_qubits',
-    #                         marker='o',
-    #                         linewidth = 2,
-    #                         markersize = 6)
-    # sim_plot.set_xlabel("Measurement Rate", fontsize = 12)
-    # sim_plot.set_ylabel("Von Neumann Entropy", fontsize = 12)
-    # sim_plot.set_title('Simulation Results')
-    # st.pyplot(main_fig)
-
+    st.subheader('Average Entanglement Entropy by System Size and Measurement Rate')
     main_fig = px.line(experiment_results_df,
                         x='measurement_rate', y='mean_entropy', color='num_qubits',
                         height=800, width=800,
@@ -195,8 +181,19 @@ elif selected == "Discovery":
                              "measurement_rate": "Measurement Rate (%)",
                              "mean_entropy": "Average Entropy"
                          })
+    main_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    st.plotly_chart(main_fig, use_container_width=True)
 
-    #et_fig.update_layout(legend=dict(orientation="h"))
+    st.subheader('Runtime Analysis')
+    main_fig = px.line(experiment_results_df,
+                        x='measurement_rate',
+                        y='mean_runtime_min',
+                        color='num_qubits',
+                        height=800, width=800,
+                        labels={
+                             "measurement_rate": "Measurement Rate (%)",
+                             "mean_runtime_min": "Average Simulation Runtime (Min)"
+                         })
     main_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     st.plotly_chart(main_fig, use_container_width=True)
 
@@ -204,9 +201,10 @@ elif selected == "Discovery":
 
     print("Dropping Experiment ID")
     entropy_tracking_df.drop(columns=['experiment_id'],inplace=True)
-    entropy_tracking_df['num_qubits'] = entropy_tracking_df.num_qubits.astype(str)
-    entropy_tracking_df['simulation_number'] = entropy_tracking_df.simulation_number.astype(str)
-    entropy_tracking_df['entropy_contribution'] = entropy_tracking_df.entropy_contribution.astype(float)
+    #entropy_tracking_df['num_qubits'] = entropy_tracking_df.num_qubits.astype(int)
+    #entropy_tracking_df['simulation_number'] = entropy_tracking_df.simulation_number.astype(str)
+    #entropy_tracking_df['entropy_contribution'] = entropy_tracking_df.entropy_contribution.astype(float)
+    #entropy_tracking_df['state_index'] = entropy_tracking_df.entropy_contribution.astype(int)
 
     st.subheader('Entropy Contribution by Measurement Rate and System Size')
 
@@ -214,41 +212,38 @@ elif selected == "Discovery":
 
     AgGrid(entropy_tracking_df.head())
 
-    temp_show_plot = True
+    print("Start plotting entropy_contribution ΔS")
+    et_fig = px.line(entropy_tracking_df,
+                     x='ij', y='entropy_contribution', color='simulation_number',
+                    facet_col = 'measurement_rate', facet_row = 'num_qubits',
+                    height=800, width=800,
+                    labels={
+                         "entropy_contribution": "ΔS",
+                         "ij": "State Index"
+                     })
 
-    if temp_show_plot:
-        print("Start plotting entropy_contribution ΔS")
-        et_fig = px.line(entropy_tracking_df,
-                         x='ij', y='entropy_contribution', color='simulation_number',
-                        facet_col = 'measurement_rate', facet_row = 'num_qubits',
-                        height=800, width=800,
-                        labels={
-                             "entropy_contribution": "ΔS",
-                             "ij": "State Index"
-                         })
+    et_fig.update_layout(legend=dict(orientation="h"))
+    et_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    st.plotly_chart(et_fig, use_container_width=True)
 
-        et_fig.update_layout(legend=dict(orientation="h"))
-        et_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-        st.plotly_chart(et_fig, use_container_width=True)
+    st.subheader('Inspection')
 
-        st.subheader('Inspection')
+    select_nq = st.selectbox('# Qubits:',entropy_tracking_df.num_qubits.unique())
+    select_mr = st.selectbox('Measurement rate:',entropy_tracking_df.measurement_rate.unique())
 
-        select_nq = st.selectbox('# Qubits:',entropy_tracking_df.num_qubits.unique())
-        select_mr = st.selectbox('Measurement rate:',entropy_tracking_df.measurement_rate.unique())
-
-        inspect_entropy_tracking_df = entropy_tracking_df[ (entropy_tracking_df.num_qubits == select_nq) & (entropy_tracking_df.measurement_rate == select_mr)]
-        eti_fig = px.line(inspect_entropy_tracking_df,
-                      x='ij', y='entropy_contribution', color='simulation_number', #size='entropy_contribution',
-                      facet_col = 'measurement_rate', facet_row = 'num_qubits',
-                      height=800, width=800,
-                      labels={
-                           "entropy_contribution": "ΔS",
-                           "ij": "State Index"
-                       })
-        eti_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-        eti_fig.update_layout(legend=dict(orientation="h"))
-        st.plotly_chart(eti_fig, use_container_width=True)
-        print("End plotting entropy_contribution ΔS")
+    inspect_entropy_tracking_df = entropy_tracking_df[ (entropy_tracking_df.num_qubits == select_nq) & (entropy_tracking_df.measurement_rate == select_mr)]
+    eti_fig = px.line(inspect_entropy_tracking_df,
+                  x='ij', y='entropy_contribution', color='simulation_number', #size='entropy_contribution',
+                  facet_col = 'measurement_rate', facet_row = 'num_qubits',
+                  height=800, width=800,
+                  labels={
+                       "entropy_contribution": "ΔS",
+                       "ij": "State Index"
+                   })
+    eti_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    eti_fig.update_layout(legend=dict(orientation="h"))
+    st.plotly_chart(eti_fig, use_container_width=True)
+    print("End plotting entropy_contribution ΔS")
 
     #st.subheader('Plotly Express:')
     # df = px.data.gapminder()

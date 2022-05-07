@@ -42,17 +42,17 @@ experiment_id = "0ed86a8c-bf24-11ec-80b0-328140767e06"
 
 if run_from_script
 
-  rng = MersenneTwister(1234)
+  rng = MersenneTwister()
   experiment_id = repr(uuid4(rng).value)
   sim_status = "Running"
-  experiment_name = "Comare with qiskit for paper 2nd try - rounding runtime"
-  experiment_description = "Comare with qiskit for paper 2nd try - rounding runtime"
+  experiment_name = "Larger & more granular experiment"
+  experiment_description = "Larger & more granular experiment"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
-  Random.seed!(1234)
-  num_qubit_space = 6:1:9 #6:1:10
-  n_layers = 20
-  n_simulations = 10
-  measurement_rate_space = 0.0:0.1:0.5 #0.10:0.10:0.70
+
+  num_qubit_space = 6:1:15 #6:1:10
+  n_layers = 50
+  n_simulations = 50
+  measurement_rate_space = 0.0:0.1:0.9 #0.10:0.10:0.70
   simulation_space = 1:n_simulations
   layer_space = 1:n_layers
 
@@ -80,7 +80,7 @@ if run_from_script
                                      runtime_in_seconds = 0
                                      )
 
-
+  execute(conn, "BEGIN;")
   LibPQ.load!(
      (experiment_id = experiment_metadata_df.experiment_id,
       status = experiment_metadata_df.status,
@@ -333,7 +333,7 @@ result = execute(conn,
 simulation_df = insertcols!(simulation_df, :experiment_id => experiment_id)
 
 #TableView.showtable(simulation_df)
-
+execute(conn, "BEGIN;")
 LibPQ.load!(
     (num_qubits = simulation_df.num_qubits,
      measurement_rate = simulation_df.measurement_rate,
@@ -349,6 +349,8 @@ execute(conn, "COMMIT;")
 
 von_neumann_entropy_df = insertcols!(von_neumann_entropy_df, :experiment_id => experiment_id)
 
+#https://invenia.github.io/LibPQ.jl/dev/#COPY-1
+execute(conn, "BEGIN;")
 LibPQ.load!(
     (
     experiment_id = von_neumann_entropy_df.experiment_id,
