@@ -175,12 +175,18 @@ elif selected == "Discovery":
 
     st.subheader('Average Entanglement Entropy by System Size and Measurement Rate')
     main_fig = px.line(experiment_results_df,
-                        x='measurement_rate', y='mean_entropy', color='num_qubits',
+                        x='measurement_rate',
+                        y='mean_entropy',
+                        color='num_qubits',
                         height=800, width=800,
+                        color_discrete_sequence= px.colors.sequential.Plasma_r,
                         labels={
                              "measurement_rate": "Measurement Rate (%)",
                              "mean_entropy": "Average Entropy"
                          })
+    main_fig.update_traces(line = dict(width=3))
+    main_fig.update_layout(font = dict(size=20))
+
     main_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     st.plotly_chart(main_fig, use_container_width=True)
 
@@ -190,10 +196,13 @@ elif selected == "Discovery":
                         y='mean_runtime_min',
                         color='num_qubits',
                         height=800, width=800,
+                        color_discrete_sequence= px.colors.sequential.Plasma_r,
                         labels={
                              "measurement_rate": "Measurement Rate (%)",
                              "mean_runtime_min": "Average Simulation Runtime (Min)"
                          })
+    main_fig.update_traces(line = dict(width=3))
+    main_fig.update_layout(font = dict(size=20))
     main_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     st.plotly_chart(main_fig, use_container_width=True)
 
@@ -212,14 +221,22 @@ elif selected == "Discovery":
 
     AgGrid(entropy_tracking_df.head())
 
-    print("Start plotting entropy_contribution ΔS")
     et_fig = px.line(entropy_tracking_df,
-                     x='ij', y='entropy_contribution', color='simulation_number',
-                    facet_col = 'measurement_rate', facet_row = 'num_qubits',
-                    height=800, width=800,
-                    labels={
+                     x='ij',
+                     y='entropy_contribution',
+                     color='simulation_number',
+                     color_discrete_sequence=px.colors.sequential.Purp,
+                     facet_col='measurement_rate',
+                     facet_row='num_qubits',
+                     height=800, width=800,
+                     labels={
                          "entropy_contribution": "ΔS",
                          "ij": "State Index"
+                      },
+                     category_orders={
+                     "simulation_number": np.sort(entropy_tracking_df.simulation_number.unique()).tolist(),
+                     "num_qubits": np.sort(entropy_tracking_df.num_qubits.unique()).tolist(),
+                     "measurement_rate": np.sort(entropy_tracking_df.measurement_rate.unique()).tolist()
                      })
 
     et_fig.update_layout(legend=dict(orientation="h"))
@@ -233,15 +250,20 @@ elif selected == "Discovery":
 
     inspect_entropy_tracking_df = entropy_tracking_df[ (entropy_tracking_df.num_qubits == select_nq) & (entropy_tracking_df.measurement_rate == select_mr)]
     eti_fig = px.line(inspect_entropy_tracking_df,
-                  x='ij', y='entropy_contribution', color='simulation_number', #size='entropy_contribution',
-                  facet_col = 'measurement_rate', facet_row = 'num_qubits',
+                  x='ij',
+                  y='entropy_contribution',
+                  color='simulation_number',
+                  color_discrete_sequence=px.colors.sequential.Purp,
+                  facet_col='measurement_rate',
+                  facet_row='num_qubits',
                   height=800, width=800,
                   labels={
                        "entropy_contribution": "ΔS",
                        "ij": "State Index"
                    })
+    eti_fig.update_traces(line = dict(width=3))
+    eti_fig.update_layout(font = dict(size=20), legend = dict(orientation="h"))
     eti_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-    eti_fig.update_layout(legend=dict(orientation="h"))
     st.plotly_chart(eti_fig, use_container_width=True)
     print("End plotting entropy_contribution ΔS")
 

@@ -61,6 +61,8 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 [Quantum Entanglement in Python - Schmidt decompostion](https://pypi.org/project/pyqentangle/)
 
+[DFT](https://www2.icp.uni-stuttgart.de/~icp/mediawiki/images/b/b8/DFT.pdf)
+
 # Installation
 
 
