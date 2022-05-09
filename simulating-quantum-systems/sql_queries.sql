@@ -24,9 +24,9 @@ alter table quantumlab_experiments.simulation_results add column mean_runtime FL
 -- delete from quantumlab_experiments.entropy_tracking where experiment_id is not null;
 -- delete from quantumlab_experiments.experiments_metadata where experiment_id is not null;
 
--- delete from quantumlab_experiments.simulation_results where experiment_id = '0xc6a67f5ef5104321bcd95e31d1249cfa';
--- delete from quantumlab_experiments.entropy_tracking where experiment_id = '0xafcd0de2920e4e4d92adf1f445583d2b';
--- delete from quantumlab_experiments.experiments_metadata where experiment_id = '0xc6a67f5ef5104321bcd95e31d1249cfa';
+--delete from quantumlab_experiments.simulation_results where experiment_id = '0xbcee3e8ca662403c9609615477a6fe3b';
+--delete from quantumlab_experiments.entropy_tracking where experiment_id = '0xbcee3e8ca662403c9609615477a6fe3b';
+--delete from quantumlab_experiments.experiments_metadata where experiment_id = '0xbcee3e8ca662403c9609615477a6fe3b';
 
 
 --delete from quantumlab_experiments.entropy_tracking where experiment_id = '0xafcd0de2920e4e4d92adf1f445583d2b';

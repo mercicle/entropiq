@@ -63,6 +63,20 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 [DFT](https://www2.icp.uni-stuttgart.de/~icp/mediawiki/images/b/b8/DFT.pdf)
 
+[](https://www.research-collection.ethz.ch/bitstream/handle/20.500.11850/123831/eth-50186-02.pdf)
+
+[A short report has placed a spotlight on IonQ, a quantum computing champion. This should not deflect long term interest in this or other quantum technologies.](https://www.factbasedinsight.com/weathering-the-first-quantum-short/)
+
+[MPS Application - Variational quantum algorithm for unconstrained black box binary optimization: Application to feature selection](https://arxiv.org/abs/2205.03045)
+
+[‘The Big Money Is Here’: The Arms Race to Quantum Computing A real quantum computer is still far off – but that doesn’t bother those engaged in the arms race to develop a quantum processor. Here are the Israelis banking on it](https://www.haaretz.com/israel-news/tech-news/.premium-the-big-money-is-here-the-arms-race-to-quantum-computing-1.10761657)
+
+# Overleaf
+
+[Positioning_of_Figures](https://www.overleaf.com/learn/latex/Positioning_of_Figures)
+[Wrapping_text_around_figures](https://www.overleaf.com/learn/latex/Wrapping_text_around_figures)
+
+
 # Installation
 
 

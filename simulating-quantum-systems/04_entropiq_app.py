@@ -21,8 +21,16 @@ from st_aggrid.grid_options_builder import GridOptionsBuilder
 
 import plotly.express as px
 
+from palettable.scientific.sequential import Devon_20
+import colour
+
+from colour import Color
+colors = list(Color("#3f007d").range_to(Color("white"),20))
+colors = np.flip([c.hex for c in colors])
+
 this_dir = os.getcwd()
 repo_root_dir = this_dir.split("qc-repo")[0] + 'qc-repo/'
+
 
 from helpers.data_helpers import *
 from _app_parms import *
@@ -173,13 +181,23 @@ elif selected == "Discovery":
     experiment_results_df['mean_runtime_min'] = experiment_results_df['mean_runtime'].apply(lambda x: np.round(x/60,3))
     AgGrid(experiment_results_df)
 
+
+    n_qubits = len(experiment_results_df.num_qubits.unique())
+    n_simulations = experiment_metadata_df.n_simulations.values[0]
+
+    #these_colors = colors[ (len(colors)-n_qubits):]
+
+    n_qubit_color_palette = list(Color("#3f007d").range_to(Color("#fcfbfd"),n_qubits))
+    n_qubit_color_palette = np.flip([c.hex for c in n_qubit_color_palette])
+
     st.subheader('Average Entanglement Entropy by System Size and Measurement Rate')
     main_fig = px.line(experiment_results_df,
                         x='measurement_rate',
                         y='mean_entropy',
                         color='num_qubits',
                         height=800, width=800,
-                        color_discrete_sequence= px.colors.sequential.Plasma_r,
+                        color_discrete_sequence = n_qubit_color_palette,
+                        #color_continuous_scale=px.colors.sequential.Plasma_r,
                         labels={
                              "measurement_rate": "Measurement Rate (%)",
                              "mean_entropy": "Average Entropy"
@@ -196,7 +214,7 @@ elif selected == "Discovery":
                         y='mean_runtime_min',
                         color='num_qubits',
                         height=800, width=800,
-                        color_discrete_sequence= px.colors.sequential.Plasma_r,
+                        color_discrete_sequence=n_qubit_color_palette,
                         labels={
                              "measurement_rate": "Measurement Rate (%)",
                              "mean_runtime_min": "Average Simulation Runtime (Min)"
@@ -210,28 +228,28 @@ elif selected == "Discovery":
 
     print("Dropping Experiment ID")
     entropy_tracking_df.drop(columns=['experiment_id'],inplace=True)
-    #entropy_tracking_df['num_qubits'] = entropy_tracking_df.num_qubits.astype(int)
-    #entropy_tracking_df['simulation_number'] = entropy_tracking_df.simulation_number.astype(str)
-    #entropy_tracking_df['entropy_contribution'] = entropy_tracking_df.entropy_contribution.astype(float)
-    #entropy_tracking_df['state_index'] = entropy_tracking_df.entropy_contribution.astype(int)
+    entropy_tracking_df['log_state_index'] = entropy_tracking_df['ij'].apply(lambda x: np.log(x))
 
     st.subheader('Entropy Contribution by Measurement Rate and System Size')
-
     st.subheader('Preview')
 
     AgGrid(entropy_tracking_df.head())
 
+    n_sim_color_palette = list(Color("#c7e9c0").range_to(Color("#006d2c"),n_simulations))
+    n_sim_color_palette = np.flip([c.hex for c in n_sim_color_palette])
+
+
     et_fig = px.line(entropy_tracking_df,
-                     x='ij',
+                     x='log_state_index',
                      y='entropy_contribution',
                      color='simulation_number',
-                     color_discrete_sequence=px.colors.sequential.Purp,
+                     color_discrete_sequence=n_sim_color_palette,
                      facet_col='measurement_rate',
                      facet_row='num_qubits',
                      height=800, width=800,
                      labels={
                          "entropy_contribution": "ΔS",
-                         "ij": "State Index"
+                         "log_state_index": "Log(State Index)"
                       },
                      category_orders={
                      "simulation_number": np.sort(entropy_tracking_df.simulation_number.unique()).tolist(),
@@ -249,34 +267,21 @@ elif selected == "Discovery":
     select_mr = st.selectbox('Measurement rate:',entropy_tracking_df.measurement_rate.unique())
 
     inspect_entropy_tracking_df = entropy_tracking_df[ (entropy_tracking_df.num_qubits == select_nq) & (entropy_tracking_df.measurement_rate == select_mr)]
+
     eti_fig = px.line(inspect_entropy_tracking_df,
-                  x='ij',
+                  x='log_state_index',
                   y='entropy_contribution',
                   color='simulation_number',
-                  color_discrete_sequence=px.colors.sequential.Purp,
+                  color_discrete_sequence=n_sim_color_palette,
                   facet_col='measurement_rate',
                   facet_row='num_qubits',
                   height=800, width=800,
                   labels={
                        "entropy_contribution": "ΔS",
-                       "ij": "State Index"
+                       "log_state_index": "Log(State Index)"
                    })
     eti_fig.update_traces(line = dict(width=3))
     eti_fig.update_layout(font = dict(size=20), legend = dict(orientation="h"))
     eti_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
     st.plotly_chart(eti_fig, use_container_width=True)
     print("End plotting entropy_contribution ΔS")
-
-    #st.subheader('Plotly Express:')
-    # df = px.data.gapminder()
-    # fig = px.scatter(df, x='gdpPercap', y='lifeExp', color='continent', size='pop',
-    #                 facet_col='year', facet_col_wrap=4)
-    # st.plotly_chart(fig, use_container_width=True)
-    #
-    #matrix_element = st.selectbox('Select matrix element', [1,2,3])
-    #print("computing matrix in julia...")
-    #this_matrix  = np.array([[1,0],[0,1]])
-    #print("after computing matrix in julia...")
-    #fig, ax = plt.subplots()
-    #sns.heatmap(this_matrix, ax=ax)
-    #st.write(fig)

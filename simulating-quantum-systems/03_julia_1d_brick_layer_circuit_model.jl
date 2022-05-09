@@ -49,8 +49,8 @@ if run_from_script
   experiment_description = "Larger & more granular experiment"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
-  num_qubit_space = 6:1:15 #6:1:10
-  n_layers = 50
+  num_qubit_space = 6:1:18 #6:1:10
+  n_layers = 40
   n_simulations = 50
   measurement_rate_space = 0.0:0.1:0.9 #0.10:0.10:0.70
   simulation_space = 1:n_simulations
