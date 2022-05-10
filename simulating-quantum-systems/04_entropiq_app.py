@@ -185,9 +185,7 @@ elif selected == "Discovery":
     n_qubits = len(experiment_results_df.num_qubits.unique())
     n_simulations = experiment_metadata_df.n_simulations.values[0]
 
-    #these_colors = colors[ (len(colors)-n_qubits):]
-
-    n_qubit_color_palette = list(Color("#3f007d").range_to(Color("#fcfbfd"),n_qubits))
+    n_qubit_color_palette = list(Color("#3f007d").range_to(Color("#dadaeb"),n_qubits))
     n_qubit_color_palette = np.flip([c.hex for c in n_qubit_color_palette])
 
     st.subheader('Average Entanglement Entropy by System Size and Measurement Rate')
@@ -200,7 +198,7 @@ elif selected == "Discovery":
                         #color_continuous_scale=px.colors.sequential.Plasma_r,
                         labels={
                              "measurement_rate": "Measurement Rate (%)",
-                             "mean_entropy": "Average Entropy"
+                             "mean_entropy": "Average Entanglement Entropy"
                          })
     main_fig.update_traces(line = dict(width=3))
     main_fig.update_layout(font = dict(size=20))
@@ -237,8 +235,6 @@ elif selected == "Discovery":
 
     n_sim_color_palette = list(Color("#c7e9c0").range_to(Color("#006d2c"),n_simulations))
     n_sim_color_palette = np.flip([c.hex for c in n_sim_color_palette])
-
-
     et_fig = px.line(entropy_tracking_df,
                      x='log_state_index',
                      y='entropy_contribution',
@@ -259,6 +255,9 @@ elif selected == "Discovery":
 
     et_fig.update_layout(legend=dict(orientation="h"))
     et_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    et_fig.update_yaxes(matches=None)
+    et_fig.update_xaxes(matches=None)
+
     st.plotly_chart(et_fig, use_container_width=True)
 
     st.subheader('Inspection')

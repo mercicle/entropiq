@@ -358,6 +358,8 @@ https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
 - [ITensor](https://arxiv.org/pdf/2007.14822.pdf)
 - [PastaQ](https://github.com/GTorlai/PastaQ.jl)
 
+[PastaQ randomlayer](https://github.com/GTorlai/PastaQ.jl/blob/000b2524b92b5cb09295cfd09dcbb1914ddc0991/src/circuits/circuits.jl)
+
 ## Starter code was graciously added by ITensor and PastaQ maintainers
 - https://raw.githubusercontent.com/GTorlai/PastaQ.jl/master/examples/11_monitored_circuit.jl
 

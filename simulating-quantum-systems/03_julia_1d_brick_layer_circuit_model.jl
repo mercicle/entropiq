@@ -49,10 +49,10 @@ if run_from_script
   experiment_description = "Larger & more granular experiment"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
-  num_qubit_space = 6:1:18 #6:1:10
+  num_qubit_space = 6:1:18
   n_layers = 40
   n_simulations = 50
-  measurement_rate_space = 0.0:0.1:0.9 #0.10:0.10:0.70
+  measurement_rate_space = 0.0:0.1:0.9
   simulation_space = 1:n_simulations
   layer_space = 1:n_layers
 
@@ -165,7 +165,6 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
   circuit_simulations = []
   for (index_s, this_sim) in enumerate(simulation_space)
     layers = []
-    #@printf("Preparing # Sim = %.3i \n", this_sim)
     for this_layer_index in layer_space
 
       this_layer = nothing
@@ -173,8 +172,6 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
 
         if gate_types_to_apply == "Random Unitaries"
 
-          #randomlayer:
-          #https://github.com/GTorlai/PastaQ.jl/blob/000b2524b92b5cb09295cfd09dcbb1914ddc0991/src/circuits/circuits.jl
           this_layer  = randomlayer("RandomUnitary",[(j,j+1) for j in 1:2:(num_qubits-1)])
 
         elseif gate_types_to_apply == "Random Cliffords"
@@ -207,7 +204,6 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
   end
 
   to = TimerOutput()
-  # loop over projective measurement probability (per site)
   for (index_m, measurement_rate) in enumerate(measurement_rate_space)
 
       # measurement_rate = 0.10
@@ -220,6 +216,7 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
          # this_circuit = circuit_simulations[8]
          N = nqubits(this_circuit)
          #@printf("# Qubits = %.3i , # Qubits = %.3i  \n", num_qubits, N)
+
          # initialize state ψ = |000…⟩
          ψ = productstate(num_qubits)
 
@@ -240,7 +237,6 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
                # qubit_index = 1
                if measurement_rate > rand()
 
-                 #projective_measurement!(ψ, qubit_index)
                  if operation_type_to_apply == "Unary"
 
                      ψ = orthogonalize!(ψ, qubit_index)
@@ -255,9 +251,7 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
                      next_qubit_index = qubit_index + 1
                      orthogonalize!(ψ, qubit_index)
 
-                     #ϕ = ψ[ qubit_index:next_qubit_index ]
                      ϕ = ψ[qubit_index] * ψ[next_qubit_index]
-
                      ρ = prime(ϕ, tags = "Site") * dag(ϕ)
 
                      unitary_pmf = real.(diag(reshape(array(ρ), (4,4))))
@@ -284,9 +278,7 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
          this_von_neumann_entropy_dict = Dict()
          try
             this_von_neumann_entropy_dict = entanglemententropy(ψ, subsystem_range_divider, use_constant_size, constant_size)
-            #@printf("Completed Entropy for Circuit: %.3i \n", this_circuit_index)
          catch e
-            #println("!!SVD failed, the matrix you were trying to SVD contains NaNs.")
             @printf("!!SVD failed for Circuit: %.3i \n", this_circuit_index)
          end
 
@@ -312,8 +304,6 @@ for (index_n, num_qubits) in enumerate(num_qubit_space)
       se_mean_entropy = sem(von_neumann_entropies)
       @printf("# Qubits = %.3i Measurement Rate = %.2f  S(ρ) = %.5f ± %.1E \n", num_qubits, measurement_rate, mean_entropy, se_mean_entropy)
 
-      #append(pd.DataFrame.from_dict({'simulation': [this_simulation], 'num_qubits': [num_qubits], 'measurement_rate':[measurement_rate],
-      #'layer': [this_layer],'keep_layer': [keep_layer], 'renyi_entropy_2nd': [renyi_entropy_2nd] }))
       this_simulation_df = DataFrame(num_qubits = num_qubits, measurement_rate = measurement_rate, mean_entropy = mean_entropy, se_mean_entropy=se_mean_entropy, mean_runtime = mean_runtime)
       simulation_df = [simulation_df; this_simulation_df]
 
