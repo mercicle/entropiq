@@ -298,7 +298,7 @@ elif selected == "Discovery":
                                legend_title_text='# of Qubits')
     st.plotly_chart(eti_fig_hist, use_container_width=True)
 
-    st.subheader('Inspection')
+    st.subheader('Inspection - State Probability Distribution')
 
     select_nq = st.selectbox('# Qubits:',entropy_tracking_df.num_qubits.unique())
     select_mr = st.selectbox('Measurement rate:',entropy_tracking_df.measurement_rate.unique())
