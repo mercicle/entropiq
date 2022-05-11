@@ -45,21 +45,21 @@ if run_from_script
   rng = MersenneTwister()
   experiment_id = repr(uuid4(rng).value)
   sim_status = "Running"
-  experiment_name = "Larger & more granular experiment"
-  experiment_description = "Larger & more granular experiment"
+  experiment_name = "Larger experiments - testing 20-100"
+  experiment_description = "Larger experiments with higher measurement rates"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
-  num_qubit_space = 6:1:18
-  n_layers = 40
-  n_simulations = 50
-  measurement_rate_space = 0.0:0.1:0.9
+  num_qubit_space = 20:10:100
+  n_layers = 100
+  n_simulations = 100
+  measurement_rate_space = 0.60:0.05:0.9
   simulation_space = 1:n_simulations
   layer_space = 1:n_layers
 
   operation_type_to_apply = "Binary" # 'Unary', 'Binary'
   gate_types_to_apply = "Random Unitaries" # Options: Random Unitaries Random Cliffords
 
-  subsystem_range_divider = 2
+  subsystem_range_divider = 4
   use_constant_size = false
   constant_size = 3
 
