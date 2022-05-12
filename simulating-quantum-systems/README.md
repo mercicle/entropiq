@@ -32,6 +32,7 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 [Matrix Product State Based Algorithms for Ground States and Dynamics](https://qdev.nbi.ku.dk/student_theses/RGawatz_Msc.pdf)
 
+[Quantum Picturalism](https://arxiv.org/abs/0908.1787)
 
 # Topics
 
@@ -391,3 +392,31 @@ https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
 [StackOverflow](https://stackoverflow.com/questions/71726946/calling-julia-from-streamlit-app-using-pyjulia)
 [Streamlit Issues](https://github.com/streamlit/streamlit/issues/4585)
 [PyJulia Issues](https://github.com/JuliaPy/pyjulia/issues/492)
+
+
+ - https://streamlit-aggrid.readthedocs.io/en/docs/Usage.html#simple-use
+ - https://towardsdatascience.com/7-reasons-why-you-should-use-the-streamlit-aggrid-component-2d9a2b6e32f0
+ - https://pypi.org/project/streamlit-observable/
+
+## Entanglement Entropy
+
+# https://qiskit.org/documentation/_modules/qiskit/quantum_info/states/utils.html#partial_trace
+# https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#reduced
+
+# http://itensor.org/docs.cgi?vers=cppv3&page=formulas/mps_two_rdm
+
+ - "Among physicists, this is often called "tracing out" or "tracing over" W to leave only an operator on V in the context where W and V are Hilbert spaces associated with quantum systems (see below)."
+# https://en.wikipedia.org/wiki/Partial_trace#:~:text=In%20linear%20algebra%20and%20functional,is%20an%20operator%2Dvalued%20function.
+
+# http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf
+
+# https://itensor.github.io/ITensors.jl/stable/examples/MPSandMPO.html
+
+# ψ₀ = ψ
+# subsystem_divider = subsystem_range_divider
+# use_constant_size
+# constant_size
+# isnan
+# SVD failed, the matrix you were trying to SVD contains NaNs.
+#http://itensor.org/docs.cgi?page=book/itensor_factorizing&vers=cppv3
+#http://itensor.org/docs.cgi?vers=cppv3&page=tutorials/SVD
