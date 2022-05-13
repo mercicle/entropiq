@@ -12,6 +12,10 @@ select *
 from quantumlab_experiments.entropy_tracking
 where experiment_id = '0xafcd0de2920e4e4d92adf1f445583d2b';
 
+select count(*) as n
+from quantumlab_experiments.entropy_tracking
+where experiment_id = '0xf49163c226ae411b89f038499ea0facc';
+
 
 
 

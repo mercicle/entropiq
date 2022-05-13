@@ -109,5 +109,30 @@ reduced_rho = qi.partial_trace(rho, [1])
 unitary_pmf = rho.probabilities([0,1]).tolist()
 unitary_pmf = [np.round(prob,2) for prob in unitary_pmf]
 
+##################################
+##          GHZ Example         ##
+##################################
 
+# Construct quantum circuit
+num_qubits = 3
+circ_ghz = QuantumCircuit(num_qubits, num_qubits)
+down_state = np.array([1,0])
+
+for qubit_index in range(0, num_qubits):
+    circ_ghz.initialize(down_state, qubit_index)
+
+circ_ghz.h(0)
+circ_ghz.cx(0, 1)
+circ_ghz.cx(1, 2)
+
+# Define a snapshot that shows the current state vector
+circ_ghz.save_statevector(label='state_vector_ghz')
+circ_ghz.save_matrix_product_state(label='MPS_ghz')
+circ_ghz.measure([0,1,2],[0,1,2])
+
+# Run and get counts, using the matrix_product_state method
+transpiled_circ_ghz = transpile(circ_ghz, simulator)
+transpiled_circ_ghz_result = simulator.run(transpiled_circ_ghz).result()
+ghz_measurement_counts = transpiled_circ_ghz_result.get_counts(0)
+ghz_measurement_counts
 

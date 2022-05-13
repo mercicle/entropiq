@@ -56,7 +56,7 @@ if selected == "EntropiQ Stats":
     with col2:
         hc.info_card(title='Average Layers', content = str(int(ave_layers)), sentiment='good')
         hc.info_card(title='Average Simulations', content = str(int(ave_simulations)), sentiment='good')
-        hc.info_card(title='Average Runtime (Min)', content = str(np.round(ave_runtime/60,2)), sentiment='good')
+        hc.info_card(title='Average Sim Runtime (Min)', content = str(np.round(ave_runtime/60,2)), sentiment='good')
 
 elif selected == "Launch Simulation":
 
