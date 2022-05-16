@@ -5,12 +5,6 @@ using PastaQ
 import PastaQ: gate
 using DataFrames
 
-# Von Neumann entropy at center bond von_neumann_entropy
-# https://en.wikipedia.org/wiki/Von_Neumann_entropy
-# http://www.scholarpedia.org/article/Quantum_entropies
-# "von Neumann entropy is a limiting case of the Rényi entropy" lim α→1 Sα(ρ) = S(ρ)
-# Given a family of entropies {Sα(ρ)}α, where α is some index, the entropies are monotonic in α∈ℝ
-
 function entanglemententropy(ψ₀::MPS, subsystem_divider::Int, use_constant_size::Bool, constant_size::Int)
 
   ψ_local = normalize!(copy(ψ₀))

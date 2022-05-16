@@ -34,6 +34,15 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 [Quantum Picturalism](https://arxiv.org/abs/0908.1787)
 
+[numpy svd](https://numpy.org/doc/stable/reference/generated/numpy.linalg.svd.html)
+
+[Extending the lifetime of a quantum bit with error correction in superconducting circuits](https://www.nature.com/articles/nature18949)
+
+[qubits from neon gas](https://phys.org/news/2022-05-quantum-bit-qubit-breakthrough.html)
+
+[Non-Abelian Anyons and Topological Quantum Computation](https://arxiv.org/abs/0707.1889)
+
+
 # Topics
 
 [This site is a resource for tensor network algorithms, theory, and software.](https://tensornetwork.org/)
@@ -400,23 +409,17 @@ https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
 
 ## Entanglement Entropy
 
-# https://qiskit.org/documentation/_modules/qiskit/quantum_info/states/utils.html#partial_trace
-# https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#reduced
+ - https://qiskit.org/documentation/_modules/qiskit/quantum_info/states/utils.html#partial_trace
+ - https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#reduced
 
-# http://itensor.org/docs.cgi?vers=cppv3&page=formulas/mps_two_rdm
+ - http://itensor.org/docs.cgi?vers=cppv3&page=formulas/mps_two_rdm
 
- - "Among physicists, this is often called "tracing out" or "tracing over" W to leave only an operator on V in the context where W and V are Hilbert spaces associated with quantum systems (see below)."
-# https://en.wikipedia.org/wiki/Partial_trace#:~:text=In%20linear%20algebra%20and%20functional,is%20an%20operator%2Dvalued%20function.
+ - ["Among physicists, this is often called "tracing out" or "tracing over" W to leave only an operator on V in the context where W and V are Hilbert spaces associated with quantum systems (see below)."](https://en.wikipedia.org/wiki/Partial_trace#:~:text=In%20linear%20algebra%20and%20functional,is%20an%20operator%2Dvalued%20function)
 
-# http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf
-
-# https://itensor.github.io/ITensors.jl/stable/examples/MPSandMPO.html
-
-# ψ₀ = ψ
-# subsystem_divider = subsystem_range_divider
-# use_constant_size
-# constant_size
-# isnan
-# SVD failed, the matrix you were trying to SVD contains NaNs.
-#http://itensor.org/docs.cgi?page=book/itensor_factorizing&vers=cppv3
-#http://itensor.org/docs.cgi?vers=cppv3&page=tutorials/SVD
+ - http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf
+ - https://itensor.github.io/ITensors.jl/stable/examples/MPSandMPO.html
+ - http://itensor.org/docs.cgi?page=book/itensor_factorizing&vers=cppv3
+ - http://itensor.org/docs.cgi?vers=cppv3&page=tutorials/SVD
+ - https://en.wikipedia.org/wiki/Von_Neumann_entropy
+ - http://www.scholarpedia.org/article/Quantum_entropies
+ - "von Neumann entropy is a limiting case of the Rényi entropy" lim α→1 Sα(ρ) = S(ρ) Given a family of entropies {Sα(ρ)}α, where α is some index, the entropies are monotonic in α∈ℝ
