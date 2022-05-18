@@ -21,6 +21,11 @@ where experiment_id = '0xf49163c226ae411b89f038499ea0facc';
 
 alter table quantumlab_experiments.experiments_metadata add column status TEXT ;
 
+alter table quantumlab_experiments.experiments_metadata add column experimental_design_type TEXT;
+
+-- update quantumlab_experiments.experiments_metadata set experimental_design_type = 'Standard Bricklayer';
+
+
 alter table quantumlab_experiments.simulation_results add column mean_runtime FLOAT ;
 
 -- clear data 

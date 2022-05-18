@@ -42,6 +42,21 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 [Non-Abelian Anyons and Topological Quantum Computation](https://arxiv.org/abs/0707.1889)
 
+## Observables
+
+[Observables and Measurements in Quantum Mechanics](http://physics.mq.edu.au/~jcresser/Phys301/Chapters/Chapter13.pdf)
+
+[ITensors A DMRGObserver is a type of observer](https://itensor.github.io/ITensors.jl/stable/DMRGObserver.html#DMRGObserver)
+
+[Qiskit Lab QuantumMeasurement](https://qiskit.org/textbook/ch-labs/Lab02_QuantumMeasurement.html)
+
+[ITensors - very good article on measurement of local operators](http://itensor.org/docs.cgi?page=formulas/measure_mps&vers=julia)
+
+[MSFT Azure Article - very good Pauli measurement operations](https://docs.microsoft.com/en-us/azure/quantum/concepts-pauli-measurements)
+
+Diagonal representation of Z operator, Z = |0><0| − |1><1|
+
+Measuring X: Apply H to X_{i} and then use the amplitudes to select which projective measurement?
 
 # Topics
 
@@ -411,9 +426,7 @@ https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
 
  - https://qiskit.org/documentation/_modules/qiskit/quantum_info/states/utils.html#partial_trace
  - https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#reduced
-
  - http://itensor.org/docs.cgi?vers=cppv3&page=formulas/mps_two_rdm
-
  - ["Among physicists, this is often called "tracing out" or "tracing over" W to leave only an operator on V in the context where W and V are Hilbert spaces associated with quantum systems (see below)."](https://en.wikipedia.org/wiki/Partial_trace#:~:text=In%20linear%20algebra%20and%20functional,is%20an%20operator%2Dvalued%20function)
 
  - http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf
