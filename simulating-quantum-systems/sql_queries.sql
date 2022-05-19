@@ -5,6 +5,8 @@ CREATE TABLE IF NOT EXISTS quantumlab_experiments.entropy_tracking_jwcplc (exper
 
 DROP TABLE IF EXISTS quantumlab_experiments.experiments_metadata_jwcplc;
 
+--delete from quantumlab_experiments.experiments_metadata_jwcplc where experiment_id is not null;
+
 select *  
 from quantumlab_experiments.experiments_metadata  
 
@@ -33,7 +35,7 @@ alter table quantumlab_experiments.experiments_metadata add column experimental_
 -- update quantumlab_experiments.experiments_metadata set experimental_design_type = 'Standard Bricklayer';
 
 
-alter table quantumlab_experiments.simulation_results add column mean_runtime FLOAT ;
+-- alter table quantumlab_experiments.simulation_results add column mean_runtime FLOAT ;
 
 -- clear data 
 -- delete from quantumlab_experiments.simulation_results where experiment_id is not null;

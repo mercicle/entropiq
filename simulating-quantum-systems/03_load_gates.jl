@@ -39,10 +39,10 @@ gate(::GateName"Π11") =
 
  gate(::GateName"X↑") =
  1/2*([1 1
-        1 1]
+        1 1])
  gate(::GateName"X↓") =
  1/2*([1 -1
-      -1 1]
+      -1 1])
 
 gate(::GateName"ΠJWCPLC_UOdd") =
   1/sqrt(2)*([1 0

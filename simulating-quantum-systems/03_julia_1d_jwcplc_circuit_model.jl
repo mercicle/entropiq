@@ -40,13 +40,17 @@ run_from_script = true
 experiment_id, sim_status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_simulations, layer_space, simulation_space, p_space, q_space, subsystem_range_divider, experimental_design_type = [nothing for _ = 1:14]
 experiment_id = "0ed86a8c-bf24-11ec-80b0-328140767e06"
 
+experiments_metadata_table_name = "experiments_metadata_jwcplc"
+sim_results_table_name = "simulation_results_jwcplc"
+entropy_tracking_table_name  = "entropy_tracking_jwcplc"
+
 if run_from_script
 
   rng = MersenneTwister()
   experiment_id = repr(uuid4(rng).value)
   sim_status = "Running"
-  experiment_name = "Testing with new run_brick_layer_sim()"
-  experiment_description = "Testing with new run_brick_layer_sim()"
+  experiment_name = "Testing jwcplc"
+  experiment_description = "Testing jwcplc"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
   # only even system sizes and
@@ -108,14 +112,14 @@ if run_from_script
       experimental_design_type = experiment_metadata_df.experimental_design_type
      ),
      conn,
-     "INSERT INTO quantumlab_experiments.experiments_metadata_jwcplc (experiment_id, status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_simulations, p_space, q_space,  use_constant_size, constant_size, subsystem_range_divider, runtime_in_seconds, experimental_design_type) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14);"
+     "INSERT INTO quantumlab_experiments."*"$(experiments_metadata_table_name)"*" (experiment_id, status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_simulations, p_space, q_space,  use_constant_size, constant_size, subsystem_range_divider, runtime_in_seconds, experimental_design_type) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14);"
   )
   execute(conn, "COMMIT;")
 
 else
 
   result = execute(conn,
-                   string("select * FROM quantumlab_experiments.experiments_metadata_jwcplc where experiment_id = '", experiment_id,"'");
+                   string("select * FROM quantumlab_experiments."*"$(experiments_metadata_table_name)"*" where experiment_id = '", experiment_id,"'");
                    throw_error=false
                    )
 
@@ -157,7 +161,6 @@ end
 # simulation_df = brick_layer_results["simulation_df"]
 # von_neumann_entropy_df = brick_layer_results["von_neumann_entropy_df"]
 
-projective_list = [ "00"; "01"; "10"; "11"]
 qubit_index_space = nothing
 ψ_tracker = nothing
 this_layer = nothing
@@ -181,6 +184,7 @@ for num_qubits in num_qubit_space
       run_times = []
       for this_sim in simulation_space
 
+         # this_sim = 1
          sim_start_time = time()
 
          # initialize state ψ = |000…⟩
@@ -188,10 +192,12 @@ for num_qubits in num_qubit_space
 
          for this_layer_index in this_layer_space
 
+           # this_layer_index = 1
            if isodd(this_layer_index)
 
              for qubit_index in qubit_index_space
 
+               # qubit_index = 1
                # p = 0.5
                odd_actions = ["JWCPLC_UOdd","JWCPLC_UOdd1", "JWCPLC_UOdd_Measure"]
                action_pmf = [p, (1-p)*q, (1-p)*(1-q)]
@@ -215,7 +221,7 @@ for num_qubits in num_qubit_space
                end
                ψ = runcircuit(ψ, (action_string, qubit_index))
                normalize!(ψ)
-
+             end
            else
 
              for qubit_index in qubit_index_space
@@ -235,7 +241,7 @@ for num_qubits in num_qubit_space
                    local_ZZ_up = ITensor([1 0 0 0
                                           0 0 0 0
                                           0 0 0 0
-                                          0 0 0 1]), Index(4,"i"), Index(4,"j"))
+                                          0 0 0 1], Index(4,"i"), Index(4,"j"))
 
                    zz_born_probability_up = bra*local_ZZ_up*ket
                    zz_born_probability_down = 1-zz_born_probability_up
@@ -289,7 +295,7 @@ end # num_qubits
 
 sim_status = "Completed"
 result = execute(conn,
-                 string("update quantumlab_experiments.experiments_metadata_jwcplc set runtime_in_seconds = ", runtime_in_seconds, ", status = '", sim_status ,"' where experiment_id = '", experiment_id,"'");
+                 string("update quantumlab_experiments."*"$(experiments_metadata_table_name)"*" set runtime_in_seconds = ", runtime_in_seconds, ", status = '", sim_status ,"' where experiment_id = '", experiment_id,"'");
                  throw_error=false
                  )
 
@@ -307,7 +313,7 @@ LibPQ.load!(
      mean_runtime = simulation_df.mean_runtime
     ),
     conn,
-    "INSERT INTO quantumlab_experiments.simulation_results_jwcplc (num_qubits, p, q, mean_entropy, se_mean_entropy, experiment_id, mean_runtime) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7);"
+    "INSERT INTO quantumlab_experiments."*"$(sim_results_table_name)"*" (num_qubits, p, q, mean_entropy, se_mean_entropy, experiment_id, mean_runtime) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7);"
 )
 execute(conn, "COMMIT;")
 
@@ -328,7 +334,7 @@ LibPQ.load!(
     entropy_contribution = von_neumann_entropy_df.entropy_contribution
     ),
     conn,
-    "INSERT INTO quantumlab_experiments.entropy_tracking_jwcplc (experiment_id, p, q, simulation_number, num_qubits, bond_index, ij, eigenvalue, entropy_contribution) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9);"
+    "INSERT INTO quantumlab_experiments."*"$(entropy_tracking_table_name)"*" (experiment_id, p, q, simulation_number, num_qubits, bond_index, ij, eigenvalue, entropy_contribution) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9);"
 )
 execute(conn, "COMMIT;")
 
