@@ -31,27 +31,33 @@ gate(::GateName"Π11") =
  0 0 0 0
  0 0 0 1]
 
- gate(::GateName"UOdd") =
-   [0 0
-    0 1]
+ #math
+ # start with wave f
+ # compute prob of some eigenvalue
+ # project onto eigenspace (multiple wf by projector)
+ # take norm squared of that state
 
-gate(::GateName"JWCPLC_UOdd") =
+ # only even system sizes and
+ # depth = system size
+ # percolation universality class p=0 q~1/2
+
+ gate(::GateName"X↑") =
+ 1/2*([1 1
+        1 1]
+ gate(::GateName"X↓") =
+ 1/2*([1 -1
+      -1 1]
+
+gate(::GateName"ΠJWCPLC_UOdd") =
   1/sqrt(2)*([1 0
               0 1] + im *[0 1
                           1 0])
 
+gate(::GateName"ΠJWCPLC_UOdd1") =
+[1 0
+ 0 1]
 
-#math
-# start with wave f
-# compute prob of some eigenvalue
-# project onto eigenspace (multiple wf by projector)
-# take norm squared of that state
-
-# only even system sizes and
-# depth = system size
-# percolation universality class p=0 q~1/2
-
-gate(::GateName"JWCPLC_UEven") =
+gate(::GateName"ΠJWCPLC_UEven") =
     1/sqrt(2)*(
     [1 0 0 0
      0 1 0 0
@@ -61,7 +67,23 @@ gate(::GateName"JWCPLC_UEven") =
                       0 0 -1 0
                       0 0 0  1])
 
+gate(::GateName"ΠJWCPLC_UEven1") =
+[1 0 0 0
+ 0 1 0 0
+ 0 0 1 0
+ 0 0 0 1]
 
+gate(::GateName"ZZ↑") =
+[1 0 0 0
+ 0 0 0 0
+ 0 0 0 0
+ 0 0 0 1]
+
+ gate(::GateName"ZZ↓") =
+ [0 0 0 0
+  0 1 0 0
+  0 0 1 0
+  0 0 0 0]
 
 fid = h5open(string(@__DIR__, "/in_data/clifford_dict.h5"), "r")
 clifford_samples = 99999
