@@ -37,10 +37,6 @@ gate(::GateName"Π11") =
  # project onto eigenspace (multiple wf by projector)
  # take norm squared of that state
 
- # only even system sizes and
- # depth = system size
- # percolation universality class p=0 q~1/2
-
  gate(::GateName"X↑") =
  1/2*([1 1
         1 1]

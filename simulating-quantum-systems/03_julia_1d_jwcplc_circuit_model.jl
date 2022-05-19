@@ -37,7 +37,7 @@ db_connection_string = string(" host = ", cnfg["POSTGRES_DB_URL"],
 conn = LibPQ.Connection(db_connection_string)
 
 run_from_script = true
-experiment_id, sim_status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, layer_space, simulation_space, p_space, q_space, subsystem_range_divider, experimental_design_type = [nothing for _ = 1:15]
+experiment_id, sim_status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_simulations, layer_space, simulation_space, p_space, q_space, subsystem_range_divider, experimental_design_type = [nothing for _ = 1:14]
 experiment_id = "0ed86a8c-bf24-11ec-80b0-328140767e06"
 
 if run_from_script
@@ -49,17 +49,21 @@ if run_from_script
   experiment_description = "Testing with new run_brick_layer_sim()"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
+  # only even system sizes and
+  # depth = system size
+  # percolation universality class p=0 q~1/2
+
   num_qubit_space = 6:2:10
-  n_layers = 20
+  #n_layers = 20
   n_simulations = 100
 
   p_space = 0.10:0.10:0.9
   q_space = 0.10:0.10:0.9
 
   simulation_space = 1:n_simulations
-  layer_space = 1:n_layers
+  #layer_space = 1:n_layers
 
-  experimental_design_type = "Standard Bricklayer" # 'Standard Bricklayer' 'Jordan-Wigner CPLC'
+  experimental_design_type = "Jordan-Wigner CPLC" # 'Standard Bricklayer' 'Jordan-Wigner CPLC'
 
   subsystem_range_divider = 2
   use_constant_size = false
@@ -70,7 +74,7 @@ if run_from_script
                                      experiment_description = experiment_description,
                                      experiment_run_date = experiment_run_date,
                                      num_qubit_space = join(["$x" for x in num_qubit_space], ","),
-                                     n_layers = n_layers,
+                                     #n_layers = n_layers,
                                      n_simulations = n_simulations,
                                      p_space = join(["$x" for x in p_space], ","),
                                      q_space = join(["$x" for x in q_space], ","),
@@ -90,7 +94,7 @@ if run_from_script
       experiment_description = experiment_metadata_df.experiment_description,
       experiment_run_date = experiment_metadata_df.experiment_run_date,
       num_qubit_space = experiment_metadata_df.num_qubit_space,
-      n_layers = experiment_metadata_df.n_layers,
+      #n_layers = experiment_metadata_df.n_layers,
       n_simulations = experiment_metadata_df.n_simulations,
 
       p_space = experiment_metadata_df.p_space,
@@ -104,14 +108,14 @@ if run_from_script
       experimental_design_type = experiment_metadata_df.experimental_design_type
      ),
      conn,
-     "INSERT INTO quantumlab_experiments.experiments_metadata_jwcplc (experiment_id, status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, use_constant_size, constant_size, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply, runtime_in_seconds,experimental_design_type) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14, \$15, \$16);"
+     "INSERT INTO quantumlab_experiments.experiments_metadata_jwcplc (experiment_id, status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_simulations, p_space, q_space,  use_constant_size, constant_size, subsystem_range_divider, runtime_in_seconds, experimental_design_type) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14);"
   )
   execute(conn, "COMMIT;")
 
 else
 
   result = execute(conn,
-                   string("select * FROM quantumlab_experiments.experiments_metadata where experiment_id = '", experiment_id,"'");
+                   string("select * FROM quantumlab_experiments.experiments_metadata_jwcplc where experiment_id = '", experiment_id,"'");
                    throw_error=false
                    )
 
@@ -125,8 +129,7 @@ else
   num_qubit_space  = split(data.num_qubit_space[1],",")
   num_qubit_space = [parse(Int64,x) for x in num_qubit_space]
 
-  n_layers = data.n_layers[1]
-  layer_space = 1:n_layers
+  #layer_space = 1:n_layers
 
   n_simulations  = data.n_simulations[1]
   simulation_space = 1:n_simulations
@@ -135,7 +138,7 @@ else
   p_space = [parse(Float16,x)/10 for x in p_space]
 
   q_space  = split(data.q_space[1],",")
-  q_space = [parse(Float16,x)/10 for x in p_space]
+  q_space = [parse(Float16,x)/10 for x in q_space]
 
   use_constant_size = data.use_constant_size[1]
   constant_size = data.constant_size[1]
@@ -168,6 +171,7 @@ for num_qubits in num_qubit_space
   # num_qubits=6
   @printf("# Qubits = %.3i \n", num_qubits)
   qubit_index_space = 1:num_qubits
+  this_layer_space = 1:num_qubits
 
   for p in p_space
     for q in q_space
@@ -182,7 +186,7 @@ for num_qubits in num_qubit_space
          # initialize state ψ = |000…⟩
          ψ = productstate(num_qubits)
 
-         for this_layer_index in layer_space
+         for this_layer_index in this_layer_space
 
            if isodd(this_layer_index)
 
@@ -256,7 +260,9 @@ for num_qubits in num_qubit_space
 
          this_von_neumann_entropy = this_von_neumann_entropy_dict["S"]
          this_von_neumann_entropy_df = this_von_neumann_entropy_dict["entropy_df"]
-         this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :measurement_rate => measurement_rate)
+         this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :p => p)
+         this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :q => q)
+
          this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :simulation_number => this_sim)
 
          von_neumann_entropy_df = [von_neumann_entropy_df; this_von_neumann_entropy_df]
@@ -272,9 +278,9 @@ for num_qubits in num_qubit_space
       mean_runtime = mean(run_times)
       mean_entropy = mean(von_neumann_entropies)
       se_mean_entropy = sem(von_neumann_entropies)
-      @printf("# Qubits = %.3i Measurement Rate = %.2f  S(ρ) = %.5f ± %.1E \n", num_qubits, measurement_rate, mean_entropy, se_mean_entropy)
+      @printf("# Qubits = %.3i p = %.2f q = %.2f   S(ρ) = %.5f ± %.1E \n", num_qubits, p, q, mean_entropy, se_mean_entropy)
 
-      this_simulation_df = DataFrame(num_qubits = num_qubits, measurement_rate = measurement_rate, mean_entropy = mean_entropy, se_mean_entropy=se_mean_entropy, mean_runtime = mean_runtime)
+      this_simulation_df = DataFrame(num_qubits = num_qubits, p = p, q = q, mean_entropy = mean_entropy, se_mean_entropy = se_mean_entropy, mean_runtime = mean_runtime)
       simulation_df = [simulation_df; this_simulation_df]
 
     end # q
@@ -283,7 +289,7 @@ end # num_qubits
 
 sim_status = "Completed"
 result = execute(conn,
-                 string("update quantumlab_experiments.experiments_metadata set runtime_in_seconds = ", runtime_in_seconds, ", status = '", sim_status ,"' where experiment_id = '", experiment_id,"'");
+                 string("update quantumlab_experiments.experiments_metadata_jwcplc set runtime_in_seconds = ", runtime_in_seconds, ", status = '", sim_status ,"' where experiment_id = '", experiment_id,"'");
                  throw_error=false
                  )
 
@@ -293,14 +299,15 @@ simulation_df = insertcols!(simulation_df, :experiment_id => experiment_id)
 execute(conn, "BEGIN;")
 LibPQ.load!(
     (num_qubits = simulation_df.num_qubits,
-     measurement_rate = simulation_df.measurement_rate,
+     p = simulation_df.p,
+     q = simulation_df.q,
      mean_entropy = simulation_df.mean_entropy,
      se_mean_entropy=simulation_df.se_mean_entropy,
      experiment_id = simulation_df.experiment_id,
      mean_runtime = simulation_df.mean_runtime
     ),
     conn,
-    "INSERT INTO quantumlab_experiments.simulation_results (num_qubits, measurement_rate, mean_entropy, se_mean_entropy, experiment_id, mean_runtime) VALUES(\$1, \$2, \$3, \$4, \$5, \$6);"
+    "INSERT INTO quantumlab_experiments.simulation_results_jwcplc (num_qubits, p, q, mean_entropy, se_mean_entropy, experiment_id, mean_runtime) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7);"
 )
 execute(conn, "COMMIT;")
 
@@ -311,7 +318,8 @@ execute(conn, "BEGIN;")
 LibPQ.load!(
     (
     experiment_id = von_neumann_entropy_df.experiment_id,
-    measurement_rate = von_neumann_entropy_df.measurement_rate,
+    p = von_neumann_entropy_df.p,
+    q = von_neumann_entropy_df.q,
     simulation_number = von_neumann_entropy_df.simulation_number,
     num_qubits = von_neumann_entropy_df.num_qubits,
     bond_index = von_neumann_entropy_df.bond_index,
@@ -320,7 +328,7 @@ LibPQ.load!(
     entropy_contribution = von_neumann_entropy_df.entropy_contribution
     ),
     conn,
-    "INSERT INTO quantumlab_experiments.entropy_tracking (experiment_id, measurement_rate, simulation_number, num_qubits, bond_index, ij, eigenvalue, entropy_contribution) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8);"
+    "INSERT INTO quantumlab_experiments.entropy_tracking_jwcplc (experiment_id, p, q, simulation_number, num_qubits, bond_index, ij, eigenvalue, entropy_contribution) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9);"
 )
 execute(conn, "COMMIT;")
 

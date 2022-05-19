@@ -1,3 +1,10 @@
+
+CREATE TABLE IF NOT EXISTS quantumlab_experiments.experiments_metadata_jwcplc (experiment_id TEXT, experiment_run_date TEXT, status TEXT, experiment_name TEXT, experiment_description TEXT, num_qubit_space TEXT, n_simulations INT, p_space TEXT, q_space TEXT, use_constant_size BOOL, constant_size INT, subsystem_range_divider FLOAT, runtime_in_seconds FLOAT, experimental_design_type TEXT);
+CREATE TABLE IF NOT EXISTS quantumlab_experiments.simulation_results_jwcplc (num_qubits INT, p FLOAT, q FLOAT, mean_entropy FLOAT, se_mean_entropy FLOAT, experiment_id TEXT, mean_runtime FLOAT);
+CREATE TABLE IF NOT EXISTS quantumlab_experiments.entropy_tracking_jwcplc (experiment_id TEXT, p FLOAT, q FLOAT, simulation_number INT, num_qubits INT, bond_index INT, ij INT, eigenvalue FLOAT, entropy_contribution FLOAT);
+
+DROP TABLE IF EXISTS quantumlab_experiments.experiments_metadata_jwcplc;
+
 select *  
 from quantumlab_experiments.experiments_metadata  
 
