@@ -37,10 +37,10 @@ gate(::GateName"Π11") =
  # project onto eigenspace (multiple wf by projector)
  # take norm squared of that state
 
- gate(::GateName"X↑") =
+ gate(::GateName"Xup") =
  1/2*([1 1
         1 1])
- gate(::GateName"X↓") =
+ gate(::GateName"Xdown") =
  1/2*([1 -1
       -1 1])
 
@@ -69,13 +69,17 @@ gate(::GateName"ΠJWCPLC_UEven1") =
  0 0 1 0
  0 0 0 1]
 
-gate(::GateName"ZZ↑") =
+gate(::GateName"ZOp") =
+ [1 0
+  0 -1]
+  
+gate(::GateName"ZZup") =
 [1 0 0 0
  0 0 0 0
  0 0 0 0
  0 0 0 1]
 
- gate(::GateName"ZZ↓") =
+ gate(::GateName"ZZdown") =
  [0 0 0 0
   0 1 0 0
   0 0 1 0

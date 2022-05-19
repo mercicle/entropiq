@@ -153,7 +153,6 @@ else
 
 end
 
-# start_time = time()
 # brick_layer_results = run_jwcplc_sim(num_qubit_space, simulation_space, p_space, q_space, layer_space, qubit_index_space, subsystem_range_divider, use_constant_size, constant_size)
 # runtime_in_seconds = time() - start_time
 # runtime_in_seconds = round(runtime_in_seconds, digits=0)
@@ -167,8 +166,11 @@ this_layer = nothing
 this_circuit = nothing
 simulation_df = DataFrame()
 von_neumann_entropy_df = DataFrame()
+this_von_neumann_entropy_df = DataFrame()
+this_von_neumann_entropy_dict = Dict()
 von_neumann_entropies = []
 run_times = []
+start_time = time()
 
 for num_qubits in num_qubit_space
   # num_qubits=6
@@ -208,16 +210,11 @@ for num_qubits in num_qubit_space
                elseif sampled_action == "JWCPLC_UOdd_Measure"
 
                  ψ = orthogonalize!(ψ, qubit_index)
-                 ket = ψ[qubit_index]
-                 bra = ITensors.dag(ITensors.prime(ket)) # prime -> row vector then dag -> hermitian conjugation
-
-                 local_X = ITensor(1/2*([1 1
-                                         1 1]), Index(2,"i"), Index(2,"j"))
-                 born_probability_up = bra*local_X*ket
+                 born_probability_up = ITensors.expect(ψ, "Xup", sites=qubit_index)
                  born_probability_down = 1-born_probability_up
                  up_down_probabilities = [born_probability_up, born_probability_down]
-                 x_measurement_list = ["X↑","X↓"]
-                 action_string = wsample(x_measurement_list, up_down_probabilities, 1)[1]
+                 X_measurement_list = ["Xup","Xdown"]
+                 action_string = wsample(X_measurement_list, up_down_probabilities, 1)[1]
                end
                ψ = runcircuit(ψ, (action_string, qubit_index))
                normalize!(ψ)
@@ -226,6 +223,7 @@ for num_qubits in num_qubit_space
 
              for qubit_index in qubit_index_space
                if qubit_index != num_qubits
+                 next_qubit_index = qubit_index + 1
                  even_actions = ["JWCPLC_UEven","JWCPLC_UEven1", "JWCPLC_UEven_Measure"]
                  action_pmf = [p,(1-p)*(1-q),(1-p)*q]
                  sampled_action = wsample(even_actions, action_pmf, 1)[1]
@@ -235,18 +233,11 @@ for num_qubits in num_qubit_space
                  elseif sampled_action == "JWCPLC_UEven_Measure"
 
                    ψ = orthogonalize!(ψ, qubit_index)
-                   ket = ψ[qubit_index] * ψ[next_qubit_index]
-                   bra = ITensors.dag(ITensors.prime(ket))
 
-                   local_ZZ_up = ITensor([1 0 0 0
-                                          0 0 0 0
-                                          0 0 0 0
-                                          0 0 0 1], Index(4,"i"), Index(4,"j"))
+                   Czz = ITensors.correlation_matrix(ψ,"ZOp", "ZOp", sites = qubit_index:next_qubit_index)
+                   zz_up_down_probabilities = real.(diag(normalize(Czz)))
 
-                   zz_born_probability_up = bra*local_ZZ_up*ket
-                   zz_born_probability_down = 1-zz_born_probability_up
-                   zz_up_down_probabilities = [zz_born_probability_up, zz_born_probability_down]
-                   zz_measurement_list = ["ZZ↑","ZZ↓"]
+                   zz_measurement_list = ["ZZup","ZZdown"]
                    action_string = wsample(zz_measurement_list, zz_up_down_probabilities, 1)[1]
                  end
                  ψ = runcircuit(ψ, (action_string, (qubit_index, next_qubit_index)))
@@ -265,10 +256,13 @@ for num_qubits in num_qubit_space
          end
 
          this_von_neumann_entropy = this_von_neumann_entropy_dict["S"]
+         if isnan(this_von_neumann_entropy)
+           this_von_neumann_entropy = 0
+         end
+
          this_von_neumann_entropy_df = this_von_neumann_entropy_dict["entropy_df"]
          this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :p => p)
          this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :q => q)
-
          this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :simulation_number => this_sim)
 
          von_neumann_entropy_df = [von_neumann_entropy_df; this_von_neumann_entropy_df]
@@ -284,6 +278,9 @@ for num_qubits in num_qubit_space
       mean_runtime = mean(run_times)
       mean_entropy = mean(von_neumann_entropies)
       se_mean_entropy = sem(von_neumann_entropies)
+      if isnan(se_mean_entropy)
+        se_mean_entropy = 0
+      end
       @printf("# Qubits = %.3i p = %.2f q = %.2f   S(ρ) = %.5f ± %.1E \n", num_qubits, p, q, mean_entropy, se_mean_entropy)
 
       this_simulation_df = DataFrame(num_qubits = num_qubits, p = p, q = q, mean_entropy = mean_entropy, se_mean_entropy = se_mean_entropy, mean_runtime = mean_runtime)
@@ -292,6 +289,9 @@ for num_qubits in num_qubit_space
     end # q
   end # p
 end # num_qubits
+
+runtime_in_seconds = time() - start_time
+runtime_in_seconds = round(runtime_in_seconds, digits=0)
 
 sim_status = "Completed"
 result = execute(conn,

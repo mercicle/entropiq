@@ -26,6 +26,9 @@ function entanglemententropy(ψ₀::MPS, subsystem_divider::Int, use_constant_si
   S = 0.0
   sigma_rank = itensor_dim(s, 1)
   entropy_df = DataFrame()
+
+  #@printf("~~~~~~sigma_rank: %.3i \n", sigma_rank)
+
   for n in 1:sigma_rank
     λ = s[n, n]^2
     entropy_contribution = - λ * log(λ + 1e-20)
