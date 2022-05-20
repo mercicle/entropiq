@@ -1,5 +1,5 @@
 
-# Example from Qiskit 
+# Example from Qiskit
 # https://qiskit.org/documentation/tutorials/simulators/7_matrix_product_state_method.html
 
 
@@ -10,6 +10,8 @@ from qiskit import QuantumCircuit, transpile
 from qiskit.providers.aer import AerSimulator
 
 import qiskit.quantum_info as qi
+
+from qiskit.visualization import array_to_latex
 
 # Select the AerSimulator from the Aer provider
 simulator = AerSimulator(method='matrix_product_state')
@@ -27,7 +29,7 @@ result = simulator.run(tcirc).result()
 counts = result.get_counts(0)
 counts
 
-# To see the internal state vector of the circuit we can use the save_statevector instruction. 
+# To see the internal state vector of the circuit we can use the save_statevector instruction.
 # To return the full internal MPS structure we can also use the save_matrix_product_state instruction.
 
 #######################################
@@ -128,6 +130,7 @@ circ_ghz.cx(1, 2)
 # Define a snapshot that shows the current state vector
 circ_ghz.save_statevector(label='state_vector_ghz')
 circ_ghz.save_matrix_product_state(label='MPS_ghz')
+
 circ_ghz.measure([0,1,2],[0,1,2])
 
 # Run and get counts, using the matrix_product_state method
@@ -136,3 +139,24 @@ transpiled_circ_ghz_result = simulator.run(transpiled_circ_ghz).result()
 ghz_measurement_counts = transpiled_circ_ghz_result.get_counts(0)
 ghz_measurement_counts
 
+transpiled_circ_ghz_result = simulator.run(transpiled_circ_ghz).result()
+ghz_mps = transpiled_circ_ghz_result.data()['MPS_ghz'][0]
+
+array_to_latex(transpiled_circ_ghz_result.data()['MPS_ghz'][0])
+
+array_to_latex(np.array([1,0]))
+([(array([[1, 0]]), array([[0, 1]])),
+
+  (array([[1.41421356, 0],
+          [0, 0]]),
+
+   array([[0, 0],
+          [0, 1.41421356]])),
+
+  (array([[1],
+          [0]]),
+
+   array([[0],
+          [1]]))],
+
+ [array([0.70710678, 0.70710678]), array([0.70710678, 0.70710678])])

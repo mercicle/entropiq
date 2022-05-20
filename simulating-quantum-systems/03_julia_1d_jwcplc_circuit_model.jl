@@ -49,15 +49,15 @@ if run_from_script
   rng = MersenneTwister()
   experiment_id = repr(uuid4(rng).value)
   sim_status = "Running"
-  experiment_name = "Testing jwcplc"
-  experiment_description = "Testing jwcplc"
+  experiment_name = "Testing jwcplc - bigger systems"
+  experiment_description = "Testing jwcplc - bigger systems"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
   # only even system sizes and
   # depth = system size
   # percolation universality class p=0 q~1/2
 
-  num_qubit_space = 6:2:10
+  num_qubit_space =10:2:20
   #n_layers = 20
   n_simulations = 100
 
@@ -261,6 +261,10 @@ for num_qubits in num_qubit_space
          end
 
          this_von_neumann_entropy_df = this_von_neumann_entropy_dict["entropy_df"]
+         if nrow(this_von_neumann_entropy_df) == 0
+           this_von_neumann_entropy_df = DataFrame(num_qubits = num_qubits, bond_index = NaN, ij= NaN, eigenvalue = NaN, entropy_contribution = NaN)
+         end
+
          this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :p => p)
          this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :q => q)
          this_von_neumann_entropy_df = insertcols!(this_von_neumann_entropy_df, :simulation_number => this_sim)
@@ -318,6 +322,18 @@ LibPQ.load!(
 execute(conn, "COMMIT;")
 
 von_neumann_entropy_df = insertcols!(von_neumann_entropy_df, :experiment_id => experiment_id)
+
+replace!(von_neumann_entropy_df.num_qubits, NaN => -1)
+replace!(von_neumann_entropy_df.bond_index, NaN => -1)
+replace!(von_neumann_entropy_df.ij, NaN => -1)
+replace!(von_neumann_entropy_df.eigenvalue, NaN => -1)
+replace!(von_neumann_entropy_df.entropy_contribution, NaN => -1)
+
+von_neumann_entropy_df[!,:bond_index] = convert.(Int64,von_neumann_entropy_df[:,:bond_index])
+von_neumann_entropy_df[!,:num_qubits] = convert.(Int64,von_neumann_entropy_df[:,:num_qubits])
+
+
+
 
 #https://invenia.github.io/LibPQ.jl/dev/#COPY-1
 execute(conn, "BEGIN;")

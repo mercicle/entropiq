@@ -3,9 +3,11 @@ CREATE TABLE IF NOT EXISTS quantumlab_experiments.experiments_metadata_jwcplc (e
 CREATE TABLE IF NOT EXISTS quantumlab_experiments.simulation_results_jwcplc (num_qubits INT, p FLOAT, q FLOAT, mean_entropy FLOAT, se_mean_entropy FLOAT, experiment_id TEXT, mean_runtime FLOAT);
 CREATE TABLE IF NOT EXISTS quantumlab_experiments.entropy_tracking_jwcplc (experiment_id TEXT, p FLOAT, q FLOAT, simulation_number INT, num_qubits INT, bond_index INT, ij INT, eigenvalue FLOAT, entropy_contribution FLOAT);
 
-DROP TABLE IF EXISTS quantumlab_experiments.experiments_metadata_jwcplc;
+--DROP TABLE IF EXISTS quantumlab_experiments.experiments_metadata_jwcplc;
 
 --delete from quantumlab_experiments.experiments_metadata_jwcplc where experiment_id is not null;
+
+--delete from quantumlab_experiments.entropy_tracking_jwcplc where experiment_id = '0x06dfa27044774ab7b9c9c484304846d1';
 
 select *  
 from quantumlab_experiments.experiments_metadata  

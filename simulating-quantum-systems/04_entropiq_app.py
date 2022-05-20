@@ -36,8 +36,8 @@ experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiment
 st.set_page_config(layout = "wide")
 
 with st.sidebar:
-    selected = option_menu("EntropiQ", ["EntropiQ Stats", 'Launch Simulation', 'Discovery'],
-                           icons=['stack', 'bricks','search'], menu_icon = "boxes", default_index=1)
+    selected = option_menu("EntropiQ", ["EntropiQ Stats", 'Launch Simulation', 'Discovery','Jordan-Wigner CPLC'],
+                           icons=['stack', 'bricks','search','search'], menu_icon = "boxes", default_index=1)
 
 if selected == "EntropiQ Stats":
 
@@ -207,6 +207,149 @@ elif selected == "Discovery":
     st.plotly_chart(main_fig, use_container_width=True)
 
     entropy_tracking_df = get_table(conn = postgres_conn, table_name = entropy_tracking_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
+
+    print("Dropping Experiment ID")
+    entropy_tracking_df.drop(columns=['experiment_id'],inplace=True)
+    entropy_tracking_df['log_state_index'] = entropy_tracking_df['ij'].apply(lambda x: np.log(x))
+    entropy_tracking_df['num_qubits'] = entropy_tracking_df['num_qubits'].astype(int)
+
+    st.subheader('Entropy Contribution by Measurement Rate and System Size')
+    st.subheader('Preview')
+
+    AgGrid(entropy_tracking_df.head())
+
+    n_sim_color_palette = list(Color("#c7e9c0").range_to(Color("#006d2c"),n_simulations))
+    n_sim_color_palette = np.flip([c.hex for c in n_sim_color_palette])
+
+    st.subheader('Histogram - Evolution of State Probabilities')
+
+    x_axis_ticks = [x/100 for x in range(0,105,10)]
+    eti_fig_hist = px.histogram(entropy_tracking_df,
+                                 x="eigenvalue",
+                                 facet_col="num_qubits",
+                                 facet_col_wrap = 4,
+                                 color="num_qubits",
+                                 color_discrete_sequence = n_qubit_color_palette,
+
+                                 histnorm = 'probability',
+                                 nbins = 20,
+                                 # add the animation
+                                 animation_frame="measurement_rate",
+                                 category_orders={
+                                 "num_qubits": np.sort(entropy_tracking_df.num_qubits.unique()).tolist(),
+                                 },
+                                 labels={
+                                      "eigenvalue": "State Probability",
+                                  },
+                                 range_x = [0,1],
+                                 range_y = [0,1],
+                                 height=800, width=800,
+    )
+
+    eti_fig_hist.for_each_yaxis(lambda y: y.update(title = ''))
+    eti_fig_hist.update_traces(marker_line_width=1,marker_line_color="white")
+    eti_fig_hist.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    eti_fig_hist.update_layout(font = dict(size=20),
+                               legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1),
+                               yaxis_title = "%",
+                               legend_title_text='# of Qubits')
+
+    eti_fig_hist.update_xaxes(ticktext=x_axis_ticks, tickvals=x_axis_ticks)
+    eti_fig_hist.for_each_xaxis(lambda x: x.update(ticktext=x_axis_ticks, tickvals=x_axis_ticks))
+
+    st.plotly_chart(eti_fig_hist, use_container_width=True)
+
+    st.subheader('Inspection - State Probability Distribution')
+
+    select_nq = st.selectbox('# Qubits:',entropy_tracking_df.num_qubits.unique())
+    select_mr = st.selectbox('Measurement rate:',entropy_tracking_df.measurement_rate.unique())
+
+    inspect_entropy_tracking_df = entropy_tracking_df[ (entropy_tracking_df.num_qubits == select_nq) & (entropy_tracking_df.measurement_rate == select_mr)]
+
+    eti_fig = px.histogram(inspect_entropy_tracking_df,
+                             x="eigenvalue",
+                             histnorm = 'probability',
+                             nbins = 20,
+                             labels={
+                                  "eigenvalue": "State Probability",
+                              },
+                             range_x = [0,1],
+                             range_y = [0,1],
+                             height=800, width=800,
+    )
+
+    eti_fig.for_each_yaxis(lambda y: y.update(title = ''))
+    eti_fig.update_traces(marker_line_width=1,marker_line_color="white")
+    eti_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    eti_fig.update_layout(font = dict(size=20),
+                          legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1),
+                          yaxis_title = "%",
+                          legend_title_text='# of Qubits')
+    eti_fig.update_xaxes(ticktext=x_axis_ticks, tickvals=x_axis_ticks)
+    st.plotly_chart(eti_fig, use_container_width=True)
+
+elif selected == "Jordan-Wigner CPLC":
+
+    st.header('Jordan-Wigner CPLC')
+
+    st.subheader('Experiments')
+    experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiments_metadata_cplc_table_name, schema_name = core_schema)
+
+    gb = GridOptionsBuilder.from_dataframe(experiment_metadata_df)
+    gb.configure_pagination()
+    grid_options = gb.build()
+
+    AgGrid(experiment_metadata_df, grid_options)
+
+    experiment_id = st.selectbox('Select Experiment ID', experiment_metadata_df.experiment_id)
+
+    st.subheader('Experiment Results:')
+    experiment_results_df = get_table(conn = postgres_conn, table_name = simulation_results_cplc_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
+    experiment_results_df['num_qubits'] = experiment_results_df.num_qubits.astype(str)
+    experiment_results_df['mean_runtime_min'] = experiment_results_df['mean_runtime'].apply(lambda x: np.round(x/60,3))
+    AgGrid(experiment_results_df)
+
+    n_qubits = len(experiment_results_df.num_qubits.unique())
+    n_simulations = experiment_metadata_df.n_simulations.values[0]
+
+    n_qubit_color_palette = list(Color("#3f007d").range_to(Color("#dadaeb"),n_qubits))
+    n_qubit_color_palette = np.flip([c.hex for c in n_qubit_color_palette])
+
+    st.subheader('Average Entanglement Entropy by System Size and Measurement Rate')
+    main_fig = px.line(experiment_results_df,
+                        x='measurement_rate',
+                        y='mean_entropy',
+                        color='num_qubits',
+                        height=800, width=800,
+                        color_discrete_sequence = n_qubit_color_palette,
+                        labels={
+                             "measurement_rate": "Measurement Rate (%)",
+                             "mean_entropy": "Average Entanglement Entropy"
+                         })
+    main_fig.update_traces(line = dict(width=3))
+    main_fig.update_layout(font = dict(size=20),legend_title_text='# of Qubits')
+
+    main_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    st.plotly_chart(main_fig, use_container_width=True)
+
+    st.subheader('Runtime Analysis')
+    main_fig = px.line(experiment_results_df,
+                        x='measurement_rate',
+                        y='mean_runtime_min',
+                        color='num_qubits',
+                        height=800, width=800,
+                        color_discrete_sequence=n_qubit_color_palette,
+                        labels={
+                             "measurement_rate": "Measurement Rate (%)",
+                             "mean_runtime_min": "Average Simulation Runtime (Min)"
+                         })
+    main_fig.update_traces(line = dict(width=3))
+    main_fig.update_layout(font = dict(size=20),
+                           legend_title_text='# of Qubits')
+    main_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    st.plotly_chart(main_fig, use_container_width=True)
+
+    entropy_tracking_df = get_table(conn = postgres_conn, table_name = entropy_tracking_cplc_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
 
     print("Dropping Experiment ID")
     entropy_tracking_df.drop(columns=['experiment_id'],inplace=True)
