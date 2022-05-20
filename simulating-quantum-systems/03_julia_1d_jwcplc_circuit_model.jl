@@ -49,8 +49,8 @@ if run_from_script
   rng = MersenneTwister()
   experiment_id = repr(uuid4(rng).value)
   sim_status = "Running"
-  experiment_name = "Testing jwcplc - bigger systems"
-  experiment_description = "Testing jwcplc - bigger systems"
+  experiment_name = "Testing jwcplc - bigger systems & more granular p and q"
+  experiment_description = "Testing jwcplc - bigger systems & more granular p and q"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
   # only even system sizes and
@@ -59,10 +59,10 @@ if run_from_script
 
   num_qubit_space =10:2:20
   #n_layers = 20
-  n_simulations = 100
+  n_simulations = 50
 
-  p_space = 0.10:0.10:0.9
-  q_space = 0.10:0.10:0.9
+  p_space = 0.10:0.05:0.9 #0.10:0.10:0.9
+  q_space = 0.10:0.05:0.9
 
   simulation_space = 1:n_simulations
   #layer_space = 1:n_layers
@@ -331,9 +331,7 @@ replace!(von_neumann_entropy_df.entropy_contribution, NaN => -1)
 
 von_neumann_entropy_df[!,:bond_index] = convert.(Int64,von_neumann_entropy_df[:,:bond_index])
 von_neumann_entropy_df[!,:num_qubits] = convert.(Int64,von_neumann_entropy_df[:,:num_qubits])
-
-
-
+von_neumann_entropy_df[!,:ij] = convert.(Int64,von_neumann_entropy_df[:,:ij])
 
 #https://invenia.github.io/LibPQ.jl/dev/#COPY-1
 execute(conn, "BEGIN;")
