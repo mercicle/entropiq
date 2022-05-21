@@ -96,6 +96,10 @@ Measuring X: Apply H to X_{i} and then use the amplitudes to select which projec
 
 [‘The Big Money Is Here’: The Arms Race to Quantum Computing A real quantum computer is still far off – but that doesn’t bother those engaged in the arms race to develop a quantum processor. Here are the Israelis banking on it](https://www.haaretz.com/israel-news/tech-news/.premium-the-big-money-is-here-the-arms-race-to-quantum-computing-1.10761657)
 
+[ITensor visualization - Validating quantum-classical programming models with tensor network simulations](file:///Users/mercicle/_school/uw/capstone/Validating_quantum-classical_programming_models_wi.pdf)
+
+[Universal Quantum Simulators](https://www.science.org/doi/10.1126/science.273.5278.1073)
+
 # Overleaf
 
 [Positioning_of_Figures](https://www.overleaf.com/learn/latex/Positioning_of_Figures)

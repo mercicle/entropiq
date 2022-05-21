@@ -49,7 +49,8 @@ alter table quantumlab_experiments.experiments_metadata add column experimental_
 --delete from quantumlab_experiments.experiments_metadata where experiment_id = '0xbcee3e8ca662403c9609615477a6fe3b';
 
 
---delete from quantumlab_experiments.entropy_tracking where experiment_id = '0xafcd0de2920e4e4d92adf1f445583d2b';
+delete from quantumlab_experiments.simulation_results_jwcplc where experiment_id = '0x256d038b432d44b5aea0a12f156d08dc';
 
+--263200
 select count(*) as n
-from quantumlab_experiments.entropy_tracking_jwcplc where experiment_id = '0x06dfa27044774ab7b9c9c484304846d1';
+from quantumlab_experiments.entropy_tracking_jwcplc where experiment_id = '0x256d038b432d44b5aea0a12f156d08dc';
