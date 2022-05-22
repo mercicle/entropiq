@@ -7,7 +7,7 @@
 
 [Qiskit example of paulitrotterevolution](https://quantumcomputing.stackexchange.com/questions/24064/qiskit-paulitrotterevolution-for-hamiltonian-simulation)
 
-[ITensors - MPS evolution using "time evolving block decimation" (TEBD)](https://docs.juliahub.com/ITensors/P3pqL/0.2.0/getting_started/Tutorials.html)
+[ITensors - computing the time evolution of a quantum state under the dynamics of a Hamiltonian - MPS evolution using "time evolving block decimation" (TEBD)](https://docs.juliahub.com/ITensors/P3pqL/0.2.0/getting_started/Tutorials.html)
 
 [Pennylane Example - Quantum Approximate Optimization Algorithm (QAOA)](https://pennylane.ai/qml/demos/tutorial_qaoa_intro.html)
 
