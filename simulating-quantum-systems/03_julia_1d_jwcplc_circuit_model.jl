@@ -360,9 +360,9 @@ row_strings = imap(eachrow(von_neumann_entropy_df)) do row
   "$(row[:experiment_id]),$(row[:p]),$(row[:q]),$(row[:simulation_number]),$(row[:num_qubits]),$(row[:bond_index]),$(row[:ij]),$(row[:eigenvalue]),$(row[:entropy_contribution])\n"
 end
 
-copyin = LibPQ.CopyIn("COPY quantumlab_experiments.entropy_tracking_jwcplc_copytest FROM STDIN (FORMAT CSV);", row_strings)
+start_time = time()
+copyin = LibPQ.CopyIn("COPY quantumlab_experiments.entropy_tracking_jwcplc FROM STDIN (FORMAT CSV);", row_strings)
 execute(conn, copyin)
-
 runtime_in_seconds = time() - start_time
 runtime_in_seconds = round(runtime_in_seconds, digits=0)
 

@@ -377,7 +377,17 @@ elif selected == "Jordan-Wigner CPLC":
     st.subheader('Average Simulation Runtime by p and q Parameters')
 
     facet_plot_runtime_df = experiment_results_df[['num_qubits','p','q','mean_runtime_min']]
-    facet_plot_runtime_df = facet_plot_runtime_df[~facet_plot_runtime_df.p.isin([0.10,0.90]) & ~facet_plot_runtime_df.q.isin([0.10])]
+    #facet_plot_runtime_df = facet_plot_runtime_df[~facet_plot_runtime_df.p.isin([0.10,0.90]) & ~facet_plot_runtime_df.q.isin([0.10])]
+
+    clipped_df = pd.DataFrame()
+    system_sizes = facet_plot_runtime_df.num_qubits.unique().tolist()
+    for system_size in system_sizes:
+        df = facet_plot_runtime_df[facet_plot_runtime_df.num_qubits == system_size]
+        clip_low,clip_high = df['mean_runtime_min'].quantile([0.0,0.95])
+        df['mean_runtime_min'] = df['mean_runtime_min'].clip(clip_low, clip_high)
+        clipped_df = clipped_df.append(df)
+
+    facet_plot_runtime_df = clipped_df
 
     fig = make_subplots(rows=max_rows, cols=max_columns,
                         shared_yaxes=True,
