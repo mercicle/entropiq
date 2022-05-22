@@ -51,20 +51,24 @@ if run_from_script
   rng = MersenneTwister()
   experiment_id = repr(uuid4(rng).value)
   sim_status = "Running"
-  experiment_name = "Testing jwcplc - bigger systems & more granular p and q"
-  experiment_description = "Testing jwcplc - bigger systems & more granular p and q"
+  experiment_name = "Testing jwcplc - smaller pq range "
+  experiment_description = "Testing jwcplc - smaller pq range "
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
   # only even system sizes and
   # depth = system size
   # percolation universality class p=0 q~1/2
 
-  num_qubit_space = 10:2:30
-  #n_layers = 20
-  n_simulations = 40
+  num_qubit_space = 30:2:30
+  for q in num_qubit_space
+    @printf("# Qubits = %.3i \n", q)
+  end
 
-  p_space = 0.10:0.025:0.9 #0.10:0.10:0.9
-  q_space = 0.10:0.025:0.9
+  #n_layers = 20
+  n_simulations = 10
+
+  p_space = 0.25:0.05:0.75 #0.10:0.10:0.9
+  q_space = 0.10:0.05:0.75
 
   simulation_space = 1:n_simulations
   #layer_space = 1:n_layers

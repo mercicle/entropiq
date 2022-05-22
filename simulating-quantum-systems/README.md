@@ -440,3 +440,7 @@ https://qiskit.org/documentation/stubs/qiskit.circuit.QuantumCircuit.reset.html
  - https://en.wikipedia.org/wiki/Von_Neumann_entropy
  - http://www.scholarpedia.org/article/Quantum_entropies
  - "von Neumann entropy is a limiting case of the Rényi entropy" lim α→1 Sα(ρ) = S(ρ) Given a family of entropies {Sα(ρ)}α, where α is some index, the entropies are monotonic in α∈ℝ
+
+# Deployment Options
+
+[Using Streamlit to build an interactive dashboard for data analysis on AWS](https://aws.amazon.com/blogs/opensource/using-streamlit-to-build-an-interactive-dashboard-for-data-analysis-on-aws/)
