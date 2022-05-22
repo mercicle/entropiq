@@ -22,6 +22,8 @@ using DotEnv
 using TableView
 using Tables
 
+using IterTools
+
 save_dir = string(@__DIR__, "/out_data/")
 include("helpers/quantum_sim_functions.jl")
 include("03_load_gates.jl")
@@ -351,5 +353,17 @@ LibPQ.load!(
     "INSERT INTO quantumlab_experiments."*"$(entropy_tracking_table_name)"*" (experiment_id, p, q, simulation_number, num_qubits, bond_index, ij, eigenvalue, entropy_contribution) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9);"
 )
 execute(conn, "COMMIT;")
+
+## Test
+
+row_strings = imap(eachrow(von_neumann_entropy_df)) do row
+  "$(row[:experiment_id]),$(row[:p]),$(row[:q]),$(row[:simulation_number]),$(row[:num_qubits]),$(row[:bond_index]),$(row[:ij]),$(row[:eigenvalue]),$(row[:entropy_contribution])\n"
+end
+
+copyin = LibPQ.CopyIn("COPY quantumlab_experiments.entropy_tracking_jwcplc_copytest FROM STDIN (FORMAT CSV);", row_strings)
+execute(conn, copyin)
+
+runtime_in_seconds = time() - start_time
+runtime_in_seconds = round(runtime_in_seconds, digits=0)
 
 #TableView.showtable(von_neumann_entropy_df)

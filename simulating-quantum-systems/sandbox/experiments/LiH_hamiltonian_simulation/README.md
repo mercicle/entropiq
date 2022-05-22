@@ -27,3 +27,7 @@
 [PennyLane Hamiltonian](https://pennylane.readthedocs.io/en/stable/code/api/pennylane.Hamiltonian.html)
 
 [Qiskit - Matrix Exponentials](https://qiskit.org/textbook/ch-appendix/linear_algebra.html#Matrix-Exponentials)
+
+[Circ hamiltonian_simulation_with_trotter_formulas](https://quantumai.google/cirq/tutorials/educators/chemistry#hamiltonian_simulation_with_trotter_formulas)
+
+[openfermion - Hamiltonian Time Evolution and Expectation Value Computation](https://quantumai.google/openfermion/fqe/tutorials/hamiltonian_time_evolution_and_expectation_estimation)

@@ -17,3 +17,4 @@ Pkg.add("Genie")
 
 Pkg.add("TableView")
 Pkg.add("Tables")
+Pkg.add("IterTools")

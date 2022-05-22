@@ -3,6 +3,8 @@ CREATE TABLE IF NOT EXISTS quantumlab_experiments.experiments_metadata_jwcplc (e
 CREATE TABLE IF NOT EXISTS quantumlab_experiments.simulation_results_jwcplc (num_qubits INT, p FLOAT, q FLOAT, mean_entropy FLOAT, se_mean_entropy FLOAT, experiment_id TEXT, mean_runtime FLOAT);
 CREATE TABLE IF NOT EXISTS quantumlab_experiments.entropy_tracking_jwcplc (experiment_id TEXT, p FLOAT, q FLOAT, simulation_number INT, num_qubits INT, bond_index INT, ij INT, eigenvalue FLOAT, entropy_contribution FLOAT);
 
+CREATE TABLE IF NOT EXISTS quantumlab_experiments.entropy_tracking_jwcplc_copytest (experiment_id TEXT, p FLOAT, q FLOAT, simulation_number INT, num_qubits INT, bond_index INT, ij INT, eigenvalue FLOAT, entropy_contribution FLOAT);
+
 --DROP TABLE IF EXISTS quantumlab_experiments.experiments_metadata_jwcplc;
 
 --delete from quantumlab_experiments.experiments_metadata_jwcplc where experiment_id is not null;
@@ -54,3 +56,20 @@ delete from quantumlab_experiments.simulation_results_jwcplc where experiment_id
 --263200
 select count(*) as n
 from quantumlab_experiments.entropy_tracking_jwcplc where experiment_id = '0x256d038b432d44b5aea0a12f156d08dc';
+
+select count(*) as n
+from quantumlab_experiments.entropy_tracking_jwcplc;
+
+select count(*) as n 
+from quantumlab_experiments.entropy_tracking_jwcplc
+where num_qubits = 26
+
+select count(*) as n 
+from quantumlab_experiments.simulation_results_jwcplc
+where num_qubits = 26
+
+delete from quantumlab_experiments.entropy_tracking_jwcplc where num_qubits = 26;
+delete from quantumlab_experiments.simulation_results_jwcplc where num_qubits = 26;
+
+
+
