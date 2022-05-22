@@ -310,7 +310,7 @@ elif selected == "Jordan-Wigner CPLC":
     st.subheader('Experiment Results:')
     experiment_results_df = get_table(conn = postgres_conn, table_name = simulation_results_cplc_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
     experiment_results_df['num_qubits'] = experiment_results_df.num_qubits.astype(str)
-    experiment_results_df['mean_runtime_min'] = experiment_results_df['mean_runtime'].apply(lambda x: np.round(x/60,3))
+    experiment_results_df['mean_runtime_min'] = experiment_results_df['mean_runtime'].apply(lambda x: x/60)#np.round(
     AgGrid(experiment_results_df)
 
     n_qubits = len(experiment_results_df.num_qubits.unique())
@@ -364,6 +364,40 @@ elif selected == "Jordan-Wigner CPLC":
         #    fig.update_traces(xgap=1,ygap=1,showscale = True)
         #else:
         #    fig.update_traces(xgap=1,ygap=1,showscale = False)
+
+        fig.update_layout(plot_bgcolor='black',height=heatmap_grid_height, width=heatmap_grid_width)
+        fig.update_xaxes(showline=True, linewidth=0.75, linecolor='black', gridcolor='black')
+        fig.update_yaxes(showline=True, linewidth=0.75, linecolor='black', gridcolor='black')
+        i_index+=1
+
+    #fig.update_layout(showlegend=False,)
+    fig.update_traces(xgap=1,ygap=1,showscale = False)
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader('Average Simulation Runtime by p and q Parameters')
+
+    facet_plot_runtime_df = experiment_results_df[['num_qubits','p','q','mean_runtime_min']]
+    facet_plot_runtime_df = facet_plot_runtime_df[~facet_plot_runtime_df.p.isin([0.10,0.90]) & ~facet_plot_runtime_df.q.isin([0.10])]
+
+    fig = make_subplots(rows=max_rows, cols=max_columns,
+                        shared_yaxes=True,
+                        subplot_titles = tuple(titles))
+
+    i_index = 1
+    max_index = len(facet_plot_runtime_df['num_qubits'].unique())
+    for i in facet_plot_runtime_df['num_qubits'].unique():
+
+        df = facet_plot_runtime_df[facet_plot_runtime_df['num_qubits'] == i]
+        row_index = int(np.floor(i_index/(max_columns+1))+1)
+        col_index = i_index % max_columns
+
+        if col_index == 0:
+            col_index = max_columns
+
+        fig.add_trace(go.Heatmap(z=df.mean_runtime_min, x=df.p, y=df.q, hoverinfo='text', hovertemplate='p: %{x}<br>q: %{y}<br>Mean Simulation Runtime: %{z}<extra></extra>'), row=row_index, col=col_index)
+
+        fig.update_xaxes(title_text='p', row=row_index, col=col_index)
+        fig.update_yaxes(title_text='q', row=row_index, col=col_index)
 
         fig.update_layout(plot_bgcolor='black',height=heatmap_grid_height, width=heatmap_grid_width)
         fig.update_xaxes(showline=True, linewidth=0.75, linecolor='black', gridcolor='black')
