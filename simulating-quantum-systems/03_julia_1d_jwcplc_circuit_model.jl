@@ -57,12 +57,12 @@ if run_from_script
   # depth = system size
   # percolation universality class p=0 q~1/2
 
-  num_qubit_space =10:2:20
+  num_qubit_space = 10:2:30
   #n_layers = 20
-  n_simulations = 50
+  n_simulations = 40
 
-  p_space = 0.10:0.05:0.9 #0.10:0.10:0.9
-  q_space = 0.10:0.05:0.9
+  p_space = 0.10:0.025:0.9 #0.10:0.10:0.9
+  q_space = 0.10:0.025:0.9
 
   simulation_space = 1:n_simulations
   #layer_space = 1:n_layers

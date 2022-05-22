@@ -16,6 +16,10 @@ from st_aggrid import AgGrid
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 import plotly.express as px
 
+import plotly.express
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+
 from palettable.scientific.sequential import Devon_20
 import colour
 from colour import Color
@@ -315,118 +319,57 @@ elif selected == "Jordan-Wigner CPLC":
     n_qubit_color_palette = list(Color("#3f007d").range_to(Color("#dadaeb"),n_qubits))
     n_qubit_color_palette = np.flip([c.hex for c in n_qubit_color_palette])
 
-    st.subheader('Average Entanglement Entropy by System Size and Measurement Rate')
-    main_fig = px.line(experiment_results_df,
-                        x='measurement_rate',
-                        y='mean_entropy',
-                        color='num_qubits',
-                        height=800, width=800,
-                        color_discrete_sequence = n_qubit_color_palette,
-                        labels={
-                             "measurement_rate": "Measurement Rate (%)",
-                             "mean_entropy": "Average Entanglement Entropy"
-                         })
-    main_fig.update_traces(line = dict(width=3))
-    main_fig.update_layout(font = dict(size=20),legend_title_text='# of Qubits')
+    st.subheader('Average Entanglement Entropy by p and q Parameters')
 
-    main_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-    st.plotly_chart(main_fig, use_container_width=True)
+    facet_plot_eg = experiment_results_df[['num_qubits','p','q','mean_entropy']]
+    facet_plot_eg.sort_values(["num_qubits", "p", "q"], ascending = [True, True, True], inplace = True)
 
-    st.subheader('Runtime Analysis')
-    main_fig = px.line(experiment_results_df,
-                        x='measurement_rate',
-                        y='mean_runtime_min',
-                        color='num_qubits',
-                        height=800, width=800,
-                        color_discrete_sequence=n_qubit_color_palette,
-                        labels={
-                             "measurement_rate": "Measurement Rate (%)",
-                             "mean_runtime_min": "Average Simulation Runtime (Min)"
-                         })
-    main_fig.update_traces(line = dict(width=3))
-    main_fig.update_layout(font = dict(size=20),
-                           legend_title_text='# of Qubits')
-    main_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-    st.plotly_chart(main_fig, use_container_width=True)
+    facet_plot_eg['p'] = facet_plot_eg['p'].astype(str)
+    facet_plot_eg['q'] = facet_plot_eg['q'].astype(str)
+    facet_plot_eg['num_qubits'] = facet_plot_eg['num_qubits'].astype(str)
+    #facet_plot_eg['mean_entropy'] = facet_plot_eg['mean_entropy'].apply(lambda x: np.round(x, 5))
 
-    entropy_tracking_df = get_table(conn = postgres_conn, table_name = entropy_tracking_cplc_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
+    max_columns = st.number_input('Maximum Columns in Heatmap Grid',  3)
+    heatmap_grid_height = st.number_input('Heatmap Grid Height',  200)
+    heatmap_grid_width = st.number_input('Heatmap Grid Width',  600)
 
-    print("Dropping Experiment ID")
-    entropy_tracking_df.drop(columns=['experiment_id'],inplace=True)
-    entropy_tracking_df['log_state_index'] = entropy_tracking_df['ij'].apply(lambda x: np.log(x))
-    entropy_tracking_df['num_qubits'] = entropy_tracking_df['num_qubits'].astype(int)
+    max_rows = int(np.ceil(len(facet_plot_eg['num_qubits'].unique())/max_columns))
+    titles = ['Qubits='+ str(x) for x in facet_plot_eg['num_qubits'].unique().astype(str)]
 
-    st.subheader('Entropy Contribution by Measurement Rate and System Size')
-    st.subheader('Preview')
+    fig = make_subplots(rows=max_rows, cols=max_columns,
+                        shared_yaxes=True,
+                        subplot_titles = tuple(titles))
 
-    AgGrid(entropy_tracking_df.head())
+    i_index = 1
+    max_index = len(facet_plot_eg['num_qubits'].unique())
+    for i in facet_plot_eg['num_qubits'].unique():
 
-    n_sim_color_palette = list(Color("#c7e9c0").range_to(Color("#006d2c"),n_simulations))
-    n_sim_color_palette = np.flip([c.hex for c in n_sim_color_palette])
+        df = facet_plot_eg[facet_plot_eg['num_qubits'] == i]
+        row_index = int(np.floor(i_index/(max_columns+1))+1)
+        col_index = i_index % max_columns
 
-    st.subheader('Histogram - Evolution of State Probabilities')
+        #print("i_index: "+ str(i_index)+" "+" row_index: "+ str(row_index)+" "+" col_index: "+ str(col_index)+" ")
 
-    x_axis_ticks = [x/100 for x in range(0,105,10)]
-    eti_fig_hist = px.histogram(entropy_tracking_df,
-                                 x="eigenvalue",
-                                 facet_col="num_qubits",
-                                 facet_col_wrap = 4,
-                                 color="num_qubits",
-                                 color_discrete_sequence = n_qubit_color_palette,
+        if col_index == 0:
+            col_index = max_columns
+        print("i_index: "+ str(i_index)+" "+" row_index: "+ str(row_index)+" "+" col_index: "+ str(col_index)+" ")
 
-                                 histnorm = 'probability',
-                                 nbins = 20,
-                                 # add the animation
-                                 animation_frame="measurement_rate",
-                                 category_orders={
-                                 "num_qubits": np.sort(entropy_tracking_df.num_qubits.unique()).tolist(),
-                                 },
-                                 labels={
-                                      "eigenvalue": "State Probability",
-                                  },
-                                 range_x = [0,1],
-                                 range_y = [0,1],
-                                 height=800, width=800,
-    )
+        fig.add_trace(go.Heatmap(z=df.mean_entropy, x=df.p, y=df.q, hoverinfo='text', hovertemplate='p: %{x}<br>q: %{y}<br>Mean Entropy: %{z}<extra></extra>'), row=row_index, col=col_index)
 
-    eti_fig_hist.for_each_yaxis(lambda y: y.update(title = ''))
-    eti_fig_hist.update_traces(marker_line_width=1,marker_line_color="white")
-    eti_fig_hist.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-    eti_fig_hist.update_layout(font = dict(size=20),
-                               legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1),
-                               yaxis_title = "%",
-                               legend_title_text='# of Qubits')
+        #dtick=list(facet_plot_eg['p'].unique())
+        fig.update_xaxes(title_text='p', row=row_index, col=col_index)
+        fig.update_yaxes(title_text='q', row=row_index, col=col_index)
 
-    eti_fig_hist.update_xaxes(ticktext=x_axis_ticks, tickvals=x_axis_ticks)
-    eti_fig_hist.for_each_xaxis(lambda x: x.update(ticktext=x_axis_ticks, tickvals=x_axis_ticks))
+        #if i_index == max_index:
+        #    fig.update_traces(xgap=1,ygap=1,showscale = True)
+        #else:
+        #    fig.update_traces(xgap=1,ygap=1,showscale = False)
 
-    st.plotly_chart(eti_fig_hist, use_container_width=True)
+        fig.update_layout(plot_bgcolor='black',height=heatmap_grid_height, width=heatmap_grid_width)
+        fig.update_xaxes(showline=True, linewidth=0.75, linecolor='black', gridcolor='black')
+        fig.update_yaxes(showline=True, linewidth=0.75, linecolor='black', gridcolor='black')
+        i_index+=1
 
-    st.subheader('Inspection - State Probability Distribution')
-
-    select_nq = st.selectbox('# Qubits:',entropy_tracking_df.num_qubits.unique())
-    select_mr = st.selectbox('Measurement rate:',entropy_tracking_df.measurement_rate.unique())
-
-    inspect_entropy_tracking_df = entropy_tracking_df[ (entropy_tracking_df.num_qubits == select_nq) & (entropy_tracking_df.measurement_rate == select_mr)]
-
-    eti_fig = px.histogram(inspect_entropy_tracking_df,
-                             x="eigenvalue",
-                             histnorm = 'probability',
-                             nbins = 20,
-                             labels={
-                                  "eigenvalue": "State Probability",
-                              },
-                             range_x = [0,1],
-                             range_y = [0,1],
-                             height=800, width=800,
-    )
-
-    eti_fig.for_each_yaxis(lambda y: y.update(title = ''))
-    eti_fig.update_traces(marker_line_width=1,marker_line_color="white")
-    eti_fig.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
-    eti_fig.update_layout(font = dict(size=20),
-                          legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1),
-                          yaxis_title = "%",
-                          legend_title_text='# of Qubits')
-    eti_fig.update_xaxes(ticktext=x_axis_ticks, tickvals=x_axis_ticks)
-    st.plotly_chart(eti_fig, use_container_width=True)
+    #fig.update_layout(showlegend=False,)
+    fig.update_traces(xgap=1,ygap=1,showscale = False)
+    st.plotly_chart(fig, use_container_width=True)
