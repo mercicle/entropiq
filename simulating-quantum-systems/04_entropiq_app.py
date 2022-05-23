@@ -329,9 +329,9 @@ elif selected == "Jordan-Wigner CPLC":
     facet_plot_eg['num_qubits'] = facet_plot_eg['num_qubits'].astype(str)
     #facet_plot_eg['mean_entropy'] = facet_plot_eg['mean_entropy'].apply(lambda x: np.round(x, 5))
 
-    max_columns = st.number_input('Maximum Columns in Heatmap Grid',  3)
-    heatmap_grid_height = st.number_input('Heatmap Grid Height',  200)
-    heatmap_grid_width = st.number_input('Heatmap Grid Width',  600)
+    max_columns = st.number_input('Maximum Columns in Heatmap Grid',  value = 3, min_value=1)
+    heatmap_grid_height = st.number_input('Heatmap Grid Height',  value = 200, min_value=200)
+    heatmap_grid_width = st.number_input('Heatmap Grid Width',  value = 600, min_value=200)
 
     max_rows = int(np.ceil(len(facet_plot_eg['num_qubits'].unique())/max_columns))
     titles = ['Qubits='+ str(x) for x in facet_plot_eg['num_qubits'].unique().astype(str)]
@@ -372,7 +372,8 @@ elif selected == "Jordan-Wigner CPLC":
 
     #fig.update_layout(showlegend=False,)
     fig.update_traces(xgap=1,ygap=1,showscale = False)
-    st.plotly_chart(fig, use_container_width=True)
+    #st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig)
 
     st.subheader('Average Simulation Runtime by p and q Parameters')
 
