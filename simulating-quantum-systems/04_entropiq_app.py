@@ -169,7 +169,6 @@ elif selected == "Discovery":
     experiment_results_df['mean_runtime_min'] = experiment_results_df['mean_runtime'].apply(lambda x: np.round(x/60,3))
     AgGrid(experiment_results_df)
 
-
     n_qubits = len(experiment_results_df.num_qubits.unique())
     n_simulations = experiment_metadata_df.n_simulations.values[0]
 
@@ -237,7 +236,6 @@ elif selected == "Discovery":
 
                                  histnorm = 'probability',
                                  nbins = 20,
-                                 # add the animation
                                  animation_frame="measurement_rate",
                                  category_orders={
                                  "num_qubits": np.sort(entropy_tracking_df.num_qubits.unique()).tolist(),
@@ -327,7 +325,6 @@ elif selected == "Jordan-Wigner CPLC":
     facet_plot_eg['p'] = facet_plot_eg['p'].astype(str)
     facet_plot_eg['q'] = facet_plot_eg['q'].astype(str)
     facet_plot_eg['num_qubits'] = facet_plot_eg['num_qubits'].astype(str)
-    #facet_plot_eg['mean_entropy'] = facet_plot_eg['mean_entropy'].apply(lambda x: np.round(x, 5))
 
     max_columns = st.number_input('Maximum Columns in Heatmap Grid',  value = 3, min_value=1)
     heatmap_grid_height = st.number_input('Heatmap Grid Height',  value = 200, min_value=200)
@@ -348,37 +345,24 @@ elif selected == "Jordan-Wigner CPLC":
         row_index = int(np.floor(i_index/(max_columns+1))+1)
         col_index = i_index % max_columns
 
-        #print("i_index: "+ str(i_index)+" "+" row_index: "+ str(row_index)+" "+" col_index: "+ str(col_index)+" ")
-
         if col_index == 0:
             col_index = max_columns
-        print("i_index: "+ str(i_index)+" "+" row_index: "+ str(row_index)+" "+" col_index: "+ str(col_index)+" ")
 
         fig.add_trace(go.Heatmap(z=df.mean_entropy, x=df.q, y=df.p, hoverinfo='text', hovertemplate='p: %{x}<br>q: %{y}<br>Mean Entropy: %{z}<extra></extra>'), row=row_index, col=col_index)
-
-        #dtick=list(facet_plot_eg['p'].unique())
         fig.update_xaxes(title_text='q', row=row_index, col=col_index)
         fig.update_yaxes(title_text='p', row=row_index, col=col_index)
-
-        #if i_index == max_index:
-        #    fig.update_traces(xgap=1,ygap=1,showscale = True)
-        #else:
-        #    fig.update_traces(xgap=1,ygap=1,showscale = False)
 
         fig.update_layout(plot_bgcolor='black',height=heatmap_grid_height, width=heatmap_grid_width)
         fig.update_xaxes(showline=True, linewidth=0.75, linecolor='black', gridcolor='black')
         fig.update_yaxes(showline=True, linewidth=0.75, linecolor='black', gridcolor='black')
         i_index+=1
 
-    #fig.update_layout(showlegend=False,)
     fig.update_traces(xgap=1,ygap=1,showscale = False)
-    #st.plotly_chart(fig, use_container_width=True)
     st.plotly_chart(fig)
 
     st.subheader('Average Simulation Runtime by p and q Parameters')
 
     facet_plot_runtime_df = experiment_results_df[['num_qubits','p','q','mean_runtime_min']]
-    #facet_plot_runtime_df = facet_plot_runtime_df[~facet_plot_runtime_df.p.isin([0.10,0.90]) & ~facet_plot_runtime_df.q.isin([0.10])]
 
     clipped_df = pd.DataFrame()
     system_sizes = facet_plot_runtime_df.num_qubits.unique().tolist()
@@ -405,16 +389,15 @@ elif selected == "Jordan-Wigner CPLC":
         if col_index == 0:
             col_index = max_columns
 
-        fig.add_trace(go.Heatmap(z=df.mean_runtime_min, x=df.p, y=df.q, hoverinfo='text', hovertemplate='p: %{x}<br>q: %{y}<br>Mean Simulation Runtime: %{z}<extra></extra>'), row=row_index, col=col_index)
+        fig.add_trace(go.Heatmap(z=df.mean_runtime_min, x=df.q, y=df.p, hoverinfo='text', hovertemplate='p: %{x}<br>q: %{y}<br>Mean Simulation Runtime: %{z}<extra></extra>'), row=row_index, col=col_index)
 
-        fig.update_xaxes(title_text='p', row=row_index, col=col_index)
-        fig.update_yaxes(title_text='q', row=row_index, col=col_index)
+        fig.update_xaxes(title_text='q', row=row_index, col=col_index)
+        fig.update_yaxes(title_text='p', row=row_index, col=col_index)
 
         fig.update_layout(plot_bgcolor='black',height=heatmap_grid_height, width=heatmap_grid_width)
         fig.update_xaxes(showline=True, linewidth=0.75, linecolor='black', gridcolor='black')
         fig.update_yaxes(showline=True, linewidth=0.75, linecolor='black', gridcolor='black')
         i_index+=1
 
-    #fig.update_layout(showlegend=False,)
     fig.update_traces(xgap=1,ygap=1,showscale = False)
     st.plotly_chart(fig, use_container_width=True)
