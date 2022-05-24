@@ -59,7 +59,7 @@ if run_from_script
   # depth = system size
   # percolation universality class p=0 q~1/2
 
-  num_qubit_space = 10:2:20
+  num_qubit_space = 30:10:30
   for q in num_qubit_space
     @printf("# Qubits = %.3i \n", q)
   end
@@ -67,8 +67,8 @@ if run_from_script
   #n_layers = 20
   n_simulations = 30
 
-  p_space = 0.0:0.05:0.90 #0.10:0.10:0.9
-  q_space = 0.0:0.05:0.90
+  p_space = 0.0:0.05:0.95 #0.10:0.10:0.9
+  q_space = 0.0:0.05:0.95
 
   simulation_space = 1:n_simulations
   #layer_space = 1:n_layers
