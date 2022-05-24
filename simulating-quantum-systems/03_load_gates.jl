@@ -39,7 +39,7 @@ gate(::GateName"Π11") =
 
  gate(::GateName"Xup") =
  1/2*([1 1
-        1 1])
+       1 1])
  gate(::GateName"Xdown") =
  1/2*([1 -1
       -1 1])
@@ -72,7 +72,7 @@ gate(::GateName"ΠJWCPLC_UEven1") =
 gate(::GateName"ZOp") =
  [1 0
   0 -1]
-  
+
 gate(::GateName"ZZup") =
 [1 0 0 0
  0 0 0 0

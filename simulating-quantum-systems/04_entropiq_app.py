@@ -354,11 +354,11 @@ elif selected == "Jordan-Wigner CPLC":
             col_index = max_columns
         print("i_index: "+ str(i_index)+" "+" row_index: "+ str(row_index)+" "+" col_index: "+ str(col_index)+" ")
 
-        fig.add_trace(go.Heatmap(z=df.mean_entropy, x=df.p, y=df.q, hoverinfo='text', hovertemplate='p: %{x}<br>q: %{y}<br>Mean Entropy: %{z}<extra></extra>'), row=row_index, col=col_index)
+        fig.add_trace(go.Heatmap(z=df.mean_entropy, x=df.q, y=df.p, hoverinfo='text', hovertemplate='p: %{x}<br>q: %{y}<br>Mean Entropy: %{z}<extra></extra>'), row=row_index, col=col_index)
 
         #dtick=list(facet_plot_eg['p'].unique())
-        fig.update_xaxes(title_text='p', row=row_index, col=col_index)
-        fig.update_yaxes(title_text='q', row=row_index, col=col_index)
+        fig.update_xaxes(title_text='q', row=row_index, col=col_index)
+        fig.update_yaxes(title_text='p', row=row_index, col=col_index)
 
         #if i_index == max_index:
         #    fig.update_traces(xgap=1,ygap=1,showscale = True)

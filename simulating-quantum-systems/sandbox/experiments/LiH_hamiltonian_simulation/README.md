@@ -31,3 +31,7 @@
 [Circ hamiltonian_simulation_with_trotter_formulas](https://quantumai.google/cirq/tutorials/educators/chemistry#hamiltonian_simulation_with_trotter_formulas)
 
 [openfermion - Hamiltonian Time Evolution and Expectation Value Computation](https://quantumai.google/openfermion/fqe/tutorials/hamiltonian_time_evolution_and_expectation_estimation)
+
+[hellinger_fidelity](https://qiskit.org/documentation/stubs/qiskit.quantum_info.hellinger_fidelity.html#qiskit.quantum_info.hellinger_fidelity)
+
+https://qiskit.org/documentation/stubs/qiskit.quantum_info.Pauli.html#:~:text=An%20%2Dqubit%20Pauli%20may%20be,the%20left%2Dmost%20Pauli%20character.

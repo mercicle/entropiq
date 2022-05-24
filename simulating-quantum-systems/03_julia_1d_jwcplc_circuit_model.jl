@@ -51,24 +51,24 @@ if run_from_script
   rng = MersenneTwister()
   experiment_id = repr(uuid4(rng).value)
   sim_status = "Running"
-  experiment_name = "Testing jwcplc - smaller pq range "
-  experiment_description = "Testing jwcplc - smaller pq range "
+  experiment_name = "CPLC - larger tests after new zz up/down"
+  experiment_description = "CPLC - larger tests after new zz up/down"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
   # only even system sizes and
   # depth = system size
   # percolation universality class p=0 q~1/2
 
-  num_qubit_space = 30:2:30
+  num_qubit_space = 10:2:20
   for q in num_qubit_space
     @printf("# Qubits = %.3i \n", q)
   end
 
   #n_layers = 20
-  n_simulations = 10
+  n_simulations = 30
 
-  p_space = 0.25:0.05:0.75 #0.10:0.10:0.9
-  q_space = 0.10:0.05:0.75
+  p_space = 0.0:0.05:0.90 #0.10:0.10:0.9
+  q_space = 0.0:0.05:0.90
 
   simulation_space = 1:n_simulations
   #layer_space = 1:n_layers
@@ -239,10 +239,11 @@ for num_qubits in num_qubit_space
                  elseif sampled_action == "JWCPLC_UEven_Measure"
 
                    ψ = orthogonalize!(ψ, qubit_index)
-
                    Czz = ITensors.correlation_matrix(ψ,"ZOp", "ZOp", sites = qubit_index:next_qubit_index)
-                   zz_up_down_probabilities = real.(diag(normalize(Czz)))
+                   off_diagonal = real.(Czz[1,2])
+                   #@printf("# off_diagonal = %.3f \n", off_diagonal)
 
+                   zz_up_down_probabilities = [1/2*(1+off_diagonal), 1/2*(1-off_diagonal)]
                    zz_measurement_list = ["ZZup","ZZdown"]
                    action_string = wsample(zz_measurement_list, zz_up_down_probabilities, 1)[1]
                  end
