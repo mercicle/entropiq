@@ -42,6 +42,8 @@ The Quantum Zeno Effect, also known as the Turing paradox, is a feature of quant
 
 [Non-Abelian Anyons and Topological Quantum Computation](https://arxiv.org/abs/0707.1889)
 
+[Example JOSS Paper](https://joss.theoj.org/papers/10.21105/joss.04143)
+
 ## Observables
 
 [Observables and Measurements in Quantum Mechanics](http://physics.mq.edu.au/~jcresser/Phys301/Chapters/Chapter13.pdf)

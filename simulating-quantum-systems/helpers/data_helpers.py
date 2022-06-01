@@ -5,6 +5,7 @@ import psycopg2
 from sqlalchemy import create_engine
 import requests
 import re
+import streamlit as st
 
 def load_environ(environ_path):
     with open(environ_path) as f:
@@ -47,6 +48,7 @@ def write_table(conn, df, table_name, schema_name, chunk_size=int(1e3), append=F
     except:
         print("Failed to save the data to " + schema_name + "." + table_name + "  ¯\\_(ツ)_//¯.")
 
+#@st.cache
 def get_table(conn, table_name, schema_name, where_string="", only_these_cols=[], use_table_quote=False):
 
     if(len(only_these_cols)>0):

@@ -11,6 +11,8 @@
 
 [Pennylane Example - Quantum Approximate Optimization Algorithm (QAOA)](https://pennylane.ai/qml/demos/tutorial_qaoa_intro.html)
 
+[https://arxiv.org/pdf/1811.04968.pdf](https://arxiv.org/pdf/1811.04968.pdf)
+
 [How to construct and load Hamiltonians in PennyLane](https://pennylane.ai/blog/2021/05/how-to-construct-and-load-hamiltonians-in-pennylane/)
 
 # Problem Help Urls

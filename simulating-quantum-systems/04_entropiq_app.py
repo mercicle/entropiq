@@ -12,7 +12,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import hydralit_components as hc
 
-from st_aggrid import AgGrid
+from st_aggrid import AgGrid, DataReturnMode
 from st_aggrid.grid_options_builder import GridOptionsBuilder
 import plotly.express as px
 
@@ -299,9 +299,22 @@ elif selected == "Jordan-Wigner CPLC":
 
     gb = GridOptionsBuilder.from_dataframe(experiment_metadata_df)
     gb.configure_pagination()
-    grid_options = gb.build()
 
-    AgGrid(experiment_metadata_df, grid_options)
+    #return_mode = st.sidebar.selectbox("Return Mode", list(DataReturnMode.__members__), index=1)
+    #return_mode_value = DataReturnMode.__members__[return_mode]
+
+    #grid_options = gb.build()
+    #grid_response = AgGrid(experiment_metadata_df, grid_options, data_return_mode=return_mode_value)
+
+    #selected = grid_response['selected_rows']
+
+    #print("=======")
+    #print(selected)
+    #selected_df = pd.DataFrame(selected)
+
+    #st.subheader('Selected')
+    #AgGrid(selected_df)
+
 
     experiment_id = st.selectbox('Select Experiment ID', experiment_metadata_df.experiment_id)
 
@@ -358,7 +371,7 @@ elif selected == "Jordan-Wigner CPLC":
         i_index+=1
 
     fig.update_traces(xgap=1,ygap=1,showscale = False)
-    st.plotly_chart(fig)
+    st.plotly_chart(fig, use_container_width=True)
 
     st.subheader('Average Simulation Runtime by p and q Parameters')
 

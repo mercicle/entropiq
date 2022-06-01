@@ -51,24 +51,21 @@ if run_from_script
   rng = MersenneTwister()
   experiment_id = repr(uuid4(rng).value)
   sim_status = "Running"
-  experiment_name = "CPLC - larger tests after new zz up/down"
-  experiment_description = "CPLC - larger tests after new zz up/down"
+  experiment_name = "CPLC - fixed p scaling"
+  experiment_description = "CPLC - fixed p scaling"
   experiment_run_date = Dates.format(Date(Dates.today()), "mm-dd-yyyy")
 
   # only even system sizes and
   # depth = system size
   # percolation universality class p=0 q~1/2
 
-  num_qubit_space = 30:10:30
-  for q in num_qubit_space
-    @printf("# Qubits = %.3i \n", q)
-  end
+  num_qubit_space = 30:10:100
 
   #n_layers = 20
   n_simulations = 30
 
-  p_space = 0.0:0.05:0.95 #0.10:0.10:0.9
-  q_space = 0.0:0.05:0.95
+  p_space = 0.0:0.05:0.0 #0.10:0.10:0.9
+  q_space = 0.1:0.05:0.90
 
   simulation_space = 1:n_simulations
   #layer_space = 1:n_layers
@@ -216,6 +213,7 @@ for num_qubits in num_qubit_space
                elseif sampled_action == "JWCPLC_UOdd_Measure"
 
                  ψ = orthogonalize!(ψ, qubit_index)
+                 #https://itensor.github.io/ITensors.jl/stable/MPSandMPO.html#ITensors.expect-Tuple{MPS,%20Any}
                  born_probability_up = ITensors.expect(ψ, "Xup", sites=qubit_index)
                  born_probability_down = 1-born_probability_up
                  up_down_probabilities = [born_probability_up, born_probability_down]
