@@ -216,8 +216,7 @@ elif selected == "Discovery":
     entropy_tracking_df['log_state_index'] = entropy_tracking_df['ij'].apply(lambda x: np.log(x))
     entropy_tracking_df['num_qubits'] = entropy_tracking_df['num_qubits'].astype(int)
 
-    st.subheader('Entropy Contribution by Measurement Rate and System Size')
-    st.subheader('Preview')
+    st.subheader('State Probabilities - Preview')
 
     AgGrid(entropy_tracking_df.head())
 
@@ -303,8 +302,8 @@ elif selected == "Jordan-Wigner CPLC":
     #return_mode = st.sidebar.selectbox("Return Mode", list(DataReturnMode.__members__), index=1)
     #return_mode_value = DataReturnMode.__members__[return_mode]
 
-    #grid_options = gb.build()
-    #grid_response = AgGrid(experiment_metadata_df, grid_options, data_return_mode=return_mode_value)
+    grid_options = gb.build()
+    AgGrid(experiment_metadata_df, grid_options)
 
     #selected = grid_response['selected_rows']
 
@@ -346,7 +345,7 @@ elif selected == "Jordan-Wigner CPLC":
     max_rows = int(np.ceil(len(facet_plot_eg['num_qubits'].unique())/max_columns))
     titles = ['Qubits='+ str(x) for x in facet_plot_eg['num_qubits'].unique().astype(str)]
 
-    fig = make_subplots(rows=max_rows, cols=max_columns,
+    fig = make_subplots(rows=max_rows, cols=int(max_columns),
                         shared_yaxes=True,
                         subplot_titles = tuple(titles))
 
@@ -361,6 +360,7 @@ elif selected == "Jordan-Wigner CPLC":
         if col_index == 0:
             col_index = max_columns
 
+        col_index = int(col_index)
         fig.add_trace(go.Heatmap(z=df.mean_entropy, x=df.q, y=df.p, hoverinfo='text', hovertemplate='p: %{x}<br>q: %{y}<br>Mean Entropy: %{z}<extra></extra>'), row=row_index, col=col_index)
         fig.update_xaxes(title_text='q', row=row_index, col=col_index)
         fig.update_yaxes(title_text='p', row=row_index, col=col_index)
@@ -387,7 +387,7 @@ elif selected == "Jordan-Wigner CPLC":
 
     facet_plot_runtime_df = clipped_df
 
-    fig = make_subplots(rows=max_rows, cols=max_columns,
+    fig = make_subplots(rows=max_rows, cols=int(max_columns),
                         shared_yaxes=True,
                         subplot_titles = tuple(titles))
 
@@ -401,6 +401,7 @@ elif selected == "Jordan-Wigner CPLC":
 
         if col_index == 0:
             col_index = max_columns
+        col_index = int(col_index)
 
         fig.add_trace(go.Heatmap(z=df.mean_runtime_min, x=df.q, y=df.p, hoverinfo='text', hovertemplate='p: %{x}<br>q: %{y}<br>Mean Simulation Runtime: %{z}<extra></extra>'), row=row_index, col=col_index)
 
@@ -414,3 +415,57 @@ elif selected == "Jordan-Wigner CPLC":
 
     fig.update_traces(xgap=1,ygap=1,showscale = False)
     st.plotly_chart(fig, use_container_width=True)
+
+
+    entropy_tracking_df = get_table(conn = postgres_conn, table_name = entropy_tracking_cplc_table_name, schema_name = core_schema, where_string = " where experiment_id = '"+experiment_id + "'")
+
+    entropy_tracking_df.drop(columns=['experiment_id'],inplace=True)
+    entropy_tracking_df['log_state_index'] = entropy_tracking_df['ij'].apply(lambda x: np.log(x))
+    entropy_tracking_df['num_qubits'] = entropy_tracking_df['num_qubits'].astype(int)
+
+    st.subheader('State Probabilities - Preview')
+    AgGrid(entropy_tracking_df.head())
+
+    n_sim_color_palette = list(Color("#c7e9c0").range_to(Color("#006d2c"),n_simulations))
+    n_sim_color_palette = np.flip([c.hex for c in n_sim_color_palette])
+
+    st.subheader('Histogram - Evolution of State Probabilities')
+
+    x_axis_ticks = [x/100 for x in range(0,105,10)]
+    eti_fig_hist = px.histogram(entropy_tracking_df,
+                                 x="eigenvalue",
+                                 facet_col="q",
+                                 facet_row="p",
+
+                                 facet_col_wrap = 4,
+                                 color="num_qubits",
+                                 color_discrete_sequence = n_qubit_color_palette,
+
+                                 histnorm = 'probability',
+                                 nbins = 20,
+                                 animation_frame="num_qubits",
+                                 category_orders={
+                                 "q": np.sort(entropy_tracking_df.q.unique()).tolist(),
+                                 "p": np.sort(entropy_tracking_df.p.unique()).tolist(),
+
+                                 },
+                                 labels={
+                                      "eigenvalue": "",
+                                  },
+                                 range_x = [0,1],
+                                 range_y = [0,1],
+                                 height=800, width=800,
+    )
+
+    eti_fig_hist.for_each_yaxis(lambda y: y.update(title = ''))
+    eti_fig_hist.update_traces(marker_line_width=1,marker_line_color="white")
+    eti_fig_hist.for_each_annotation(lambda a: a.update(text=a.text.split("=")[-1]))
+    eti_fig_hist.update_layout(font = dict(size=20),
+                               legend=dict(orientation="h",yanchor="bottom",y=1.02,xanchor="right",x=1),
+                               yaxis_title = "%",
+                               legend_title_text='# of Qubits')
+
+    eti_fig_hist.update_xaxes(ticktext=x_axis_ticks, tickvals=x_axis_ticks)
+    eti_fig_hist.for_each_xaxis(lambda x: x.update(ticktext=x_axis_ticks, tickvals=x_axis_ticks))
+
+    st.plotly_chart(eti_fig_hist, use_container_width=True)
