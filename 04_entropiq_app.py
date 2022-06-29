@@ -289,9 +289,9 @@ elif selected == "Discovery":
     eti_fig.update_xaxes(ticktext=x_axis_ticks, tickvals=x_axis_ticks)
     st.plotly_chart(eti_fig, use_container_width=True)
 
-elif selected == "Jordan-Wigner CPLC":
+elif selected == "CPLC":
 
-    st.header('Jordan-Wigner CPLC')
+    st.header('Completely packed loop model with crossings (CPLC) Experimental Design')
 
     st.subheader('Experiments')
     experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiments_metadata_cplc_table_name, schema_name = core_schema)
@@ -299,21 +299,8 @@ elif selected == "Jordan-Wigner CPLC":
     gb = GridOptionsBuilder.from_dataframe(experiment_metadata_df)
     gb.configure_pagination()
 
-    #return_mode = st.sidebar.selectbox("Return Mode", list(DataReturnMode.__members__), index=1)
-    #return_mode_value = DataReturnMode.__members__[return_mode]
-
     grid_options = gb.build()
     AgGrid(experiment_metadata_df, grid_options)
-
-    #selected = grid_response['selected_rows']
-
-    #print("=======")
-    #print(selected)
-    #selected_df = pd.DataFrame(selected)
-
-    #st.subheader('Selected')
-    #AgGrid(selected_df)
-
 
     experiment_id = st.selectbox('Select Experiment ID', experiment_metadata_df.experiment_id)
 

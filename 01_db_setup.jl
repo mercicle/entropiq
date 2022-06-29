@@ -28,9 +28,9 @@ create_entropy_tracking_string = "DROP TABLE IF EXISTS quantumlab_experiments.en
 result = execute(conn, create_entropy_tracking_string);
 
 
-########################
-##   JW CPLC Design   ##
-########################
+############################################################################
+## Completely packed loop model with crossings (CPLC) Experimental Design ##
+############################################################################
 create_experimental_metadata_string = "CREATE TABLE IF NOT EXISTS quantumlab_experiments.experiments_metadata_jwcplc (experiment_id TEXT, experiment_run_date TEXT, status TEXT, experiment_name TEXT, experiment_description TEXT, num_qubit_space TEXT, n_layers INT, n_simulations INT, p_space TEXT, q_space TEXT, use_constant_size BOOL, constant_size INT, subsystem_range_divider FLOAT, runtime_in_seconds FLOAT, experimental_design_type TEXT)";
 result = execute(conn, create_experimental_metadata_string);
 

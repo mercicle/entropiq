@@ -1,3 +1,7 @@
+############################################################################
+## Completely packed loop model with crossings (CPLC) Experimental Design ##
+############################################################################
+
 using ITensors
 using ITensors: dim as itensor_dim
 using PastaQ
@@ -155,13 +159,6 @@ else
   experimental_design_type = data.experimental_design_type[1]
 
 end
-
-# brick_layer_results = run_jwcplc_sim(num_qubit_space, simulation_space, p_space, q_space, layer_space, qubit_index_space, subsystem_range_divider, use_constant_size, constant_size)
-# runtime_in_seconds = time() - start_time
-# runtime_in_seconds = round(runtime_in_seconds, digits=0)
-#
-# simulation_df = brick_layer_results["simulation_df"]
-# von_neumann_entropy_df = brick_layer_results["von_neumann_entropy_df"]
 
 qubit_index_space = nothing
 ψ_tracker = nothing

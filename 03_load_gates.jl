@@ -2,7 +2,9 @@
 import PastaQ: gate
 using HDF5
 
-# single qubit gates provided in example
+#####################################
+##    Projective Measurements      ##
+#####################################
 gate(::GateName"Π0") =
   [1 0
    0 0]
@@ -31,12 +33,9 @@ gate(::GateName"Π11") =
  0 0 0 0
  0 0 0 1]
 
- #math
- # start with wave f
- # compute prob of some eigenvalue
- # project onto eigenspace (multiple wf by projector)
- # take norm squared of that state
-
+#####################################################################################################
+## Gates for completely packed loop model with crossings (CPLC) from Jordan–Wigner Transformations ##
+#####################################################################################################
  gate(::GateName"Xup") =
  1/2*([1 1
        1 1])
@@ -85,6 +84,9 @@ gate(::GateName"ZZup") =
   0 0 1 0
   0 0 0 0]
 
+#####################################
+## Loading Saved Clifford Gate Set ##
+#####################################
 fid = h5open(string(@__DIR__, "/in_data/clifford_dict.h5"), "r")
 clifford_samples = 99999
 clifford_dict = Dict()

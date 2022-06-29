@@ -1,3 +1,6 @@
+############################################################################
+##                 Brick-layer Experimental Design                        ##
+############################################################################
 using ITensors
 using ITensors: dim as itensor_dim
 using PastaQ
@@ -39,6 +42,10 @@ conn = LibPQ.Connection(db_connection_string)
 run_from_script = true
 experiment_id, sim_status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, layer_space, simulation_space, measurement_rate_space, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply, experimental_design_type = [nothing for _ = 1:15]
 experiment_id = "0ed86a8c-bf24-11ec-80b0-328140767e06"
+
+experiments_metadata_table_name = "experiments_metadata"
+sim_results_table_name = "simulation_results"
+entropy_tracking_table_name  = "entropy_tracking"
 
 if run_from_script
 
@@ -103,14 +110,14 @@ if run_from_script
       experimental_design_type = experiment_metadata_df.experimental_design_type
      ),
      conn,
-     "INSERT INTO quantumlab_experiments.experiments_metadata (experiment_id, status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, use_constant_size, constant_size, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply, runtime_in_seconds,experimental_design_type) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14, \$15, \$16);"
+     "INSERT INTO quantumlab_experiments."*"$(experiments_metadata_table_name)"*" (experiment_id, status, experiment_name, experiment_description, experiment_run_date, num_qubit_space, n_layers, n_simulations, measurement_rate_space, use_constant_size, constant_size, subsystem_range_divider, operation_type_to_apply, gate_types_to_apply, runtime_in_seconds,experimental_design_type) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8, \$9, \$10, \$11, \$12, \$13, \$14, \$15, \$16);"
   )
   execute(conn, "COMMIT;")
 
 else
 
   result = execute(conn,
-                   string("select * FROM quantumlab_experiments.experiments_metadata where experiment_id = '", experiment_id,"'");
+                   string("select * FROM quantumlab_experiments."*"$(experiments_metadata_table_name)"*" where experiment_id = '", experiment_id,"'");
                    throw_error=false
                    )
 
@@ -154,13 +161,12 @@ von_neumann_entropy_df = brick_layer_results["von_neumann_entropy_df"]
 
 sim_status = "Completed"
 result = execute(conn,
-                 string("update quantumlab_experiments.experiments_metadata set runtime_in_seconds = ", runtime_in_seconds, ", status = '", sim_status ,"' where experiment_id = '", experiment_id,"'");
+                 string("update quantumlab_experiments."*"$(experiments_metadata_table_name)"*"  set runtime_in_seconds = ", runtime_in_seconds, ", status = '", sim_status ,"' where experiment_id = '", experiment_id,"'");
                  throw_error=false
                  )
 
 simulation_df = insertcols!(simulation_df, :experiment_id => experiment_id)
 
-#TableView.showtable(simulation_df)
 execute(conn, "BEGIN;")
 LibPQ.load!(
     (num_qubits = simulation_df.num_qubits,
@@ -171,28 +177,32 @@ LibPQ.load!(
      mean_runtime = simulation_df.mean_runtime
     ),
     conn,
-    "INSERT INTO quantumlab_experiments.simulation_results (num_qubits, measurement_rate, mean_entropy, se_mean_entropy, experiment_id, mean_runtime) VALUES(\$1, \$2, \$3, \$4, \$5, \$6);"
+    "INSERT INTO quantumlab_experiments."*"$(sim_results_table_name)"*" (num_qubits, measurement_rate, mean_entropy, se_mean_entropy, experiment_id, mean_runtime) VALUES(\$1, \$2, \$3, \$4, \$5, \$6);"
 )
 execute(conn, "COMMIT;")
 
 von_neumann_entropy_df = insertcols!(von_neumann_entropy_df, :experiment_id => experiment_id)
 
-#https://invenia.github.io/LibPQ.jl/dev/#COPY-1
-execute(conn, "BEGIN;")
-LibPQ.load!(
-    (
-    experiment_id = von_neumann_entropy_df.experiment_id,
-    measurement_rate = von_neumann_entropy_df.measurement_rate,
-    simulation_number = von_neumann_entropy_df.simulation_number,
-    num_qubits = von_neumann_entropy_df.num_qubits,
-    bond_index = von_neumann_entropy_df.bond_index,
-    ij = von_neumann_entropy_df.ij,
-    eigenvalue = von_neumann_entropy_df.eigenvalue,
-    entropy_contribution = von_neumann_entropy_df.entropy_contribution
-    ),
-    conn,
-    "INSERT INTO quantumlab_experiments.entropy_tracking (experiment_id, measurement_rate, simulation_number, num_qubits, bond_index, ij, eigenvalue, entropy_contribution) VALUES(\$1, \$2, \$3, \$4, \$5, \$6, \$7, \$8);"
-)
-execute(conn, "COMMIT;")
+
+replace!(von_neumann_entropy_df.num_qubits, NaN => -1)
+replace!(von_neumann_entropy_df.bond_index, NaN => -1)
+replace!(von_neumann_entropy_df.ij, NaN => -1)
+replace!(von_neumann_entropy_df.eigenvalue, NaN => -1)
+replace!(von_neumann_entropy_df.entropy_contribution, NaN => -1)
+
+von_neumann_entropy_df[!,:bond_index] = convert.(Int64,von_neumann_entropy_df[:,:bond_index])
+von_neumann_entropy_df[!,:num_qubits] = convert.(Int64,von_neumann_entropy_df[:,:num_qubits])
+von_neumann_entropy_df[!,:ij] = convert.(Int64,von_neumann_entropy_df[:,:ij])
+
+row_strings = imap(eachrow(von_neumann_entropy_df)) do row
+  "$(row[:experiment_id]),$(row[:p]),$(row[:q]),$(row[:simulation_number]),$(row[:num_qubits]),$(row[:bond_index]),$(row[:ij]),$(row[:eigenvalue]),$(row[:entropy_contribution])\n"
+end
+
+start_time = time()
+copyin = LibPQ.CopyIn("COPY quantumlab_experiments."*"$(entropy_tracking_table_name)"*" FROM STDIN (FORMAT CSV);", row_strings)
+execute(conn, copyin)
+runtime_in_seconds = time() - start_time
+runtime_in_seconds = round(runtime_in_seconds, digits=0)
+
 
 #TableView.showtable(von_neumann_entropy_df)
