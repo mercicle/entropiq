@@ -1,0 +1,4 @@
+qiskit==0.20
+seaborn==0.10
+ipywidgets==7.5.1
+pylatexenc
