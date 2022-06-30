@@ -1,21 +1,19 @@
-<img src="./readme_images/entropiq-transparent-background.png" width="800" height="200">
+<img src="./readme_images/entropiq-transparent-background.png" width="400" height="100">
 
 # Welcome to EntropiQ
 
 We hope EntropiQ will become a community effort to build a cloud platform for entanglement analytics of many-body quantum mechanical systems using Tensor Networks.
 
-
 ## EntropiQ Components
+
+<img src="./readme_images/ql_experiment.png" width="600" height="600">
 
 - AWS Postgres Database for quantum simulation data and metadata management
 - Many-body quantum system simulation pipeline templates in (Julia)
   - Julia API Templates to deploy simulations and integrate with app
 - Streamlit Application (Python)
 
-<img src="./readme_images/discovery_main.png" width="250" height="250">
-<img src="./readme_images/discovery_runtimes.png" width="250" height="250">
-<img src="./readme_images/discovery_state_evolution.png" width="250" height="250">
-<img src="./readme_images/discovery_inspection.png" width="250" height="250">
+<img src="./readme_images/discovery_main.png" width="250" height="250"><img src="./readme_images/discovery_runtimes.png" width="250" height="250"><img src="./readme_images/discovery_state_evolution.png" width="250" height="250"><img src="./readme_images/discovery_inspection.png" width="250" height="250">
 
 
 ## Relevant Papers
