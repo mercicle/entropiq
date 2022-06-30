@@ -9,7 +9,7 @@ We hope EntropiQ will become a community effort to build a no-code cloud platfor
 ## EntropiQ Components
 
 <p align="center">
-  <img src="./readme_images/ql_experiment.png" width=75% height=75%>
+  <img src="./readme_images/entropiq_stats.png" width=75% height=75%>
 </p>
 
 There are three parts of EntropiQ:
@@ -17,6 +17,10 @@ There are three parts of EntropiQ:
 - Many-body quantum system simulation pipeline templates in Julia
   - Genie (web framework in Julia) API Templates to deploy simulations and integrate with app
 - Streamlit Application (Python)
+
+<p align="center">
+  <img src="./readme_images/ql_experiment.png" width=75% height=75%>
+</p>
 
 <img src="./readme_images/discovery_main.png" width=50% height=50%><img src="./readme_images/discovery_runtimes.png" width=50% height=50%><img src="./readme_images/discovery_state_evolution.png" width=50% height=50%><img src="./readme_images/discovery_inspection.png" width=50% height=50%>
 
