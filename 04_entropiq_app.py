@@ -35,13 +35,20 @@ load_environ(creds_path)
 
 postgres_conn = get_postgres_conn()
 
+# new customization in hydralit 1.0.10
+info_card_custom_theme_experiments = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#2171b5', 'icon': 'fa fa-flask'}
+info_card_custom_theme_lastrun = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#2171b5', 'icon': 'fa fa-calendar'}
+info_card_custom_theme_layers = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#2171b5', 'icon': 'fa fa-bars'}
+info_card_custom_theme_sims = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#2171b5', 'icon': 'fa fa-calculator'}
+info_card_custom_theme_runtime = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#2171b5', 'icon': 'fa fa-clock'}
+
 experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiments_metadata_table_name, schema_name = core_schema)
 
 st.set_page_config(layout = "wide")
 
 with st.sidebar:
     selected = option_menu("EntropiQ", ["EntropiQ Stats", 'Launch Simulation', 'Discovery','Jordan-Wigner CPLC'],
-                           icons=['stack', 'bricks','search','search'], menu_icon = "boxes", default_index=1)
+                           icons=['stack', 'bricks','search','search'], menu_icon = "boxes", default_index=0)
 
 if selected == "EntropiQ Stats":
 
@@ -54,13 +61,13 @@ if selected == "EntropiQ Stats":
     ave_runtime = experiment_metadata_df['runtime_in_seconds'].mean()
 
     with col1:
-        hc.info_card(title='# of Experiments', content = str(int(n_experiments)), sentiment='good')
-        hc.info_card(title='Last Run Date', content = str(last_run_date), sentiment='good')
+        hc.info_card(title='Experiments', content = str(int(n_experiments)), content_text_size= '2.5rem',theme_override=info_card_custom_theme_experiments)
+        hc.info_card(title='Last Run Date', content = str(last_run_date), content_text_size= '2.5rem',theme_override=info_card_custom_theme_lastrun)
 
     with col2:
-        hc.info_card(title='Average Layers', content = str(int(ave_layers)), sentiment='good')
-        hc.info_card(title='Average Simulations', content = str(int(ave_simulations)), sentiment='good')
-        hc.info_card(title='Average Sim Runtime (Min)', content = str(np.round(ave_runtime/60,2)), sentiment='good')
+        hc.info_card(title='Average Layers', content = str(int(ave_layers)), content_text_size= '2.5rem', theme_override=info_card_custom_theme_layers)
+        hc.info_card(title='Average Simulations', content = str(int(ave_simulations)), content_text_size= '2.5rem',theme_override=info_card_custom_theme_sims)
+        hc.info_card(title='Average Runtime (Min)', content = str(np.round(ave_runtime/60,2)), content_text_size= '2.5rem',theme_override=info_card_custom_theme_runtime)
 
 elif selected == "Launch Simulation":
 

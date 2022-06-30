@@ -84,8 +84,13 @@ There are three parts of EntropiQ:
 
 # Step-By-Step Onboarding
 
+Request DB credentials from @mercicle and create a `db_creds.env` file in the root folder with the following:
 ```
-
+POSTGRES_DB_USERNAME=
+POSTGRES_DB_PASSWORD=
+POSTGRES_DB_URL=quantumlabdb.cvbkaarxyt1b.us-east-1.rds.amazonaws.com
+POSTGRES_DB_PORT=5432
+POSTGRES_DB_NAME=postgres
 ```
 
 # Help Options
