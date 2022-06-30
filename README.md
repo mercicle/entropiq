@@ -16,9 +16,14 @@ The community version and demos will be available at https://entropiq.tech/ shor
 
 There are three parts of EntropiQ:
 - AWS Postgres Database for quantum simulation data and metadata management
+  - tables managing experiment metadata, high-level simulation results, and low-level state and entropy tracking
 - Many-body quantum system simulation pipeline templates in Julia
-  - Genie (web framework in Julia) API Templates to deploy simulations and integrate with app
+  - Currently seeded with both brick-layer design and completely packed loop model with crossings (CPLC) design
+  - Working on Genie (web framework in Julia) API Templates to deploy simulations and integrate with app
 - Streamlit Application (Python)
+  - Platform statistics
+  - Flexibility across multiple experimental conditions, including: system size, gates, measurement types and rates, circuit depth and entropy calculation cutomization.
+  - High and low-level exploratory data analysis of entanglement entropy, runtime analysis, and state probability distribution evolution animations
 
 <p align="center">
   <img src="./readme_images/entropiq_experiment.png" width=75% height=75%>
@@ -62,18 +67,17 @@ There are three parts of EntropiQ:
 
 ## Entanglement Entropy
 
-- https://qiskit.org/documentation/_modules/qiskit/quantum_info/states/utils.html#partial_trace
-- https://qiskit.org/textbook/ch-quantum-hardware/density-matrix.html#reduced
-- http://itensor.org/docs.cgi?vers=cppv3&page=formulas/mps_two_rdm
+[Quantum Entropies](http://www.scholarpedia.org/article/Quantum_entropies)
 
+> "von Neumann entropy is a limiting case of the Rényi entropy lim α→1 Sα(ρ) = S(ρ) Given a family of entropies {Sα(ρ)}α, where α is some index, the entropies are monotonic in α∈ℝ" (see [here](https://en.wikipedia.org/wiki/Von_Neumann_entropy)).
+
+Entanglement Entropy via the partial trace:
 > "Among physicists, this is often called "tracing out" or "tracing over" W to leave only an operator on V in the context where W and V are Hilbert spaces associated with quantum systems (see [here](https://en.wikipedia.org/wiki/Partial_trace#:~:text=In%20linear%20algebra%20and%20functional,is%20an%20operator%2Dvalued%20function))."
 
 [Partial Trace](http://www.fmt.if.usp.br/~gtlandi/04---reduced-dm-2.pdf)
 
-[Partial Trace Wiki](https://en.wikipedia.org/wiki/Partial_trace)
+[Partial Trace Wikipedia](https://en.wikipedia.org/wiki/Partial_trace)
 
-> "von Neumann entropy is a limiting case of the Rényi entropy lim α→1 Sα(ρ) = S(ρ) Given a family of entropies {Sα(ρ)}α, where α is some index, the entropies are monotonic in α∈ℝ" (see [here](https://en.wikipedia.org/wiki/Von_Neumann_entropy)).
-[Quantum Entropies](http://www.scholarpedia.org/article/Quantum_entropies)
 
 ## Misc Articles
 
