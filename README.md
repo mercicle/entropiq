@@ -12,9 +12,10 @@ We hope EntropiQ will become a community effort to build a cloud platform for en
   <img src="./readme_images/ql_experiment.png" width=75% height=75%>
 </p>
 
+There are three parts of EntropiQ:
 - AWS Postgres Database for quantum simulation data and metadata management
 - Many-body quantum system simulation pipeline templates in (Julia)
-  - Julia API Templates to deploy simulations and integrate with app
+  - Genie (web framework in Julia) API Templates to deploy simulations and integrate with app
 - Streamlit Application (Python)
 
 <img src="./readme_images/discovery_main.png" width=50% height=50%><img src="./readme_images/discovery_runtimes.png" width=50% height=50%><img src="./readme_images/discovery_state_evolution.png" width=50% height=50%><img src="./readme_images/discovery_inspection.png" width=50% height=50%>
