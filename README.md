@@ -21,7 +21,7 @@ There are three parts of EntropiQ:
 - Streamlit Application (Python)
 
 <p align="center">
-  <img src="./readme_images/ql_experiment.png" width=75% height=75%>
+  <img src="./readme_images/entropiq_experiment.png" width=75% height=75%>
 </p>
 
 <img src="./readme_images/discovery_main.png" width=50% height=50%><img src="./readme_images/discovery_runtimes.png" width=50% height=50%><img src="./readme_images/discovery_state_evolution.png" width=50% height=50%><img src="./readme_images/discovery_inspection.png" width=50% height=50%>
