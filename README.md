@@ -6,6 +6,8 @@
 
 We hope EntropiQ will become a community effort to build a no-code cloud platform for designing and running large-scale simulations of many-body quantum mechanical systems using Tensor Networks.
 
+The community version and demos will be available at https://entropiq.tech/ shortly 🚀.
+
 ## EntropiQ Components
 
 <p align="center">
