@@ -1,6 +1,7 @@
 <p align="center">
   <img src="./readme_images/entropiq-transparent-background.png" width="400" height="100">
 </p>
+
 # Welcome
 
 We hope EntropiQ will become a community effort to build a cloud platform for entanglement analytics of many-body quantum mechanical systems using Tensor Networks.
@@ -18,10 +19,7 @@ We hope EntropiQ will become a community effort to build a cloud platform for en
 
 <img src="./readme_images/discovery_main.png" width=50% height=50%><img src="./readme_images/discovery_runtimes.png" width=50% height=50%><img src="./readme_images/discovery_state_evolution.png" width=50% height=50%><img src="./readme_images/discovery_inspection.png" width=50% height=50%>
 
-
-## Relevant Papers
-
-# Papers
+# Relevant Papers
 
 ## Quantum System Experimental Design
 [Bricklayer Design - "Quantum Zeno Effect and the Many-body Entanglement Transition"](https://arxiv.org/pdf/1808.06134.pdf)
@@ -54,8 +52,6 @@ We hope EntropiQ will become a community effort to build a cloud platform for en
 [MPS Examples](https://physics.stackexchange.com/questions/266587/examples-of-matrix-product-states)
 
 [Qiskit MPS](https://qiskit.org/documentation/stable/0.24/tutorials/simulators/7_matrix_product_state_method.html)
-
-[MPO Matrix Product Operator](https://tensornetwork.org/mpo/#:~:text=A%20matrix%20product%20operator%20(MPO,in%20a%20chain%2Dlike%20fashion.)
 
 ## Entanglement Entropy
 
