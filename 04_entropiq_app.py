@@ -36,11 +36,11 @@ load_environ(creds_path)
 postgres_conn = get_postgres_conn()
 
 # new customization in hydralit 1.0.10
-info_card_custom_theme_experiments = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#2171b5', 'icon': 'fa fa-flask'}
-info_card_custom_theme_lastrun = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#2171b5', 'icon': 'fa fa-calendar'}
-info_card_custom_theme_layers = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#2171b5', 'icon': 'fa fa-bars'}
-info_card_custom_theme_sims = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#2171b5', 'icon': 'fa fa-calculator'}
-info_card_custom_theme_runtime = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#2171b5', 'icon': 'fa fa-clock'}
+info_card_custom_theme_experiments = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#FF4B4B', 'icon': 'fa fa-flask'}
+info_card_custom_theme_lastrun = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#FF4B4B', 'icon': 'fa fa-calendar'}
+info_card_custom_theme_layers = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#FF4B4B', 'icon': 'fa fa-bars'}
+info_card_custom_theme_sims = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#FF4B4B', 'icon': 'fa fa-calculator'}
+info_card_custom_theme_runtime = {'bgcolor': '#f9f9f9','title_color': '#969696','content_color': 'black', 'icon_color': '#FF4B4B', 'icon': 'fa fa-clock'}
 
 experiment_metadata_df = get_table(conn = postgres_conn, table_name = experiments_metadata_table_name, schema_name = core_schema)
 
