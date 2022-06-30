@@ -1,12 +1,15 @@
-<img src="./readme_images/entropiq-transparent-background.png" width="400" height="100">
-
+<p align="center">
+  <img src="./readme_images/entropiq-transparent-background.png" width="400" height="100">
+</p>
 # Welcome
 
 We hope EntropiQ will become a community effort to build a cloud platform for entanglement analytics of many-body quantum mechanical systems using Tensor Networks.
 
 ## EntropiQ Components
 
-<img src="./readme_images/ql_experiment.png" width=50% height=50%>
+<p align="center">
+  <img src="./readme_images/ql_experiment.png" width=75% height=75%>
+</p>
 
 - AWS Postgres Database for quantum simulation data and metadata management
 - Many-body quantum system simulation pipeline templates in (Julia)
