@@ -4,7 +4,7 @@
 
 # Welcome
 
-We hope EntropiQ will become a community effort to build a cloud platform for entanglement analytics of many-body quantum mechanical systems using Tensor Networks.
+We hope EntropiQ will become a community effort to build a no-code cloud platform for designing and running large-scale simulations of many-body quantum mechanical systems using Tensor Networks.
 
 ## EntropiQ Components
 
@@ -14,7 +14,7 @@ We hope EntropiQ will become a community effort to build a cloud platform for en
 
 There are three parts of EntropiQ:
 - AWS Postgres Database for quantum simulation data and metadata management
-- Many-body quantum system simulation pipeline templates in (Julia)
+- Many-body quantum system simulation pipeline templates in Julia
   - Genie (web framework in Julia) API Templates to deploy simulations and integrate with app
 - Streamlit Application (Python)
 
