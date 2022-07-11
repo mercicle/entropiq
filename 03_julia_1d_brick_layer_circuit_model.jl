@@ -152,7 +152,7 @@ else
 end
 
 start_time = time()
-brick_layer_results = run_brick_layer_sim(num_qubit_space, simulation_space, measurement_rate_space, layer_space, qubit_index_space, operation_type_to_apply, gate_types_to_apply, subsystem_range_divider, use_constant_size, constant_size)
+brick_layer_results = run_brick_layer_sim(num_qubit_space, simulation_space, measurement_rate_space, layer_space, operation_type_to_apply, gate_types_to_apply, subsystem_range_divider, use_constant_size, constant_size)
 runtime_in_seconds = time() - start_time
 runtime_in_seconds = round(runtime_in_seconds, digits=0)
 
