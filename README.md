@@ -4,6 +4,8 @@
 
 # Welcome
 
+I began building EntropiQ at the end of my M.S. Physics, when I was studying entanglement entropy in quantum systems under the supervision of [Associate Professor Dr. Lukasz Fidkowski](https://phys.washington.edu/people/lukasz-fidkowski) at the [University of Washington](https://phys.washington.edu/).
+
 We hope EntropiQ will become a community effort to build a no-code cloud platform for designing and running large-scale simulations of many-body quantum mechanical systems using Tensor Networks.
 
 The community version and demos will be available at https://entropiq.tech/ shortly 🚀.
@@ -14,7 +16,7 @@ The community version and demos will be available at https://entropiq.tech/ shor
   <img src="./readme_images/entropiq_stats.png" width=75% height=75%>
 </p>
 
-There are three parts of EntropiQ:
+There are three components of EntropiQ:
 - AWS Postgres Database for quantum simulation data and metadata management
   - tables managing experiment metadata, high-level simulation results, and low-level state and entropy tracking
 - Many-body quantum system simulation pipeline templates in Julia
@@ -22,7 +24,7 @@ There are three parts of EntropiQ:
   - Working on Genie (web framework in Julia) API Templates to deploy simulations and integrate with app
 - Streamlit Application (Python)
   - Platform statistics
-  - Flexibility across multiple experimental conditions, including: system size, gates, measurement types and rates, circuit depth and entropy calculation cutomization.
+  - Flexible experimental design, including: system size, gates, measurement types and rates, circuit depth and entropy calculation customization.
   - High and low-level exploratory data analysis of entanglement entropy, runtime analysis, and state probability distribution evolution animations
 
 <p align="center">
