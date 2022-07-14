@@ -4,8 +4,6 @@
 
 # Welcome
 
-I began building EntropiQ at the end of my M.S. Physics, when I was studying entanglement entropy in quantum systems under the supervision of [Associate Professor Dr. Lukasz Fidkowski](https://phys.washington.edu/people/lukasz-fidkowski) at the [University of Washington](https://phys.washington.edu/).
-
 We hope EntropiQ will become a community effort to build a no-code cloud platform for designing and running large-scale simulations of many-body quantum mechanical systems using Tensor Networks.
 
 The community version and demos will be available at https://entropiq.tech/ shortly 🚀.
@@ -214,3 +212,13 @@ pkg> up Atom Juno
 
 # AWS Deployment
 [Using Streamlit to build an interactive dashboard for data analysis on AWS](https://aws.amazon.com/blogs/opensource/using-streamlit-to-build-an-interactive-dashboard-for-data-analysis-on-aws/)
+
+# MGMT of Open Source Projects
+
+[Open Source Project Checklist](https://inspirezone.tech/checklist-for-every-open-source-repository-maintainer/)
+
+# History
+
+I began building EntropiQ at the end of my M.S. Physics, when I was studying entanglement entropy in quantum systems under the supervision of [Associate Professor Dr. Lukasz Fidkowski](https://phys.washington.edu/people/lukasz-fidkowski) at the [University of Washington](https://phys.washington.edu/).
+
+This could not have been done without the generous support provided by the [ITensors](https://arxiv.org/pdf/2007.14822.pdf) and [PastaQ](https://github.com/GTorlai/PastaQ.jl) package developers, Matt and Giacomo. These are the two powerhouse packages used by EntropiQ.

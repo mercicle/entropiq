@@ -158,7 +158,7 @@ else
 end
 
 start_time = time()
-cplc_results = run_cplc_sim(num_qubit_space, simulation_space, measurement_rate_space, subsystem_range_divider, use_constant_size, constant_size)
+cplc_results = run_cplc_sim(num_qubit_space, simulation_space, measurement_rate_space, p_space, q_space, subsystem_range_divider, use_constant_size, constant_size)
 runtime_in_seconds = time() - start_time
 runtime_in_seconds = round(runtime_in_seconds, digits=0)
 
