@@ -20,6 +20,7 @@ Now, entanglement entropy is a key quantity in quantum physics that captures how
 There are three components of EntropiQ:
 - Many-body quantum system simulation pipeline templates in Julia
   - Currently seeded with both brick-layer design and completely packed loop model with crossings (CPLC) design
+  - Harnesses high-performance `ITensors.jl` package (based on tensor networks and Matrix Product States)
 - AWS Postgres Database for quantum simulation data and metadata management
   - Schema for managing experiment metadata, high-level simulation results, and low-level state and entropy tracking
 - Streamlit Application
@@ -67,7 +68,7 @@ As a small concrete example, consider a 2-qubit system with maximum entanglement
 This is a *maximally entangled* state living in \(\mathbb{C}^4\), meaning given the state of the first qubit, the state of the second qubit is also known definitively. The MPS representation is:
 
 <div align="center">
-  <img src="readme_images/mps_bell_example.png" width="250"/>
+  <img src="readme_images/mps_bell_example.png" width="800"/>
 </div>
 
 We arrive at this equation by iteratively splitting the system into two parts (one index at a time), creating a left and right hand side (lower-order tensors). At each iteration, we perform a Singular Value Decomposition (SVD), and then finally contract the \(\lambda^{i}\) matrices into their left local tensors \(M^{i}\). This forms the tensor network of \(A^{i}\)'s, which is the MPS, as shown below:
