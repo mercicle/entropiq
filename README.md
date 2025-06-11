@@ -41,7 +41,7 @@ There are three components of EntropiQ:
 The computational challenge of simulating many-body quantum systems is the exponential increase in size of the Hilbert space:
 
 <div align="center">
-  <img src="readme_images/hilbert_space_dimension.png" alt="Description" width="200"/>
+  <img src="readme_images/hilbert_space_dimension.png" width="100"/>
 </div>
 
 There are many computational approaches for simulating many-body systems, such as: exact diagonalization of the quantum Hamiltonian, series expansion techniques, quantum Monte Carlo algorithms, continuous unitary transformations, coupled cluster methods, and density functional theory (DFT). These methods have various limitations that span both computational (computer memory) and with mathematical accuracy due to approximations that must be made.
