@@ -60,11 +60,15 @@ On the LHS, \(\ket{\Psi}\) is of length \(2^n\) and \(c_{i_{1}...i_{n}}\) are \(
 
 As a small concrete example, consider a 2-qubit system with maximum entanglement (i.e., a "Bell State" or "EPR pair"). We begin with both qubits in \(\ket{0}\). First, apply a Hadamard to the first qubit, and then follow that with a 2-qubit CNOT gate between the two qubits, resulting in:
 
-![Bell state equation](readme_images/bell_state_equation.png)  
+<div align="center">
+  <img src="readme_images/bell_state_equation.png" width="100"/>
+</div>
 
 This is a *maximally entangled* state living in \(\mathbb{C}^4\), meaning given the state of the first qubit, the state of the second qubit is also known definitively. The MPS representation is:
 
-![Bell state MPS equation](readme_images/mps_bell_example.png)  
+<div align="center">
+  <img src="readme_images/mps_bell_example.png" width="100"/>
+</div>
 
 We arrive at this equation by iteratively splitting the system into two parts (one index at a time), creating a left and right hand side (lower-order tensors). At each iteration, we perform a Singular Value Decomposition (SVD), and then finally contract the \(\lambda^{i}\) matrices into their left local tensors \(M^{i}\). This forms the tensor network of \(A^{i}\)'s, which is the MPS, as shown below:
 
@@ -95,7 +99,9 @@ for s in n_simulations:
 
 The 2-qubit gates are selected randomly from either Haar random unitaries or Clifford gates. After all layer iterations, the Von Neumann entropy is calculated based on the final MPS state of \(\Psi\) using Singular Value Decomposition (SVD) of a bi-partition of the system:
 
-![Von Neumann Entropy](readme_images/von_neumann_entropy.png)  
+<div align="center">
+  <img src="readme_images/von_neumann_entropy.png" width="100"/>
+</div>
 
 Here, \(\lambda_{i} = \sum_{i,i}^2\) is the square of the \(i\)-th singular value from the S tensor (in the Schmidt basis) from SVD. Thus, \(\lambda_{i}\) is the probability of observing state \(i\).
 
