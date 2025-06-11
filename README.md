@@ -4,9 +4,8 @@
 
 # Welcome
 
-We hope EntropiQ will become a community effort to build a no-code cloud platform for designing and running large-scale simulations of many-body quantum mechanical systems using Tensor Networks.
+EntropiQ enables researchers to more easily design, run and manage large-scale simulations of many-body quantum mechanical systems using Tensor Networks.
 
-The community version and demos will be available at https://entropiq.tech/ shortly 🚀.
 
 ## EntropiQ Components
 
@@ -15,15 +14,16 @@ The community version and demos will be available at https://entropiq.tech/ shor
 </p>
 
 There are three components of EntropiQ:
-- AWS Postgres Database for quantum simulation data and metadata management
-  - tables managing experiment metadata, high-level simulation results, and low-level state and entropy tracking
 - Many-body quantum system simulation pipeline templates in Julia
   - Currently seeded with both brick-layer design and completely packed loop model with crossings (CPLC) design
   - Working on Genie (web framework in Julia) API Templates to deploy simulations and integrate with app
-- Streamlit Application (Python)
-  - Platform statistics
+- AWS Postgres Database for quantum simulation data and metadata management
+  - tables managing experiment metadata, high-level simulation results, and low-level state and entropy tracking
+- Streamlit Application
   - Flexible experimental design, including: system size, gates, measurement types and rates, circuit depth and entropy calculation customization.
   - High and low-level exploratory data analysis of entanglement entropy, runtime analysis, and state probability distribution evolution animations
+  - Platform statistics
+
 
 <p align="center">
   <img src="./readme_images/entropiq_experiment.png" width=75% height=75%>
@@ -94,11 +94,11 @@ Entanglement Entropy via the partial trace:
 
 # Step-By-Step Onboarding
 
-Request DB credentials from @mercicle and create a `db_creds.env` file in the root folder with the following:
+Create a `db_creds.env` file in the root folder with the following:
 ```
 POSTGRES_DB_USERNAME=
 POSTGRES_DB_PASSWORD=
-POSTGRES_DB_URL=quantumlabdb.cvbkaarxyt1b.us-east-1.rds.amazonaws.com
+POSTGRES_DB_URL=
 POSTGRES_DB_PORT=5432
 POSTGRES_DB_NAME=postgres
 ```
@@ -165,20 +165,6 @@ Add to `~/.zshrc`:
 export JULIA_NUM_THREADS=4
 ```
 
-## Mac M1 Support
-
-[Julia support for Apple Silicon](https://julialang.org/blog/2021/11/julia-1.7-highlights/#support_for_apple_silicon)
-
-Tried M1 experimental and was running into PastaQ error:
-
-> ERROR: LoadError: UndefVarError: libscsindir not defined
-
-So then installed Julia  macOS x86 (Intel or Rosetta)
-
-```
-softwareupdate --install-rosetta
-```
-
 ## Atom Editor
 
 [juno-makes-writing-julia-awesome](https://towardsdatascience.com/juno-makes-writing-julia-awesome-f3e1baf92ea9)
@@ -210,15 +196,6 @@ pkg> up Atom Juno
 
 [PyJulia Issues](https://github.com/JuliaPy/pyjulia/issues/492)
 
-# AWS Deployment
-[Using Streamlit to build an interactive dashboard for data analysis on AWS](https://aws.amazon.com/blogs/opensource/using-streamlit-to-build-an-interactive-dashboard-for-data-analysis-on-aws/)
-
-# MGMT of Open Source Projects
-
-[Open Source Project Checklist](https://inspirezone.tech/checklist-for-every-open-source-repository-maintainer/)
-
-# History
-
-I began building EntropiQ at the end of my M.S. Physics, when I was studying entanglement entropy in quantum systems under the supervision of [Associate Professor Dr. Lukasz Fidkowski](https://phys.washington.edu/people/lukasz-fidkowski) at the [University of Washington](https://phys.washington.edu/).
+# Thanks
 
 This could not have been done without the generous support provided by the [ITensors](https://arxiv.org/pdf/2007.14822.pdf) and [PastaQ](https://github.com/GTorlai/PastaQ.jl) package developers, Matt and Giacomo. These are the two powerhouse packages used by EntropiQ.
