@@ -4,9 +4,13 @@
 
 # Welcome
 
-EntropiQ enables researchers to more easily design, run and manage large-scale simulations of many-body quantum mechanical systems using Tensor Networks.
+The acceleration of quantum hardware and software development is making quantum computing poised to become one of the most important technological innovations in the 21st century. Given the significant challenges remaining before surpassing the current NISQ era, one flourishing area of development is the intersection of high-performance computing for simulating many-body quantum mechanical systems so that *classical in-silico* simulations enable rapid prototyping and experimentation.
 
+Now, entanglement entropy is a key quantity in quantum physics that captures how much quantum information is shared between parts of a system. Analyzing and modeling the characteristics and behavior of entanglement entropy under different system sizes, gates, and measurement regimes -- i.e., the so-called area-to-volume law phase transitions encoded by entanglement entropy --  is fundamentally important. 
 
+**EntropiQ** is a framework and application that enables researchers to more easily design, run and manage large-scale simulations of many-body quantum mechanical systems using Tensor Networks for running, managing, and analyzing experiments of entanglement entropy in large-scale systems.
+
+---
 ## EntropiQ Components
 
 <p align="center">
@@ -29,6 +33,70 @@ There are three components of EntropiQ:
 </p>
 
 <img src="./readme_images/discovery_main.png" width=50% height=50%><img src="./readme_images/discovery_runtimes.png" width=50% height=50%><img src="./readme_images/discovery_state_evolution.png" width=50% height=50%><img src="./readme_images/discovery_inspection.png" width=50% height=50%>
+
+---
+
+## Simulation of Many-body Quantum Systems
+
+The computational challenge of simulating many-body quantum systems is the exponential increase in size of the Hilbert space:
+
+![Hilbert space equation](readme_images/hilbert_space_dimension.png)  
+
+There are many computational approaches for simulating many-body systems, such as: exact diagonalization of the quantum Hamiltonian, series expansion techniques, quantum Monte Carlo algorithms, continuous unitary transformations, coupled cluster methods, and density functional theory (DFT). These methods have various limitations that span both computational (computer memory) and with mathematical accuracy due to approximations that must be made.
+
+An alternative method, Matrix Product States (MPS) is a powerful and unique approach limited only by the nature of the entanglement of the system (in fact, the paper explicitly warns it's a method for "slightly entangled" or "conveniently restricted" systems). Two excellent introductions to tensor networks and MPS are provided in the references.
+
+A tensor network is a diagrammatic method for combining many low-order tensors into one higher-order "composite tensor." Tensors are represented by objects (circles, triangles, squares, and rectangles are most common), and the legs emanating from the objects represent the indices of the tensor and therefore its local rank. In a diagram, the number of satellite legs (that don't connect to an object) can be added to determine the rank (or "order") of the composite tensor.
+
+![Tensor and Contraction Examples](readme_images/tensor_examples.png)
+
+The MPS translates the original state vector into a local representation as follows:
+
+![MPS general equation](readme_images/mps_equation_general.png)  
+
+On the LHS, \(\ket{\Psi}\) is of length \(2^n\) and \(c_{i_{1}...i_{n}}\) are \(2^n\) complex numbers (vs. \(2n\) amplitudes if it were a product state). On the RHS, the \(s_i\) are basis states (i.e. for qubits \(s_i \in \{0,1\}\)), and the \(A_i^{s_i}\) are square matrices of local dimension \(\chi\), which is the maximal Schmidt rank (from the Schmidt decomposition of \(\ket{\Psi}\)) over all possible bipartite splittings of the \(n\) qubits.
+
+As a small concrete example, consider a 2-qubit system with maximum entanglement (i.e., a "Bell State" or "EPR pair"). We begin with both qubits in \(\ket{0}\). First, apply a Hadamard to the first qubit, and then follow that with a 2-qubit CNOT gate between the two qubits, resulting in:
+
+![Bell state equation](readme_images/bell_state_equation.png)  
+
+This is a *maximally entangled* state living in \(\mathbb{C}^4\), meaning given the state of the first qubit, the state of the second qubit is also known definitively. The MPS representation is:
+
+![Bell state MPS equation](readme_images/mps_bell_example.png)  
+
+We arrive at this equation by iteratively splitting the system into two parts (one index at a time), creating a left and right hand side (lower-order tensors). At each iteration, we perform a Singular Value Decomposition (SVD), and then finally contract the \(\lambda^{i}\) matrices into their left local tensors \(M^{i}\). This forms the tensor network of \(A^{i}\)'s, which is the MPS, as shown below:
+
+![Iterative Decomposition](readme_images/tnn_psi.png)
+
+---
+
+### Simulation Design
+
+The system architecture is a one-dimensional chain of qubits that undergo the so-called "brick-layer" evolution illustrated below. Here, nearest-neighbor gates and measurements are applied in an alternating even/odd pattern resembling bricks. Unary or binary gates (such as random unitaries or Clifford Gates) and projective measurements are applied in this alternating pattern, and at a certain depth (number of layers), the resulting entanglement entropy is quantified. This process is repeated a specified number of simulations for each system-size and measurement rate, and the average entanglement entropy across simulations is computed.
+
+![Brick-layer Circuit Structure](readme_images/my_bricklayer_diagram.png)
+
+The pseudo-code for a simulation run is as follows:
+
+```python
+for s in n_simulations:
+  for q in system_sizes:
+    for r in measurement_rates:
+      for l in number_of_layers:
+        for i in qubit_index_space:
+          if (either i and l are both odd or both even):
+            apply gate to qubits (i, i+1)
+            if r > rand(0, 1):
+                apply measurement to qubits (i, i+1)
+      compute_entropy(ψ)
+```
+
+The 2-qubit gates are selected randomly from either Haar random unitaries or Clifford gates. After all layer iterations, the Von Neumann entropy is calculated based on the final MPS state of \(\Psi\) using Singular Value Decomposition (SVD) of a bi-partition of the system:
+
+![Von Neumann Entropy](readme_images/von_neumann_entropy.png)  
+
+Here, \(\lambda_{i} = \sum_{i,i}^2\) is the square of the \(i\)-th singular value from the S tensor (in the Schmidt basis) from SVD. Thus, \(\lambda_{i}\) is the probability of observing state \(i\).
+
 
 # Relevant Papers
 
