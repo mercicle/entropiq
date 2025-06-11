@@ -16,9 +16,8 @@ EntropiQ enables researchers to more easily design, run and manage large-scale s
 There are three components of EntropiQ:
 - Many-body quantum system simulation pipeline templates in Julia
   - Currently seeded with both brick-layer design and completely packed loop model with crossings (CPLC) design
-  - Working on Genie (web framework in Julia) API Templates to deploy simulations and integrate with app
 - AWS Postgres Database for quantum simulation data and metadata management
-  - tables managing experiment metadata, high-level simulation results, and low-level state and entropy tracking
+  - Schema for managing experiment metadata, high-level simulation results, and low-level state and entropy tracking
 - Streamlit Application
   - Flexible experimental design, including: system size, gates, measurement types and rates, circuit depth and entropy calculation customization.
   - High and low-level exploratory data analysis of entanglement entropy, runtime analysis, and state probability distribution evolution animations
@@ -103,10 +102,7 @@ POSTGRES_DB_PORT=5432
 POSTGRES_DB_NAME=postgres
 ```
 
-# Help Options
-
-
-# Software and Library Installation Help
+# Helpful Links and Tips
 
 ## Julia
 To install [Julia](https://julialang.org/) on Mac:
